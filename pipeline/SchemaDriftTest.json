@@ -73,7 +73,13 @@
 								},
 								"sink": {
 									"type": "SqlServerSink",
-									"writeBehavior": "insert",
+									"writeBehavior": "upsert",
+									"upsertSettings": {
+										"useTempDB": true,
+										"keys": [
+											""
+										]
+									},
 									"sqlWriterUseTableLock": false,
 									"tableOption": "autoCreate"
 								},
