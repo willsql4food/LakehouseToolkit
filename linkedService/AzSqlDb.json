@@ -1,0 +1,20 @@
+{
+	"name": "AzSqlDb",
+	"properties": {
+		"parameters": {
+			"serverName": {
+				"type": "string",
+				"defaultValue": "sql-ab092898.database.windows.net"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "txn"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
+		}
+	}
+}
