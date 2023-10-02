@@ -1,0 +1,185 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-sbx-ab092898"
+		},
+		"AzSqlDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
+		},
+		"OnpremSqlDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
+			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
+		},
+		"AzKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://akv-ab092898.vault.azure.net/"
+		},
+		"OnpremSqlDb_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().userName}"
+		},
+		"sfdc_properties_typeProperties_environmentUrl": {
+			"type": "string",
+			"defaultValue": "https://login.salesforce.com"
+		},
+		"sfdc_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "@{linkedService().userName}"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzKeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzSqlDb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"serverName": {
+						"type": "string",
+						"defaultValue": "sql-ab092898.database.windows.net"
+					},
+					"dbName": {
+						"type": "string",
+						"defaultValue": "txn"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('AzSqlDb_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OnpremSqlDb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"serverFqdn": {
+						"type": "string",
+						"defaultValue": "localhost\\ACB"
+					},
+					"dbName": {
+						"type": "string",
+						"defaultValue": "master"
+					},
+					"userName": {
+						"type": "string",
+						"defaultValue": "ab092898@flooranddecor.com"
+					},
+					"password": {
+						"type": "string",
+						"defaultValue": "AzimuthDeco1!"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('OnpremSqlDb_connectionString')]",
+					"userName": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]",
+					"password": "@{linkedService().password}"
+				},
+				"connectVia": {
+					"referenceName": "shirt-ACB",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sfdc')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"userName": {
+						"type": "string",
+						"defaultValue": "fred"
+					},
+					"sfdcPwdSecret": {
+						"type": "string",
+						"defaultValue": "sfdcPwd"
+					},
+					"sfdcTokenSecret": {
+						"type": "string",
+						"defaultValue": "sfdcToken"
+					},
+					"sfdcApiVersion": {
+						"type": "string",
+						"defaultValue": "52.0"
+					}
+				},
+				"annotations": [],
+				"type": "Salesforce",
+				"typeProperties": {
+					"environmentUrl": "[parameters('sfdc_properties_typeProperties_environmentUrl')]",
+					"username": "[parameters('sfdc_properties_typeProperties_username')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().sfdcPwdSecret",
+							"type": "Expression"
+						}
+					},
+					"securityToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().sfdcTokenSecret",
+							"type": "Expression"
+						}
+					},
+					"apiVersion": "@{linkedService().sfdcApiVersion}"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/shirt-ACB')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"description": "Self-hosted integration runtime operating on Carter Burleigh's laptop",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		}
+	]
+}

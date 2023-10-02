@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "df-sbx-ab092898"
+		},
+		"AzSqlDb_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
+		},
+		"OnpremSqlDb_connectionString": {
+			"value": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
+		},
+		"AzKeyVault_properties_typeProperties_baseUrl": {
+			"value": "https://akv-ab092898.vault.azure.net/"
+		},
+		"OnpremSqlDb_properties_typeProperties_userName": {
+			"value": "@{linkedService().userName}"
+		},
+		"sfdc_properties_typeProperties_environmentUrl": {
+			"value": "https://login.salesforce.com"
+		},
+		"sfdc_properties_typeProperties_username": {
+			"value": "@{linkedService().userName}"
+		}
+	}
+}

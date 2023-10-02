@@ -1,0 +1,86 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-sbx-ab092898"
+		},
+		"AzSqlDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
+		},
+		"OnpremSqlDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
+			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
+		},
+		"AzKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://akv-ab092898.vault.azure.net/"
+		},
+		"OnpremSqlDb_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().userName}"
+		},
+		"sfdc_properties_typeProperties_environmentUrl": {
+			"type": "string",
+			"defaultValue": "https://login.salesforce.com"
+		},
+		"sfdc_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "@{linkedService().userName}"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "df-sbx-ab092898_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzSqlDb_connectionString": {
+						"value": "[parameters('AzSqlDb_connectionString')]"
+					},
+					"OnpremSqlDb_connectionString": {
+						"value": "[parameters('OnpremSqlDb_connectionString')]"
+					},
+					"AzKeyVault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"OnpremSqlDb_properties_typeProperties_userName": {
+						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
+					},
+					"sfdc_properties_typeProperties_environmentUrl": {
+						"value": "[parameters('sfdc_properties_typeProperties_environmentUrl')]"
+					},
+					"sfdc_properties_typeProperties_username": {
+						"value": "[parameters('sfdc_properties_typeProperties_username')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
