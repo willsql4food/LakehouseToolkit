@@ -5,12 +5,46 @@
 			"referenceName": "AzSqlDb",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"serverName": "sql-ab092898.database.windows.net",
-				"dbName": "txn"
+				"serverName": {
+					"value": "@dataset().sqlFqdn",
+					"type": "Expression"
+				},
+				"dbName": {
+					"value": "@dataset().dbName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"schemaName": {
+				"type": "string",
+				"defaultValue": "dbo"
+			},
+			"tableName": {
+				"type": "string",
+				"defaultValue": "customer"
+			},
+			"sqlFqdn": {
+				"type": "string",
+				"defaultValue": "sql-ab092898.database.windows.net"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "txn"
 			}
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
-		"schema": []
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().schemaName",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().tableName",
+				"type": "Expression"
+			}
+		}
 	}
 }
