@@ -1,0 +1,16 @@
+{
+	"name": "AzSqlTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzSqlDb",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"serverName": "sql-ab092898.database.windows.net",
+				"dbName": "txn"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
