@@ -1,0 +1,35 @@
+{
+	"name": "OnpremSqlDb",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"serverFqdn": {
+				"type": "string",
+				"defaultValue": "localhost\\ACB"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "master"
+			},
+			"userName": {
+				"type": "string",
+				"defaultValue": "ab092898@flooranddecor.com"
+			},
+			"password": {
+				"type": "string",
+				"defaultValue": "AzimuthDeco1!"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}",
+			"userName": "@{linkedService().userName}",
+			"password": "@{linkedService().password}"
+		},
+		"connectVia": {
+			"referenceName": "shirt-ACB",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

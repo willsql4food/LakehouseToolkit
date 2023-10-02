@@ -1,1 +1,1 @@
-# Data Lakehouse Toolkit
+Initialized by Azure Data Factory!
