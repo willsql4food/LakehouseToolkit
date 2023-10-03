@@ -28,7 +28,10 @@
 				"type": "AzureKeyVaultSecret",
 				"store": {
 					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference"
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"baseUrl": "https://akv-ab092898.vault.azure.net/"
+					}
 				},
 				"secretName": {
 					"value": "@linkedService().sfdcPwdSecret",
@@ -39,7 +42,10 @@
 				"type": "AzureKeyVaultSecret",
 				"store": {
 					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference"
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"baseUrl": "https://akv-ab092898.vault.azure.net/"
+					}
 				},
 				"secretName": {
 					"value": "@linkedService().sfdcTokenSecret",
