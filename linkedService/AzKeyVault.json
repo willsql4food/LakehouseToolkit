@@ -1,10 +1,16 @@
 {
 	"name": "AzKeyVault",
 	"properties": {
+		"parameters": {
+			"baseUrl": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			}
+		},
 		"annotations": [],
 		"type": "AzureKeyVault",
 		"typeProperties": {
-			"baseUrl": "https://akv-ab092898.vault.azure.net/"
+			"baseUrl": "@{linkedService().baseUrl}"
 		}
 	}
 }
