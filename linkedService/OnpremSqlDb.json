@@ -17,6 +17,10 @@
 			"akvBaseUrl": {
 				"type": "string",
 				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"PwdSecret": {
+				"type": "string",
+				"defaultValue": "WinAuthPwd"
 			}
 		},
 		"annotations": [],
@@ -36,7 +40,10 @@
 						}
 					}
 				},
-				"secretName": "WinAuthPwd"
+				"secretName": {
+					"value": "@linkedService().PwdSecret",
+					"type": "Expression"
+				}
 			}
 		},
 		"connectVia": {
