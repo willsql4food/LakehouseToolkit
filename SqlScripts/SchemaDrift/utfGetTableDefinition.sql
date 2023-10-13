@@ -9,6 +9,9 @@ create or alter function dbo.uftGetTableDefinition(@SchemaName sysname, @TableNa
         ,   TemporalTypeId int default -1
         ,   TemporalType varchar(25) default 'n/a'
         ,   TypeName varchar(255)
+        ,   max_length int
+        ,   [Precision] int
+        ,   [Scale] int
         ,   DefinitionSql nvarchar(1000)
         ,   DefinitionHtml nvarchar(1000)
         ,   DefinitionMermaid nvarchar(1000)
@@ -28,8 +31,11 @@ order by    Id
 as
 begin
     /* Get each column of the table and its definition */
-    insert into @TableDefinition (Id, SchemaName, TableName, ColumnName, ColumnId, TemporalTypeId, TemporalType, TypeName, DefinitionSql, DefinitionHtml, DefinitionMermaid)
-    select      c.column_id, s.name, t.name, c.name, c.column_id, c.generated_always_type, c.generated_always_type_desc, ty.name
+    insert into @TableDefinition (  Id, SchemaName, TableName, ColumnName, ColumnId, TemporalTypeId, TemporalType
+                                ,   TypeName, max_length, [Precision], [Scale]
+                                ,   DefinitionSql, DefinitionHtml, DefinitionMermaid)
+    select      c.column_id, s.name, t.name, c.name, c.column_id, c.generated_always_type, c.generated_always_type_desc
+            ,   ty.name, c.max_length, c.[precision], c.scale
             ,   concat(
                     c.name, ' ', ty.name
                     /* SQL definition (ex. "Id int NOT NULL") */
