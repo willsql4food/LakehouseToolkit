@@ -13,6 +13,14 @@
 			"userName": {
 				"type": "string",
 				"defaultValue": "ab092898@flooranddecor.com"
+			},
+			"akvBaseUrl": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"PwdSecret": {
+				"type": "string",
+				"defaultValue": "WinAuthPwd"
 			}
 		},
 		"annotations": [],
@@ -26,10 +34,16 @@
 					"referenceName": "AzKeyVault",
 					"type": "LinkedServiceReference",
 					"parameters": {
-						"baseUrl": "https://akv-ab092898.vault.azure.net/"
+						"baseUrl": {
+							"value": "@linkedService().akvBaseUrl",
+							"type": "Expression"
+						}
 					}
 				},
-				"secretName": "WinAuthPwd"
+				"secretName": {
+					"value": "@linkedService().PwdSecret",
+					"type": "Expression"
+				}
 			}
 		},
 		"connectVia": {

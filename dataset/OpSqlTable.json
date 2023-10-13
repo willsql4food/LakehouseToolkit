@@ -18,8 +18,12 @@
 					"value": "@dataset().userName",
 					"type": "Expression"
 				},
-				"password": {
-					"value": "@dataset().password",
+				"akvBaseUrl": {
+					"value": "@dataset().akvBaseUrl",
+					"type": "Expression"
+				},
+				"PwdSecret": {
+					"value": "@dataset().pwdSecretName",
 					"type": "Expression"
 				}
 			}
@@ -45,9 +49,13 @@
 				"type": "string",
 				"defaultValue": "AB092898"
 			},
-			"password": {
+			"pwdSecretName": {
 				"type": "string",
-				"defaultValue": "AzimuthDeco1!"
+				"defaultValue": "WinAuthPwd"
+			},
+			"akvBaseUrl": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
 			}
 		},
 		"annotations": [],
