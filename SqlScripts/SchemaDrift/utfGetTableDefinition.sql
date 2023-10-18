@@ -10,6 +10,7 @@ create or alter function dbo.uftGetTableDefinition(@SchemaName sysname, @TableNa
         ,   TemporalType varchar(25) default 'n/a'
         ,   TypeName varchar(255)
         ,   max_length int
+        ,   max_string_length int
         ,   [Precision] int
         ,   [Scale] int
         ,   DefinitionSql nvarchar(1000)
@@ -32,12 +33,14 @@ as
 begin
     /* Get each column of the table and its definition */
     insert into @TableDefinition (  Id, SchemaName, TableName, ColumnName, ColumnId, TemporalTypeId, TemporalType
-                                ,   TypeName, max_length, [Precision], [Scale]
+                                ,   TypeName, max_length, max_string_length, [Precision], [Scale]
                                 ,   DefinitionSql, DefinitionHtml, DefinitionMermaid)
     select      c.column_id, s.name, t.name, c.name, c.column_id, c.generated_always_type, c.generated_always_type_desc
-            ,   ty.name, c.max_length, c.[precision], c.scale
+            ,   ty.name, c.max_length
+            ,   case when c.max_length < 0 then 8193 when ty.name in ('nchar', 'nvarchar', 'ntext') then c.max_length / 2 else c.max_length end
+            ,   c.[precision], c.scale
             ,   concat(
-                    c.name, ' ', ty.name
+                    quotename(c.name), ' ', ty.name
                     /* SQL definition (ex. "Id int NOT NULL") */
                 ,   case    
                         when ty.name in ('char', 'varchar', 'varbinary', 'binary') then concat('(', case when c.max_length > 0 then convert(varchar, c.max_length) else 'MAX' end, ')')
