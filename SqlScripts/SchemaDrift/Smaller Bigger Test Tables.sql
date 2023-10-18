@@ -29,6 +29,9 @@ create table dbo.smaller (
 	,	ncs nchar(10)
 	,	s varchar(200)
 	,	ns nvarchar(200)
+	,	var2nvar varchar(250)
+	,	var2nvarsz varchar(250)
+	,	char2ncharar char(25)
 
 	,	bin binary(90)
 	,	vbin varbinary(90)
@@ -66,6 +69,9 @@ create table dbo.bigger (
 	,	ncs nchar(15)
 	,	s varchar(250)
 	,	ns nvarchar(250)
+	,	var2nvar nvarchar(250)
+	,	var2nvarsz nvarchar(200)
+	,	char2ncharar nchar(25)
 
 	,	bin binary(120)
 	,	vbin varbinary(120)
