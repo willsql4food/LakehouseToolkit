@@ -1,7 +1,6 @@
 create or alter function dbo.uftGetTableDefinition(@SchemaName sysname, @TableName sysname, @IncludeHdrFtr bit)
     returns @TableDefinition table
-    (
-            Id int
+    (       Id int
         ,   SchemaName varchar(255)
         ,   TableName varchar(255)
         ,   ColumnName varchar(255)
@@ -13,6 +12,7 @@ create or alter function dbo.uftGetTableDefinition(@SchemaName sysname, @TableNa
         ,   max_string_length int
         ,   [Precision] int
         ,   [Scale] int
+        ,   IsPrmaryKey bit
         ,   DefinitionSql nvarchar(1000)
         ,   DefinitionHtml nvarchar(1000)
         ,   DefinitionMermaid nvarchar(1000)
@@ -33,51 +33,53 @@ as
 begin
     /* Get each column of the table and its definition */
     insert into @TableDefinition (  Id, SchemaName, TableName, ColumnName, ColumnId, TemporalTypeId, TemporalType
-                                ,   TypeName, max_length, max_string_length, [Precision], [Scale]
+                                ,   TypeName, max_length, max_string_length, [Precision], [Scale], IsPrmaryKey
                                 ,   DefinitionSql, DefinitionHtml, DefinitionMermaid)
     select      c.column_id, s.name, t.name, c.name, c.column_id, c.generated_always_type, c.generated_always_type_desc
             ,   ty.name, c.max_length
-            ,   case when c.max_length < 0 then 8193 when ty.name in ('nchar', 'nvarchar', 'ntext') then c.max_length / 2 else c.max_length end
-            ,   c.[precision], c.scale
-            ,   concat(
-                    quotename(c.name), ' ', ty.name
-                    /* SQL definition (ex. "Id int NOT NULL") */
-                ,   case    
-                        when ty.name in ('char', 'varchar', 'varbinary', 'binary') then concat('(', case when c.max_length > 0 then convert(varchar, c.max_length) else 'MAX' end, ')')
-                        when ty.name in ('nchar', 'nvarchar') then concat('(', case when c.max_length > 0 then  convert(varchar, c.max_length / 2) else 'MAX' end, ')')
-                        when ty.name in ('time', 'datetime2', 'datetimeoffset') then concat('(', c.scale, ')')
-                        when ty.name in ('float') then concat('(', c.[precision], ')')
-                        when ty.name in ('decimal', 'numeric') then concat('(', c.[precision], ', ', c.scale, ')')
-                    end
-                ,   case when c.is_nullable = 0 then ' NOT' end, ' NULL'
-                ) DefinitionSql
+            ,   case 
+                    when c.max_length < 0 or ty.name like '%text' then 8193 
+                    when ty.name in ('nchar', 'nvarchar', 'ntext') 
+                    then c.max_length / 2 
+                    else c.max_length 
+                end
+            ,   c.[precision], c.scale, convert(bit, ixc.column_id)
+            ,   concat( quotename(c.name), ' ', ty.name
+                        /* SQL definition (ex. "Id int NOT NULL") */
+                    ,   case    
+                            when ty.name in ('char', 'varchar', 'varbinary', 'binary') then concat('(', case when c.max_length > 0 then convert(varchar, c.max_length) else 'MAX' end, ')')
+                            when ty.name in ('nchar', 'nvarchar') then concat('(', case when c.max_length > 0 then  convert(varchar, c.max_length / 2) else 'MAX' end, ')')
+                            when ty.name in ('time', 'datetime2', 'datetimeoffset') then concat('(', c.scale, ')')
+                            when ty.name in ('float') then concat('(', c.[precision], ')')
+                            when ty.name in ('decimal', 'numeric') then concat('(', c.[precision], ', ', c.scale, ')')
+                        end
+                    ,   case when c.is_nullable = 0 then ' NOT' end, ' NULL'
+                    ) DefinitionSql
                 /* HTML definition - a table row / item tagged column definiton */
-            ,   concat(
-                    '<tr><td>', convert(varchar, c.column_id), '</td><td>', c.name, '</td><td>', ty.name
-                ,   case    
-                        when ty.name in ('char', 'varchar', 'varbinary', 'binary') then concat('(', case when c.max_length > 0 then convert(varchar, c.max_length) else 'MAX' end, ')')
-                        when ty.name in ('nchar', 'nvarchar') then concat('(', case when c.max_length > 0 then  convert(varchar, c.max_length / 2) else 'MAX' end, ')')
-                        when ty.name in ('time', 'datetime2', 'datetimeoffset') then concat('(', c.scale, ')')
-                        when ty.name in ('float') then concat('(', c.[precision], ')')
-                        when ty.name in ('decimal', 'numeric') then concat('(', c.[precision], ', ', c.scale, ')')
-                    end
-                ,   '</td><td>'
-                ,   case when ixc.column_id is null then 'False' else 'True' end, '</td><td>'
-                ,   case when c.is_nullable = 0 then 'False' else 'True' end, '</td></tr>'
-                ) DefinitionHtml
+            ,   concat( '<tr><td>', convert(varchar, c.column_id), '</td><td>', c.name, '</td><td>', ty.name
+                    ,   case    
+                            when ty.name in ('char', 'varchar', 'varbinary', 'binary') then concat('(', case when c.max_length > 0 then convert(varchar, c.max_length) else 'MAX' end, ')')
+                            when ty.name in ('nchar', 'nvarchar') then concat('(', case when c.max_length > 0 then  convert(varchar, c.max_length / 2) else 'MAX' end, ')')
+                            when ty.name in ('time', 'datetime2', 'datetimeoffset') then concat('(', c.scale, ')')
+                            when ty.name in ('float') then concat('(', c.[precision], ')')
+                            when ty.name in ('decimal', 'numeric') then concat('(', c.[precision], ', ', c.scale, ')')
+                        end
+                    ,   '</td><td>'
+                    ,   case when ixc.column_id is null then 'False' else 'True' end, '</td><td>'
+                    ,   case when c.is_nullable = 0 then 'False' else 'True' end, '</td></tr>'
+                    ) DefinitionHtml
                 /* Mermaid.js script for column's line in an ER Diagram */
-            ,   concat(
-                    ty.name
-                ,   case    
-                        when ty.name in ('char', 'varchar', 'varbinary', 'binary') then concat('[', case when c.max_length > 0 then  convert(varchar, c.max_length) else 'MAX' end, ']')
-                        when ty.name in ('nchar', 'nvarchar') then concat('[', case when c.max_length > 0 then  convert(varchar, c.max_length / 2) else 'MAX' end, ']')
-                        when ty.name in ('time', 'datetime2', 'datetimeoffset') then concat('[', c.scale, ']')
-                        when ty.name in ('float') then concat('[', c.[precision], ']')
-                        when ty.name in ('decimal', 'numeric') then concat('[', c.[precision], '_', c.scale, ']')
-                    end
-                ,   ' ', c.name, case when ixc.column_id is not null then ' PK' else ' ' end
-                ,   ' "', case when c.is_nullable = 0 then 'NOT ' end, 'NULL"'
-                ) DefinitionMermaid
+            ,   concat( ty.name
+                    ,   case    
+                            when ty.name in ('char', 'varchar', 'varbinary', 'binary') then concat('[', case when c.max_length > 0 then  convert(varchar, c.max_length) else 'MAX' end, ']')
+                            when ty.name in ('nchar', 'nvarchar') then concat('[', case when c.max_length > 0 then  convert(varchar, c.max_length / 2) else 'MAX' end, ']')
+                            when ty.name in ('time', 'datetime2', 'datetimeoffset') then concat('[', c.scale, ']')
+                            when ty.name in ('float') then concat('[', c.[precision], ']')
+                            when ty.name in ('decimal', 'numeric') then concat('[', c.[precision], '_', c.scale, ']')
+                        end
+                    ,   ' ', c.name, case when ixc.column_id is not null then ' PK' else ' ' end
+                    ,   ' "', case when c.is_nullable = 0 then 'NOT ' end, 'NULL"'
+                    ) DefinitionMermaid
     from        sys.schemas s
     join		sys.tables t on t.schema_id = s.schema_id
     join		sys.columns c on c.object_id = t.object_id
@@ -119,5 +121,3 @@ begin
 end
 
 go
-
-
