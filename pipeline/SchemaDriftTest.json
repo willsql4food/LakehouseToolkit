@@ -94,7 +94,7 @@
 						{
 							"type": "Query",
 							"text": {
-								"value": "@activity('ConformTableRigid').output.firstRow.SqlCommand",
+								"value": "@activity('ConformTblRigid').output.firstRow.SqlCommand",
 								"type": "Expression"
 							}
 						}
@@ -194,7 +194,7 @@
 						{
 							"type": "Query",
 							"text": {
-								"value": "@activity('ConformTableFlexible').output.firstRow.SqlCommand",
+								"value": "@activity('ConformTblFlexible').output.firstRow.SqlCommand",
 								"type": "Expression"
 							}
 						}
