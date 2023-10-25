@@ -3,7 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ConformTableRigid",
+				"name": "ConformTblRigid",
+				"description": "Load data into target table without changing its structure.\nRisks: truncation, loss of precision, special characters.",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -66,7 +67,7 @@
 				"type": "Script",
 				"dependsOn": [
 					{
-						"activity": "ConformTableRigid",
+						"activity": "ConformTblRigid",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -102,7 +103,7 @@
 				}
 			},
 			{
-				"name": "ConformTableFlexible",
+				"name": "ConformTblFlexible",
 				"description": "Change Target Table\nExecute the conform table stored procedure with Perform DML = 1",
 				"type": "Lookup",
 				"dependsOn": [],
@@ -166,7 +167,7 @@
 				"type": "Script",
 				"dependsOn": [
 					{
-						"activity": "ConformTableFlexible",
+						"activity": "ConformTblFlexible",
 						"dependencyConditions": [
 							"Succeeded"
 						]
