@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ListTables",
+				"name": "ConformTable",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -17,7 +17,6 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select\t\ts.name sch, t.name tbl\nfrom\t\tsys.schemas s\njoin\t\tsys.tables t on t.schema_id = s.schema_id\norder by\ts.name, t.name",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -30,103 +29,7 @@
 							"sqlFqdn": "sql-ab092898.database.windows.net",
 							"dbName": "txn"
 						}
-					},
-					"firstRowOnly": false
-				}
-			},
-			{
-				"name": "LoopTables",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "ListTables",
-						"dependencyConditions": [
-							"Succeeded"
-						]
 					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('ListTables').output.value",
-						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "CopyTable",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"queryTimeout": "02:00:00",
-									"isolationLevel": "Snapshot",
-									"partitionOption": "None"
-								},
-								"sink": {
-									"type": "SqlServerSink",
-									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false,
-									"tableOption": "autoCreate"
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "AzSqlTable",
-									"type": "DatasetReference",
-									"parameters": {
-										"schemaName": {
-											"value": "@item().sch",
-											"type": "Expression"
-										},
-										"tableName": {
-											"value": "@item().tbl",
-											"type": "Expression"
-										},
-										"sqlFqdn": "sql-ab092898.database.windows.net",
-										"dbName": "txn"
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "OpSqlTable",
-									"type": "DatasetReference",
-									"parameters": {
-										"schemaName": {
-											"value": "@item().sch",
-											"type": "Expression"
-										},
-										"tableName": {
-											"value": "@item().tbl",
-											"type": "Expression"
-										},
-										"sqlFqdn": "localhost\\ACB",
-										"dbName": "SevenLetterTees",
-										"userName": "AB092898@flooranddecor.com",
-										"pwdSecretName": "AzimuthDeco1!"
-									}
-								}
-							]
-						}
-					]
 				}
 			}
 		],
