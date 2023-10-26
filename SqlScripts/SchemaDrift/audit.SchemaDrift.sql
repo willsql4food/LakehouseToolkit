@@ -46,6 +46,7 @@ if not exists (select s.name sch, t.name tbl from sys.tables t join sys.schemas 
         ,   [Definition]    nvarchar(2000)
         ,   PriorDefinition nvarchar(2000)
         ,   ActionReason    varchar(50)
+        ,   DdlProposed     nvarchar(2000)
         ,	SysStartTime    datetime2 not null
         ,	SysEndTime      datetime2 not null
         )
@@ -59,6 +60,7 @@ if not exists (select s.name sch, t.name tbl from sys.tables t join sys.schemas 
         ,   [Definition]    nvarchar(2000)
         ,   PriorDefinition nvarchar(2000)
         ,   ActionReason    varchar(50)
+        ,   DdlProposed     nvarchar(2000)
         ,	SysStartTime    datetime2 generated always as row start not null
         ,	SysEndTime      datetime2 generated always as row end not null
 	    ,	period for SYSTEM_TIME (SysStartTime, SysEndTime)
