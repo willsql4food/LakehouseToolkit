@@ -3,7 +3,8 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ListTables",
+				"name": "ConformTblRigid",
+				"description": "Load data into target table without changing its structure.\nRisks: truncation, loss of precision, special characters.",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -17,119 +18,213 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select\t\ts.name sch, t.name tbl\nfrom\t\tsys.schemas s\njoin\t\tsys.tables t on t.schema_id = s.schema_id\norder by\ts.name, t.name",
+						"sqlReaderStoredProcedureName": "dbo.uspConformTable",
+						"storedProcedureParameters": {
+							"SourceSchema": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plSourceSchema",
+									"type": "Expression"
+								}
+							},
+							"SourceTable": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plSourceTable",
+									"type": "Expression"
+								}
+							},
+							"TargetSchema": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plTargetSchema",
+									"type": "Expression"
+								}
+							},
+							"TargetTable": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plTargetTableRigid",
+									"type": "Expression"
+								}
+							},
+							"Options": {
+								"type": "String",
+								"value": "{\"Perform DDL\": 0}"
+							}
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "AzSqlTable",
-						"type": "DatasetReference",
-						"parameters": {
-							"schemaName": "dbo",
-							"tableName": "customer",
-							"sqlFqdn": "sql-ab092898.database.windows.net",
-							"dbName": "txn"
-						}
-					},
-					"firstRowOnly": false
+						"referenceName": "AzSqlDb",
+						"type": "DatasetReference"
+					}
 				}
 			},
 			{
-				"name": "LoopTables",
-				"type": "ForEach",
+				"name": "InsertScriptRigid",
+				"type": "Script",
 				"dependsOn": [
 					{
-						"activity": "ListTables",
+						"activity": "ConformTblRigid",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					}
 				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "AzSqlDb",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"serverName": "sql-ab092898.database.windows.net",
+						"dbName": "txn"
+					}
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "@activity('ConformTblRigid').output.firstRow.SqlCommand",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "ConformTblFlexible",
+				"description": "Change Target Table\nExecute the conform table stored procedure with Perform DML = 1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"items": {
-						"value": "@activity('ListTables').output.value",
-						"type": "Expression"
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "dbo.uspConformTable",
+						"storedProcedureParameters": {
+							"SourceSchema": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plSourceSchema",
+									"type": "Expression"
+								}
+							},
+							"SourceTable": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plSourceTable",
+									"type": "Expression"
+								}
+							},
+							"TargetSchema": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plTargetSchema",
+									"type": "Expression"
+								}
+							},
+							"TargetTable": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.plTargetTableFlexible",
+									"type": "Expression"
+								}
+							},
+							"Options": {
+								"type": "String",
+								"value": "{\"Perform DDL\": 1}"
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
-					"activities": [
+					"dataset": {
+						"referenceName": "AzSqlDb",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "InsertScriptFlexible",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "ConformTblFlexible",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "AzSqlDb",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"serverName": "sql-ab092898.database.windows.net",
+						"dbName": "txn"
+					}
+				},
+				"typeProperties": {
+					"scripts": [
 						{
-							"name": "CopyTable",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"queryTimeout": "02:00:00",
-									"isolationLevel": "Snapshot",
-									"partitionOption": "None"
-								},
-								"sink": {
-									"type": "SqlServerSink",
-									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false,
-									"tableOption": "autoCreate"
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "AzSqlTable",
-									"type": "DatasetReference",
-									"parameters": {
-										"schemaName": {
-											"value": "@item().sch",
-											"type": "Expression"
-										},
-										"tableName": {
-											"value": "@item().tbl",
-											"type": "Expression"
-										},
-										"sqlFqdn": "sql-ab092898.database.windows.net",
-										"dbName": "txn"
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "OpSqlTable",
-									"type": "DatasetReference",
-									"parameters": {
-										"schemaName": {
-											"value": "@item().sch",
-											"type": "Expression"
-										},
-										"tableName": {
-											"value": "@item().tbl",
-											"type": "Expression"
-										},
-										"sqlFqdn": "localhost\\ACB",
-										"dbName": "SevenLetterTees",
-										"userName": "AB092898@flooranddecor.com",
-										"pwdSecretName": "AzimuthDeco1!"
-									}
-								}
-							]
+							"type": "Query",
+							"text": {
+								"value": "@activity('ConformTblFlexible').output.firstRow.SqlCommand",
+								"type": "Expression"
+							}
 						}
-					]
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],
+		"parameters": {
+			"plSourceSchema": {
+				"type": "string",
+				"defaultValue": "Stage"
+			},
+			"plSourceTable": {
+				"type": "string",
+				"defaultValue": "PersonA"
+			},
+			"plTargetSchema": {
+				"type": "string",
+				"defaultValue": "dbo"
+			},
+			"plTargetTableRigid": {
+				"type": "string",
+				"defaultValue": "PersonRigid"
+			},
+			"plTargetTableFlexible": {
+				"type": "string",
+				"defaultValue": "PersonFlexible"
+			}
+		},
 		"annotations": []
 	}
 }
