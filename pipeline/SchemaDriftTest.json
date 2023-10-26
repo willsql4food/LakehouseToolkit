@@ -50,7 +50,7 @@
 							},
 							"Options": {
 								"type": "String",
-								"value": "{\"Perform DML\": 0}"
+								"value": "{\"Perform DDL\": 0, \"Debug\": 1}"
 							}
 						},
 						"queryTimeout": "02:00:00",
@@ -150,7 +150,7 @@
 							},
 							"Options": {
 								"type": "String",
-								"value": "{\"Perform DML\": 1}"
+								"value": "{\"Perform DDL\": 1, \"Debug\": 1}"
 							}
 						},
 						"queryTimeout": "02:00:00",

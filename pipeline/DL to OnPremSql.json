@@ -15,8 +15,53 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"enableStaging": false
-				}
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"fileListPath": "datalake/bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzDLStorePq",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "dbo",
+							"tableName": "Case",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "SevenLetterTees",
+							"userName": "AB092898@flooranddecor.com",
+							"pwdSecretName": "WinAuthPwd",
+							"akvBaseUrl": "https://akv-ab092898.vault.azure.net/"
+						}
+					}
+				]
 			}
 		],
 		"annotations": []

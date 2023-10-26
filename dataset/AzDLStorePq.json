@@ -10,7 +10,6 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "data_2179db13-4216-47f6-9d0c-48fc3f6756a1_4d2d06db-0a78-467d-9368-c0afc9975e9c.parquet",
 				"folderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
 				"fileSystem": "datalake"
 			},
