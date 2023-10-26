@@ -7,5 +7,14 @@
   sections:
     - file: /Testing/TableSetup
       title: Table Setup
-    - title: Scenarios
-      file: /Testing/Scenarios
+    - file: /Testing/Scenarios
+      title: Scenarios
+- title: Demo
+  file: /Demo/Demo
+  sections:
+    - title: Setup
+      file: /Demo/Setup
+    - title: View Results
+      file: /Demo/ViewResults
+    - title: Monitor
+      file: /Demo/Monitor
