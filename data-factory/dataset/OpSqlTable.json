@@ -1,0 +1,75 @@
+{
+	"name": "OpSqlTable",
+	"properties": {
+		"description": "On premise SQL Server, named table.",
+		"linkedServiceName": {
+			"referenceName": "OnpremSqlDb",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"serverFqdn": {
+					"value": "@dataset().sqlFqdn",
+					"type": "Expression"
+				},
+				"dbName": {
+					"value": "@dataset().dbName",
+					"type": "Expression"
+				},
+				"userName": {
+					"value": "@dataset().userName",
+					"type": "Expression"
+				},
+				"akvBaseUrl": {
+					"value": "@dataset().akvBaseUrl",
+					"type": "Expression"
+				},
+				"PwdSecret": {
+					"value": "@dataset().pwdSecretName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"schemaName": {
+				"type": "string",
+				"defaultValue": "dbo"
+			},
+			"tableName": {
+				"type": "string",
+				"defaultValue": "customer"
+			},
+			"sqlFqdn": {
+				"type": "string",
+				"defaultValue": "localhost\\ACB"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "SevenLetterTees"
+			},
+			"userName": {
+				"type": "string",
+				"defaultValue": "AB092898"
+			},
+			"pwdSecretName": {
+				"type": "string",
+				"defaultValue": "WinAuthPwd"
+			},
+			"akvBaseUrl": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().schemaName",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().tableName",
+				"type": "Expression"
+			}
+		}
+	}
+}

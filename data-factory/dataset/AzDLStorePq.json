@@ -1,0 +1,899 @@
+{
+	"name": "AzDLStorePq",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzDLStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "Id",
+				"type": "UTF8"
+			},
+			{
+				"name": "IsDeleted",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "MasterRecordId",
+				"type": "UTF8"
+			},
+			{
+				"name": "CaseNumber",
+				"type": "UTF8"
+			},
+			{
+				"name": "ContactId",
+				"type": "UTF8"
+			},
+			{
+				"name": "AccountId",
+				"type": "UTF8"
+			},
+			{
+				"name": "AssetId",
+				"type": "UTF8"
+			},
+			{
+				"name": "ProductId",
+				"type": "UTF8"
+			},
+			{
+				"name": "EntitlementId",
+				"type": "UTF8"
+			},
+			{
+				"name": "SourceId",
+				"type": "UTF8"
+			},
+			{
+				"name": "BusinessHoursId",
+				"type": "UTF8"
+			},
+			{
+				"name": "ParentId",
+				"type": "UTF8"
+			},
+			{
+				"name": "SuppliedName",
+				"type": "UTF8"
+			},
+			{
+				"name": "SuppliedEmail",
+				"type": "UTF8"
+			},
+			{
+				"name": "SuppliedPhone",
+				"type": "UTF8"
+			},
+			{
+				"name": "SuppliedCompany",
+				"type": "UTF8"
+			},
+			{
+				"name": "Type",
+				"type": "UTF8"
+			},
+			{
+				"name": "RecordTypeId",
+				"type": "UTF8"
+			},
+			{
+				"name": "Status",
+				"type": "UTF8"
+			},
+			{
+				"name": "Reason",
+				"type": "UTF8"
+			},
+			{
+				"name": "Origin",
+				"type": "UTF8"
+			},
+			{
+				"name": "Language",
+				"type": "UTF8"
+			},
+			{
+				"name": "Subject",
+				"type": "UTF8"
+			},
+			{
+				"name": "Priority",
+				"type": "UTF8"
+			},
+			{
+				"name": "Description",
+				"type": "UTF8"
+			},
+			{
+				"name": "IsClosed",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "ClosedDate",
+				"type": "INT96"
+			},
+			{
+				"name": "IsEscalated",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "OwnerId",
+				"type": "UTF8"
+			},
+			{
+				"name": "IsClosedOnCreate",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "SlaStartDate",
+				"type": "INT96"
+			},
+			{
+				"name": "SlaExitDate",
+				"type": "INT96"
+			},
+			{
+				"name": "IsStopped",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "StopStartDate",
+				"type": "INT96"
+			},
+			{
+				"name": "CreatedDate",
+				"type": "INT96"
+			},
+			{
+				"name": "CreatedById",
+				"type": "UTF8"
+			},
+			{
+				"name": "LastModifiedDate",
+				"type": "INT96"
+			},
+			{
+				"name": "LastModifiedById",
+				"type": "UTF8"
+			},
+			{
+				"name": "SystemModstamp",
+				"type": "INT96"
+			},
+			{
+				"name": "ContactPhone",
+				"type": "UTF8"
+			},
+			{
+				"name": "ContactMobile",
+				"type": "UTF8"
+			},
+			{
+				"name": "ContactEmail",
+				"type": "UTF8"
+			},
+			{
+				"name": "ContactFax",
+				"type": "UTF8"
+			},
+			{
+				"name": "Comments",
+				"type": "UTF8"
+			},
+			{
+				"name": "LastViewedDate",
+				"type": "INT96"
+			},
+			{
+				"name": "LastReferencedDate",
+				"type": "INT96"
+			},
+			{
+				"name": "MilestoneStatus",
+				"type": "UTF8"
+			},
+			{
+				"name": "Damage_Location__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Follow_up_Needed__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Satisfaction_Comment__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Satisfaction_Reason__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Satisfaction_Score__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Duplicate__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "ZendeskTicketId__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Attorney_Name__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Auto_Response_Day_or_Hours__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Bypass_Validation_Rules__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Call_Chat_Email_Reason__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Calling_Location__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Cause__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Notes__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Open_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Claim_Resolution__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Status__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claims_First_Response__c",
+				"type": "INT96"
+			},
+			{
+				"name": "ConcessionAmount__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "ConcessionType__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Contact_Me_Store__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Contact_Us_Reason__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Credit_Memo_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Current_User_Role__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Customer_Preferred_Store__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Customer_Preferred_Store_t__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Department__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Escalated_Issue__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "F_D_Inspection_Expense__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "F_D_Paid__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "First_Response_Time__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Fulfilling_Location__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Inspection_Report__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Inspector__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "IssueDetail__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Last_Activity_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Last_Activity_Role__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Manufacturer__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "OrderNumber__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "PRO__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Parent_Case_Resolution__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Parent_Concession_Amount__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Parent_Concession_Type__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Preferred_Method_of_Contact__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Professional_Install__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Projected_Close_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Projected_F_D_Payout__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Promoted__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Region__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Resolution__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Owner_Role__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "SKU__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Sales_Audit_Response__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Settlement_Amount__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Settlement_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Solved_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Sub_Department__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Survey_Sent__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "TransactionID__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Vendor_Approved_Credit__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Vendor_Paid_Direct__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Vendor_Paid__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Web_Order_Number__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "customernumber__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Child_SKU__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Customer_Name__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Issue__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Region__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Store__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Family_SKU__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Law_Firm__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "SKU_Description__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Vendor_SKU__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Contact_Account__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Date_Assigned_to_Queue__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Case_Age_in_Hours__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Last_Owned_By__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Owner_Name__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Action_Required__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Time_in_Queue__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "CCM_upload__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Date_Sent_to_Buyer_Vendor__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Date_Response_Received_from_Buyer_Vendor__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Vendor_Response_Time_Hours__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "First_Call_Resolution__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Claim_Closed_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Claim_Open_Date_Formula__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Marked_for_Review__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Macro_Run__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Parent_EmailMessage__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Owner_User_Id__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Owner_was_CC_Sales_Audit__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Date_Assigned_to_CC_Sales_Audit_Queue2__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Time_in_Queue_hours_Fraud_Prevention__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Email_received__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Number_of_Attempts__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Check_Amount_from_Accounting__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Vendor_Collected_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Vendor_Collected__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Vendor_Committed_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Settlement_Amount2__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "F_D_Paid2__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Article_Feedback__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Date_ReOpened__c",
+				"type": "INT96"
+			},
+			{
+				"name": "of_ReOpens__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Data_Quality_Description__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Data_Quality_Score__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Purged__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "PCCC_DM__DSAR_Status__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "PCCC_DM__DSAR_Type__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "PCCC_DM__Data_Subject__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "CCPACaseRetrieval__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Case_Related_Store__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "First_Response_Expired__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Carrier_Claim_Status__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Status_Text__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Date_Submitted_to_Re_Shipped_Store__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Delivery_Zip_Code__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Re_Shipped_Store__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Chat_Description__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Settlement_AmountNew__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Shipping_Carrier_Details__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Shipping_Carrier__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Shipping_Cost__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Last_Changed_Owner_Time__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Fraud_Indicator__c",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "Pro_Name__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Issue_Detail_CCT__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Claim_Other__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Customer_Request__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Gift_Card__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Store_Commit__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Vendor_Recommended__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Estimated_Installation_Cost__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Estimated_Sq_Ft__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "First_Owner_Assignment_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "Install_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "First_Case_Owner_Assignment_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "First_Chat_Owner_Assignment_Date__c",
+				"type": "INT96"
+			},
+			{
+				"name": "SKU_Cost__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "SKU_Quantities__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Department2__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Sub_Department2__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "SKU_Weight__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Total_Weight__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "Current_Date_for_RR__c",
+				"type": "INT96"
+			},
+			{
+				"name": "RR_Payment_Type__c",
+				"type": "UTF8"
+			},
+			{
+				"name": "Refund__c",
+				"type": "DECIMAL",
+				"precision": 38,
+				"scale": 18
+			},
+			{
+				"name": "IngestionSource",
+				"type": "UTF8"
+			},
+			{
+				"name": "IngestionEnvironment",
+				"type": "UTF8"
+			},
+			{
+				"name": "IngestionWatermarkOverride",
+				"type": "UTF8"
+			},
+			{
+				"name": "IngestionStartDate",
+				"type": "UTF8"
+			},
+			{
+				"name": "IngestionEndDate",
+				"type": "UTF8"
+			},
+			{
+				"name": "IngestionPipeline",
+				"type": "UTF8"
+			},
+			{
+				"name": "IngestionPipelineRunId",
+				"type": "UTF8"
+			}
+		]
+	}
+}
