@@ -1,5 +1,6 @@
 {
 	"name": "OnpremSqlDb",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"parameters": {
 			"serverFqdn": {
@@ -14,13 +15,9 @@
 				"type": "string",
 				"defaultValue": "ab092898@flooranddecor.com"
 			},
-			"akvBaseUrl": {
+			"password": {
 				"type": "string",
-				"defaultValue": "https://akv-ab092898.vault.azure.net/"
-			},
-			"PwdSecret": {
-				"type": "string",
-				"defaultValue": "WinAuthPwd"
+				"defaultValue": "AzimuthDeco1!"
 			}
 		},
 		"annotations": [],
@@ -28,28 +25,11 @@
 		"typeProperties": {
 			"connectionString": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}",
 			"userName": "@{linkedService().userName}",
-			"password": {
-				"type": "AzureKeyVaultSecret",
-				"store": {
-					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"baseUrl": {
-							"value": "@linkedService().akvBaseUrl",
-							"type": "Expression"
-						}
-					}
-				},
-				"secretName": {
-					"value": "@linkedService().PwdSecret",
-					"type": "Expression"
-				}
-			}
+			"password": "@{linkedService().password}"
 		},
 		"connectVia": {
 			"referenceName": "shirt-ACB",
 			"type": "IntegrationRuntimeReference"
 		}
-	},
-	"type": "Microsoft.DataFactory/factories/linkedservices"
+	}
 }

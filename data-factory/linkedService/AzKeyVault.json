@@ -1,16 +1,11 @@
 {
 	"name": "AzKeyVault",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
-		"parameters": {
-			"baseUrl": {
-				"type": "string",
-				"defaultValue": "https://akv-ab092898.vault.azure.net/"
-			}
-		},
 		"annotations": [],
 		"type": "AzureKeyVault",
 		"typeProperties": {
-			"baseUrl": "@{linkedService().baseUrl}"
+			"baseUrl": "https://akv-ab092898.vault.azure.net/"
 		}
 	}
 }

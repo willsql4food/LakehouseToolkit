@@ -1,5 +1,6 @@
 {
 	"name": "sfdc",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"parameters": {
 			"userName": {
@@ -28,10 +29,7 @@
 				"type": "AzureKeyVaultSecret",
 				"store": {
 					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"baseUrl": "https://akv-ab092898.vault.azure.net/"
-					}
+					"type": "LinkedServiceReference"
 				},
 				"secretName": {
 					"value": "@linkedService().sfdcPwdSecret",
@@ -42,10 +40,7 @@
 				"type": "AzureKeyVaultSecret",
 				"store": {
 					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"baseUrl": "https://akv-ab092898.vault.azure.net/"
-					}
+					"type": "LinkedServiceReference"
 				},
 				"secretName": {
 					"value": "@linkedService().sfdcTokenSecret",
