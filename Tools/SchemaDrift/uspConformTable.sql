@@ -386,9 +386,8 @@ begin
         end
 
         /* Return an INSERT... FROM <source table> statement based on columns having been altered */
-        select      SqlCommand = concat('insert into ', @tgtTblFullName, ' (', string_agg(ColumnName, ', ') within group (order by srcColumnId, ColumnName)
-                                , ') select ', string_agg(SelectClausePostDdl, ', ') within group (order by srcColumnId, ColumnName)
-                                , ' from ', @srcTblFullName)
+        select      InsertCmd = concat('insert into ', @tgtTblFullName, ' (', string_agg(ColumnName, ', ') within group (order by srcColumnId, ColumnName), ')')
+                ,   SelectCmd = concat('select ', string_agg(SelectClausePostDdl, ', ') within group (order by srcColumnId, ColumnName), ' from ', @srcTblFullName)
         from        @comp
         where       srcColDefinition is not null
     end
@@ -416,9 +415,8 @@ begin
             and     not exists (select * from audit.SchemaDrift where SchemaName = @tgtSchema and TableName = @tgtTable and ColumnName = c.ColumnName and DdlProposed = c.DdlStmt)
 
         /* Return an INSERT... FROM <source table> statement with convert logic for columns that have different definitions */
-        select      SqlCommand = concat('insert into ', @tgtTblFullName, ' (', string_agg(ColumnName, ', ') within group (order by srcColumnId, ColumnName)
-                                , ') select ', string_agg(SelectClauseNoDdl, ', ') within group (order by srcColumnId, ColumnName)
-                                , ' from ', @srcTblFullName)
+        select      InsertCmd = concat('insert into ', @tgtTblFullName, ' (', string_agg(ColumnName, ', ') within group (order by srcColumnId, ColumnName), ')')
+                ,   SelectCmd = concat('select ', string_agg(SelectClauseNoDdl, ', ') within group (order by srcColumnId, ColumnName), ' from ', @srcTblFullName)
         from        @comp
         where       srcColDefinition is not null
             and     tgtColDefinition is not null
