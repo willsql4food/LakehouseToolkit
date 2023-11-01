@@ -94,7 +94,7 @@
 						{
 							"type": "Query",
 							"text": {
-								"value": "@activity('ConformTblRigid').output.firstRow.SqlCommand",
+								"value": "@concat(activity('ConformTblRigid').output.firstRow.InsertCmd, ' ', activity('ConformTblRigid').output.firstRow.SelectCmd)",
 								"type": "Expression"
 							}
 						}
@@ -194,7 +194,7 @@
 						{
 							"type": "Query",
 							"text": {
-								"value": "@activity('ConformTblFlexible').output.firstRow.SqlCommand",
+								"value": "@concat(activity('ConformTblFlexible').output.firstRow.InsertCmd, ' ', activity('ConformTblFlexible').output.firstRow.SelectCmd)",
 								"type": "Expression"
 							}
 						}
