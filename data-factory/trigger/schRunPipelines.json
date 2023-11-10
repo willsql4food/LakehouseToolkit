@@ -1,0 +1,18 @@
+{
+	"name": "schRunPipelines",
+	"properties": {
+		"description": "Scheduled trigger to run one or more pipelines (POC)",
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2023-11-10T18:03:00",
+				"timeZone": "Eastern Standard Time"
+			}
+		}
+	}
+}
