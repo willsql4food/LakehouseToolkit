@@ -17,7 +17,7 @@ __prod__ - This branch contains ___production ready___ code.
 ### Temporary
 __BUG...__ - _Bug Fix_ branches are short lived.  They are typically derived from the __dev__ branch and used for the duration of fixing a known issue, though sometimes __prod__ is the source.
 
-___Naming___: `BUG_<Ticket number>_<Short description>`  
+___Naming___: `BUG_<Ticket#>_<Short description>`  
 ex: _BUG_6019_Store_Hierarchy_
 
 ---
@@ -27,7 +27,7 @@ __ft...__ - Feature branches exist on the days to weeks scale.  They typically m
 * Enhancing an existing set of functionality
 * Building a new capability
 
-___Naming___: `ft_<Ticket number>_<Short description>`  
+___Naming___: `ft_<Ticket#>_<Short description>`  
 ex: _ft_6129_Add_Report_Branding_
 
 ---
