@@ -4,7 +4,21 @@
 		"description": "Scheduled trigger to run one or more pipelines (POC)",
 		"annotations": [],
 		"runtimeState": "Stopped",
-		"pipelines": [],
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "SchemaDriftTest",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"plSourceSchema": "stage",
+					"plSourceTable": "PersonC",
+					"plTargetSchema": "dbo",
+					"plTargetTableRigid": "PersonRigid",
+					"plTargetTableFlexible": "PersonFlexible"
+				}
+			}
+		],
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
