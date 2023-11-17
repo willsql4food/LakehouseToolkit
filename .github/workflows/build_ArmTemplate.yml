@@ -29,4 +29,5 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo Add other actions to build,
-          dir data-factory /s
+          dir data-factory
+          npm run build export ./data-factory /subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.DataFactory/factories/df-dbx-ab092898 df-sbx-ab092898/Automated
