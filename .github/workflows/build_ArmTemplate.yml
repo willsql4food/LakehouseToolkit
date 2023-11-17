@@ -33,9 +33,6 @@ jobs:
           npm i commander
           npm i @microsoft/azure-data-factory-utilities
 
-      - name: What''s in the package, Joe?
-        run: type package.json
-
       - name: Run ADF Export
         run: |
           echo npm "run export"
