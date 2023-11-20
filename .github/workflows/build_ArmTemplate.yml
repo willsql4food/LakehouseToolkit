@@ -27,7 +27,7 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Playing with variables
-        run: echo ${{ variables.WHEREAMI }}
+        run: echo ${{ vars.WHEREAMI }}
 
       # Runs a set of commands using the runners shell
       - name: Install NPM packages
