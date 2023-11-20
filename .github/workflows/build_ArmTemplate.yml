@@ -38,14 +38,6 @@ jobs:
           npm i @microsoft/azure-data-factory-utilities
           dir
 
-      - name: Add to PATH
-        run: |
-          echo ------------------------
-          echo "Adding $PWD/node_modules/@microsoft/azure-data-factory-utilities to path"
-          echo "$PWD/node_modules/@microsoft/azure-data-factory-utilities" >> $GITHUB_PATH
-          echo ------------------------
-          echo $GITHUB_PATH
-
       - name: Run ADF Export
         run: |
           echo ------------------------
@@ -61,17 +53,17 @@ jobs:
 #      - name: Navigate to template
 #        run: cd ../../../df-sbx-ab092898/Automated
             
-#      - uses: Azure/data-factory-deploy-action@v1.2.0
-#        with:
-#          # Data Factory resource group name
-#          resourceGroupName: rg-sbx-ab092898
-#          # Data factory name
-#          dataFactoryName: df-sbx-ab092898-qa
-#          # ARM template file name
-#          armTemplateFile: ARMTemplateForFactory.json
-#          # ARM template parameters file name
-#          armTemplateParametersFile: ARMTemplateParametersForFactory.json
-#          # Parameters which will be replaced in the ARM template
-#          additionalParameters: false
-#          # Parameters which skip the Az module installation
-#          skipAzModuleInstallation: false
+      - uses: Azure/data-factory-deploy-action@v1.2.0
+        with:
+          # Data Factory resource group name
+          resourceGroupName: rg-sbx-ab092898
+          # Data factory name
+          dataFactoryName: df-sbx-ab092898
+          # ARM template file name
+          armTemplateFile: ../../../df-sbx-ab092898/Automated/ARMTemplateForFactory.json
+          # ARM template parameters file name
+          armTemplateParametersFile: ../../../df-sbx-ab092898/Automated/ARMTemplateParametersForFactory.json
+          # Parameters which will be replaced in the ARM template
+          additionalParameters: false
+          # Parameters which skip the Az module installation
+          skipAzModuleInstallation: false
