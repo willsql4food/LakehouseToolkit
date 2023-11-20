@@ -37,13 +37,6 @@ jobs:
           npm i commander
           npm i @microsoft/azure-data-factory-utilities
           dir
-
-      - name: Azure Login
-        uses: Azure/login@v1.5.0
-        with:
-            client-id: 3003a57f-4ce7-49d8-97ca-95d09cebd7db
-            tenant-id: MS-AZR-0017P
-            subscription-id: 4c87027a-d0a7-4f47-b9c4-31447460fbef          
           
       - name: Run ADF Export
         run: |
@@ -53,7 +46,15 @@ jobs:
 #          echo ------------------------
 #          dir
 #          echo ------------------------
-            
+
+      - name: Azure Login
+        uses: Azure/login@v1.5.0
+        with:
+          client-id: ${{ secrets.AZ_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZ_TENANT_ID }}
+          subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+          
       - uses: Azure/data-factory-deploy-action@v1.2.0
         with:
           # Data Factory resource group name
