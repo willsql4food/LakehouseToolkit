@@ -36,10 +36,9 @@ jobs:
 
       - name: Add to PATH
         run: |
-          $d = Get-Location
-          $d = ($d, "node_modules/@microsoft/azure-data-factory-utilities") -join ""
-          echo "Adding $d to path"
-          Add-Content $env:GITHUB_PATH $d
+          echo "$HOME/node_modules/@microsoft/azure-data-factory-utilities"
+          echo "Adding $HOME/node_modules/@microsoft/azure-data-factory-utilities to path"
+          Add-Content $env:GITHUB_PATH "$HOME/node_modules/@microsoft/azure-data-factory-utilities"
           echo ------------------------
           ls env:
           echo ------------------------
@@ -48,7 +47,6 @@ jobs:
         run: |
           echo ------------------------
           npm run start export ../../../data-factory /subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.DataFactory/factories/df-dbx-ab092898 ../../../df-sbx-ab092898/Automated
-            - name: data-factory-deploy
       
 #      - name: Navigate to template
 #        run: cd ../../../df-sbx-ab092898/Automated
