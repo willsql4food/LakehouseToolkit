@@ -45,21 +45,20 @@ jobs:
           npm run start export ../../../data-factory /subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.DataFactory/factories/df-dbx-ab092898 ../../../df-sbx-ab092898/Automated
             - name: data-factory-deploy
       
-      - name: Navigate to template
-        run: cd ../../../df-sbx-ab092898/Automated
+#      - name: Navigate to template
+#        run: cd ../../../df-sbx-ab092898/Automated
             
-      - uses: Azure/data-factory-deploy-action@v1.2.0
-        with:
-          # Data Factory resource group name
-          resourceGroupName: rg-sbx-ab092898
-          # Data factory name
-          dataFactoryName: df-sbx-ab092898-qa
-          # ARM template file name
-          armTemplateFile: ARMTemplateForFactory.json
-          # ARM template parameters file name
-          armTemplateParametersFile: ARMTemplateParametersForFactory.json
-          # Parameters which will be replaced in the ARM template
-          additionalParameters: false
-          # Parameters which skip the Az module installation
-          skipAzModuleInstallation: false
-            
+#      - uses: Azure/data-factory-deploy-action@v1.2.0
+#        with:
+#          # Data Factory resource group name
+#          resourceGroupName: rg-sbx-ab092898
+#          # Data factory name
+#          dataFactoryName: df-sbx-ab092898-qa
+#          # ARM template file name
+#          armTemplateFile: ARMTemplateForFactory.json
+#          # ARM template parameters file name
+#          armTemplateParametersFile: ARMTemplateParametersForFactory.json
+#          # Parameters which will be replaced in the ARM template
+#          additionalParameters: false
+#          # Parameters which skip the Az module installation
+#          skipAzModuleInstallation: false
