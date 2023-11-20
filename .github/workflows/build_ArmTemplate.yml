@@ -30,12 +30,13 @@ jobs:
         run: echo ${{ vars.WHEREAMI }}
 
       # Runs a set of commands using the runners shell
-      - name: Install NPM packages
+      - name: Install NPM packages, AZ CLI
         run: |
           echo Install commander, microsoft/azure-data-factory-utilities
           echo ------------------------
           npm i commander
           npm i @microsoft/azure-data-factory-utilities
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           dir
           
       - name: Run ADF Export
@@ -54,6 +55,7 @@ jobs:
           tenant-id: ${{ secrets.AZ_TENANT_ID }}
           subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
+          auth-type: IDENTITY 
           
       - uses: Azure/data-factory-deploy-action@v1.2.0
         with:
