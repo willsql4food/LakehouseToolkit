@@ -41,7 +41,7 @@ jobs:
       - name: Run ADF Export
         run: |
           echo ------------------------
-          cd node_modules/@microsoft/azure-data-factory-utilities
+          echo node_modules/@microsoft/azure-data-factory-utilities >> $GITHUB_PATH
           npm run start export ../../../data-factory /subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.DataFactory/factories/df-dbx-ab092898 ../../../df-sbx-ab092898/Automated
             - name: data-factory-deploy
       
