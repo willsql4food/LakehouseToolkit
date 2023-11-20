@@ -36,11 +36,10 @@ jobs:
 
       - name: Add to PATH
         run: |
+          echo ------------------------
           echo "$HOME/node_modules/@microsoft/azure-data-factory-utilities"
           echo "Adding $HOME/node_modules/@microsoft/azure-data-factory-utilities to path"
-          Add-Content $env:GITHUB_PATH "$HOME/node_modules/@microsoft/azure-data-factory-utilities"
-          echo ------------------------
-          ls env:
+          echo "$HOME/node_modules/@microsoft/azure-data-factory-utilities" >> $GITHUB_PATH
           echo ------------------------
 
       - name: Run ADF Export
