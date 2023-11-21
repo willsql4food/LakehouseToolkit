@@ -19,7 +19,9 @@
 						"type": "ParquetSource",
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
-							"fileListPath": "datalake/bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
+							"recursive": true,
+							"wildcardFolderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023",
+							"wildcardFileName": "*",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
