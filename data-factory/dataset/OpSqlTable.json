@@ -18,14 +18,7 @@
 					"value": "@dataset().userName",
 					"type": "Expression"
 				},
-				"akvBaseUrl": {
-					"value": "@dataset().akvBaseUrl",
-					"type": "Expression"
-				},
-				"PwdSecret": {
-					"value": "@dataset().pwdSecretName",
-					"type": "Expression"
-				}
+				"password": "AzimuthDeco1!"
 			}
 		},
 		"parameters": {
