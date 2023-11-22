@@ -93,9 +93,7 @@
 								"type": "ParquetSource",
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"wildcardFolderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
-									"wildcardFileName": "*",
+									"recursive": false,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
@@ -456,7 +454,8 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10",
+						"fileName": "*",
+						"folderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
 						"fileSystem": "datalake"
 					},
 					"compressionCodec": "snappy"
