@@ -20,7 +20,7 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
-							"wildcardFolderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10",
+							"wildcardFolderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
 							"wildcardFileName": "*",
 							"enablePartitionDiscovery": false
 						},
@@ -60,7 +60,8 @@
 							"dbName": "SevenLetterTees",
 							"userName": "AB092898@flooranddecor.com",
 							"pwdSecretName": "WinAuthPwd",
-							"akvBaseUrl": "https://akv-ab092898.vault.azure.net/"
+							"akvBaseUrl": "https://akv-ab092898.vault.azure.net/",
+							"pwd": "AzimuthDeco1!"
 						}
 					}
 				]
