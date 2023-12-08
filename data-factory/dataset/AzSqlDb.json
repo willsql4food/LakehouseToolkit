@@ -11,6 +11,10 @@
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
-		"schema": []
+		"schema": [],
+		"typeProperties": {
+			"schema": "sys",
+			"table": "tables"
+		}
 	}
 }

@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "df-sbx-ab092898"
 		},
+		"AzDLStorage_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzDLStorage'"
+		},
 		"AzSqlDb_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
@@ -17,6 +21,10 @@
 			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
 			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
 		},
+		"AzDLStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sadevdatalakehouse.dfs.core.windows.net/"
+		},
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
@@ -25,6 +33,10 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().userName}"
 		},
+		"RestApi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().baseUrl}"
+		},
 		"sfdc_properties_typeProperties_environmentUrl": {
 			"type": "string",
 			"defaultValue": "https://login.salesforce.com"
@@ -32,6 +44,26 @@
 		"sfdc_properties_typeProperties_username": {
 			"type": "string",
 			"defaultValue": "@{linkedService().userName}"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
+			"type": "string",
+			"defaultValue": "stage"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable": {
+			"type": "string",
+			"defaultValue": "PersonC"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema": {
+			"type": "string",
+			"defaultValue": "dbo"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid": {
+			"type": "string",
+			"defaultValue": "PersonRigid"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
+			"type": "string",
+			"defaultValue": "PersonFlexible"
 		},
 		"containerUri": {
 			"type": "string",
@@ -60,14 +92,23 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"AzDLStorage_accountKey": {
+						"value": "[parameters('AzDLStorage_accountKey')]"
+					},
 					"AzSqlDb_connectionString": {
 						"value": "[parameters('AzSqlDb_connectionString')]"
 					},
 					"OnpremSqlDb_connectionString": {
 						"value": "[parameters('OnpremSqlDb_connectionString')]"
 					},
+					"AzDLStorage_properties_typeProperties_url": {
+						"value": "[parameters('AzDLStorage_properties_typeProperties_url')]"
+					},
 					"AzKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"RestApi_properties_typeProperties_url": {
+						"value": "[parameters('RestApi_properties_typeProperties_url')]"
 					},
 					"OnpremSqlDb_properties_typeProperties_userName": {
 						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
@@ -77,6 +118,21 @@
 					},
 					"sfdc_properties_typeProperties_username": {
 						"value": "[parameters('sfdc_properties_typeProperties_username')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible')]"
 					}
 				}
 			},

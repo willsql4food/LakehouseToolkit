@@ -4,7 +4,7 @@
 		"activities": [
 			{
 				"name": "ConformTblRigid",
-				"description": "Load data into target table without changing its structure.\nRisks: truncation, loss of precision, special characters.",
+				"description": "Auto Deployed\nLoad data into target table without changing its structure.\nRisks: truncation, loss of precision, special characters.",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {

@@ -19,7 +19,7 @@
 						"type": "ParquetSource",
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
-							"fileListPath": "datalake/bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
+							"recursive": false,
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -58,7 +58,8 @@
 							"dbName": "SevenLetterTees",
 							"userName": "AB092898@flooranddecor.com",
 							"pwdSecretName": "WinAuthPwd",
-							"akvBaseUrl": "https://akv-ab092898.vault.azure.net/"
+							"akvBaseUrl": "https://akv-ab092898.vault.azure.net/",
+							"pwd": "AzimuthDeco1!"
 						}
 					}
 				]

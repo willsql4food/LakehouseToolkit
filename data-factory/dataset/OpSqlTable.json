@@ -18,12 +18,8 @@
 					"value": "@dataset().userName",
 					"type": "Expression"
 				},
-				"akvBaseUrl": {
-					"value": "@dataset().akvBaseUrl",
-					"type": "Expression"
-				},
-				"PwdSecret": {
-					"value": "@dataset().pwdSecretName",
+				"password": {
+					"value": "@dataset().pwd",
 					"type": "Expression"
 				}
 			}
@@ -47,7 +43,7 @@
 			},
 			"userName": {
 				"type": "string",
-				"defaultValue": "AB092898"
+				"defaultValue": "AB092898@flooranddecor.com"
 			},
 			"pwdSecretName": {
 				"type": "string",
@@ -56,6 +52,10 @@
 			"akvBaseUrl": {
 				"type": "string",
 				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"pwd": {
+				"type": "string",
+				"defaultValue": "AzimuthDeco1!"
 			}
 		},
 		"annotations": [],

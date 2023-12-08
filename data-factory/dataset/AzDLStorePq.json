@@ -10,6 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": "*",
 				"folderPath": "bronze/flooranddecor.my.salesforce.com/Case/2023/10/26",
 				"fileSystem": "datalake"
 			},
