@@ -5,6 +5,9 @@ dbo.uspConformTable
     Info:		See selfDoc: section
 ---	----------	-------------------------------------------------------------------------------------------------------
 ACB	2023-10-12	Initial development
+ACB	2023-12-12	Added column alias when converting data types for PK fields or when not performing DDL to allow 
+                SelectCmd to be used in sub-select by caller
+                Handled STRING_AGG 8000-byte limit
 ======================================================================================================================= */
     (   @SourceSchema varchar(255)
     ,   @SourceTable varchar(255)
@@ -272,16 +275,16 @@ begin
     set         c.DdlStmt = ''
             ,   c.SelectClauseNoDdl = concat('convert(', tgtTypeName, 
                                         case 
-                                            when tgtTypeName like '%char' then concat('(', tgtMaxStrLength, '), ')
+                                            when tgtTypeName like '%char' then concat('(', case when tgtMaxStrLength > 8000 then 'MAX' else convert(nvarchar, tgtMaxStrLength) end, '), ')
                                             when tgtTypeName like '%text' then ', '
                                         end
-                                    ,   ColumnName, ')')
+                                    ,   ColumnName, ') AS ', ColumnName)
             ,   c.SelectClausePostDdl = concat('convert(', tgtTypeName, 
                                         case 
-                                            when tgtTypeName like '%char' then concat('(', tgtMaxStrLength, '), ')
+                                            when tgtTypeName like '%char' then concat('(', case when tgtMaxStrLength > 8000 then 'MAX' else convert(nvarchar, tgtMaxStrLength) end, '), ')
                                             when tgtTypeName like '%text' then ', '
                                         end
-                                    ,   ColumnName, ')'
+                                    ,   ColumnName, ') AS ', ColumnName
                                     ,   case 
                                             when c.ActionReason = 'SQL.PRIMARY_KEY' then ' /* PRIMARY KEY field - no DDL performed */' 
                                             else ''
@@ -317,7 +320,7 @@ begin
                     case
                         when c.ActionReason = 'DDL.NO_DEST' 
                             then ''
-                        else concat('convert(', replace(replace(c.tgtColDefinition, c.ColumnName, ''), ' NULL', ''), ', ', c.ColumnName, ')')
+                        else concat('convert(', replace(replace(c.tgtColDefinition, c.ColumnName, ''), ' NULL', ''), ', ', c.ColumnName, ') AS ', ColumnName)
                     end
                 /* Post DDL, destination column needs no conversion */
             ,   c.SelectClausePostDdl = c.ColumnName
@@ -386,8 +389,8 @@ begin
         end
 
         /* Return an INSERT... FROM <source table> statement based on columns having been altered */
-        select      InsertCmd = concat('insert into ', @tgtTblFullName, ' (', string_agg(ColumnName, ', ') within group (order by srcColumnId, ColumnName), ')')
-                ,   SelectCmd = concat('select ', string_agg(SelectClausePostDdl, ', ') within group (order by srcColumnId, ColumnName), ' from ', @srcTblFullName)
+        select      InsertCmd = concat('insert into ', @tgtTblFullName, ' (', string_agg(convert(nvarchar(max), ColumnName), ', ') within group (order by srcColumnId, ColumnName), ')')
+                ,   SelectCmd = concat('select ', string_agg(convert(nvarchar(max), SelectClausePostDdl), ', ') within group (order by srcColumnId, ColumnName), ' from ', @srcTblFullName)
         from        @comp
         where       srcColDefinition is not null
     end
@@ -415,8 +418,8 @@ begin
             and     not exists (select * from audit.SchemaDrift where SchemaName = @tgtSchema and TableName = @tgtTable and ColumnName = c.ColumnName and DdlProposed = c.DdlStmt)
 
         /* Return an INSERT... FROM <source table> statement with convert logic for columns that have different definitions */
-        select      InsertCmd = concat('insert into ', @tgtTblFullName, ' (', string_agg(ColumnName, ', ') within group (order by srcColumnId, ColumnName), ')')
-                ,   SelectCmd = concat('select ', string_agg(SelectClauseNoDdl, ', ') within group (order by srcColumnId, ColumnName), ' from ', @srcTblFullName)
+        select      InsertCmd = concat('insert into ', @tgtTblFullName, ' (', string_agg(convert(nvarchar(max), ColumnName), ', ') within group (order by srcColumnId, ColumnName), ')')
+                ,   SelectCmd = concat('select ', string_agg(convert(nvarchar(max), SelectClauseNoDdl), ', ') within group (order by srcColumnId, ColumnName), ' from ', @srcTblFullName)
         from        @comp
         where       srcColDefinition is not null
             and     tgtColDefinition is not null
