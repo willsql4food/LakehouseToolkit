@@ -22,7 +22,7 @@
 			},
 			"tableName": {
 				"type": "string",
-				"defaultValue": "customer"
+				"defaultValue": "PersonFlexible"
 			},
 			"sqlFqdn": {
 				"type": "string",
