@@ -357,6 +357,67 @@
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
 						}
+					},
+					{
+						"name": "CopyPersonFlexible",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "InsertScriptFlexible",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select top 10 FirstName, reverse(LastName) LastName from dbo.PersonFlexible",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzSqlDb",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzSqlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"schemaName": "dbo",
+									"tableName": "PersonFlexible",
+									"sqlFqdn": "sql-ab092898.database.windows.net",
+									"dbName": "txn"
+								}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -388,7 +449,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AzSqlDb')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzSqlDb')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzSqlDb')]",
+				"[concat(variables('factoryId'), '/datasets/AzSqlTable')]"
 			]
 		},
 		{
