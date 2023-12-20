@@ -20,3 +20,4 @@ We need to configure our Azure resources to emit their logs to a blob storage ac
     * NOTE - Many small JSON files make for inefficient processing - consider importing them to parquet files initially and building analysis off those.
         * Perhaps all JSON files emitted by a given resource in a day, week, or month are consolidated into a single parquet file and a retention policy is built around this.
 
+[Example notebook](Get%20Log%20Data.py)
