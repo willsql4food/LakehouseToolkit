@@ -1,0 +1,19 @@
+{
+	"name": "GoogleBigQuery",
+	"properties": {
+		"annotations": [],
+		"type": "GoogleBigQuery",
+		"typeProperties": {
+			"project": "acbtest-410820",
+			"requestGoogleDriveScope": false,
+			"authenticationType": "ServiceAuthentication",
+			"email": "acbtester@acbtest-410820.iam.gserviceaccount.com",
+			"keyFilePath": "C:\\source\\keys\\acbtest-410820-e51edfa5baab.json",
+			"useSystemTrustStore": false
+		},
+		"connectVia": {
+			"referenceName": "shirt-ACB",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
