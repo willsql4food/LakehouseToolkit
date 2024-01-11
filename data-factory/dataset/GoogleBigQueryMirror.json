@@ -1,0 +1,16 @@
+{
+	"name": "GoogleBigQueryMirror",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GoogleBigQueryMirror",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "GoogleBigQueryObject",
+		"schema": [],
+		"typeProperties": {
+			"dataset": "dw_mirror",
+			"table": "messages"
+		}
+	}
+}
