@@ -1,0 +1,41 @@
+{
+	"name": "AzPq",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzDLStorage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"dsFilesystem": {
+				"type": "string"
+			},
+			"dsPath": {
+				"type": "string"
+			},
+			"dsFilename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().dsFilename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().dsPath",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().dsFilesystem",
+					"type": "Expression"
+				}
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
