@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "GoogleBigQuerySource",
-						"query": "select      t.table_catalog, t.table_schema, t.table_name, t.table_type,\n               case when t.table_name like 'event%' then 'batch' else 'full' end load_type\nFROM        `region-us`.INFORMATION_SCHEMA.TABLES t\norder by    t.table_catalog, t.table_schema, t.table_name, t.table_type"
+						"query": "with cte as (\n  select      t.table_catalog, t.table_schema, t.table_name,\n              left(t.table_name, instr(t.table_name, '_') - 1) root_name,\n              right(t.table_name, length(t.table_name) - instr(t.table_name, '_')) suffix,\n              t.table_type\n  FROM        `region-us`.INFORMATION_SCHEMA.TABLES t\n)\n\nselect    table_catalog, table_schema, table_name, root_name, left(suffix, 4) yr, substring(suffix, 5, 2) mon, right(suffix, 2) dy,\n               case when root_name in ('events') then 'batch' else 'full' end load_type\nfrom      cte\norder by  table_catalog, table_schema, table_name"
 					},
 					"dataset": {
 						"referenceName": "GoogleBigQueryFND",
@@ -174,7 +174,7 @@
 														"parameters": {
 															"dsFilesystem": "datalake",
 															"dsPath": {
-																"value": "@concat('google_analytics/', item().table_catalog, '/', item().table_schema)",
+																"value": "@concat('google_analytics/', item().table_catalog, '/', item().table_schema, '/', item().root_name, '/', item().yr, '/', item().mon, '/', item().dy)",
 																"type": "Expression"
 															},
 															"dsFilename": {
