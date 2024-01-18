@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "GoogleBigQuerySource",
-						"query": "select      t.table_schema, t.table_name, t.table_type,\n               case when t.table_name like 'event%' then 'batch' else 'full' end load_type\nFROM        `region-us`.INFORMATION_SCHEMA.TABLES t\nts.table_name\norder by    t.table_catalog, t.table_schema, t.table_name, t.table_type"
+						"query": "select      t.table_schema, t.table_name, t.table_type,\n               case when t.table_name like 'event%' then 'batch' else 'full' end load_type\nFROM        `region-us`.INFORMATION_SCHEMA.TABLES t\norder by    t.table_catalog, t.table_schema, t.table_name, t.table_type"
 					},
 					"dataset": {
 						"referenceName": "GoogleBigQueryFND",
