@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "getGoogleAnalytics",
 	"properties": {
 		"activities": [
 			{
@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "GoogleBigQuerySource",
-						"query": "select      t.table_schema, t.table_name, t.table_type, \n            ts.total_physical_bytes, ts.total_logical_bytes\nFROM        `region-us`.INFORMATION_SCHEMA.TABLES t\njoin        `region-us`.INFORMATION_SCHEMA.TABLE_STORAGE ts on t.table_catalog = ts.table_catalog and t.table_schema = ts.table_schema and t.table_name = ts.table_name\nwhere t.table_name not like 'event%'\norder by    t.table_catalog, t.table_schema, t.table_name, t.table_type"
+						"query": "select      t.table_schema, t.table_name, t.table_type,\n               case when t.table_name like 'event%' then 'batch' else 'full' end load_type\nFROM        `region-us`.INFORMATION_SCHEMA.TABLES t\nts.table_name\norder by    t.table_catalog, t.table_schema, t.table_name, t.table_type"
 					},
 					"dataset": {
 						"referenceName": "GoogleBigQueryFND",
@@ -95,6 +95,152 @@
 									"type": "DatasetReference"
 								}
 							]
+						},
+						{
+							"name": "LoadType",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().load_type",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "batch",
+										"activities": [
+											{
+												"name": "BatchLoad",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "GoogleBigQuerySource",
+														"query": {
+															"value": "@concat('with recursive cte as (\n  /* Count and row_number by event_name and ordered with highest row count first */\n  SELECT    event_name, count(*) _count, row_number() over (order by count(*) desc) id\n  FROM      ', item().table_catalog, '.', item().table_schema, '.', item().table_name, '\n  group by  event_name \n), rt as (\n  /* Conditional sum with prior row(s) until just before 1M, then start new running total */\n  select    id, event_name, _count, _count running_total, 1 group_id\n  from      cte\n  where     id = 1\n  union all\n  select    a.id, a.event_name, a._count,\n            case when a._count + b.running_total < 1000000 then a._count + b.running_total else a._count end running_total,\n            case when a._count + b.running_total < 1000000 then b.group_id else b.group_id + 1 end group_id\n  from      cte a\n  join      rt b on b.id = a.id - 1\n)\n\nselect id, group_id, event_name, _count, running_total\nfrom  rt\norder by group_id, id\n')",
+															"type": "Expression"
+														}
+													},
+													"sink": {
+														"type": "SqlServerSink",
+														"writeBehavior": "insert",
+														"sqlWriterUseTableLock": false,
+														"tableOption": "autoCreate"
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "GoogleBigQueryFND",
+														"type": "DatasetReference"
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "OpSqlTable",
+														"type": "DatasetReference",
+														"parameters": {
+															"schemaName": "dbo",
+															"tableName": "event_count",
+															"sqlFqdn": "localhost\\ACB",
+															"dbName": "gbq_study",
+															"userName": "AB092898@flooranddecor.com",
+															"pwdSecretName": "WinAuthPwd",
+															"akvBaseUrl": "https://akv-ab092898.vault.azure.net/",
+															"pwd": "jjj"
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "full",
+										"activities": [
+											{
+												"name": "FullLoad",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "GoogleBigQuerySource",
+														"query": {
+															"value": "@concat('select * from ', item().table_catalog, '.', item().table_schema, '.', item().table_name)",
+															"type": "Expression"
+														}
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "GoogleBigQueryFND",
+														"type": "DatasetReference"
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "AzPq",
+														"type": "DatasetReference",
+														"parameters": {
+															"dsFilesystem": "datalake",
+															"dsPath": {
+																"value": "@concat('google_analytics/', item().table_catalog, '/', item().table_schema)",
+																"type": "Expression"
+															},
+															"dsFilename": {
+																"value": "@concat(item().table_name, '.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									}
+								]
+							}
 						}
 					]
 				}
