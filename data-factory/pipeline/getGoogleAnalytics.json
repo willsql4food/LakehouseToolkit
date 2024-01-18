@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "GoogleBigQuerySource",
-						"query": "select      t.table_schema, t.table_name, t.table_type,\n               case when t.table_name like 'event%' then 'batch' else 'full' end load_type\nFROM        `region-us`.INFORMATION_SCHEMA.TABLES t\norder by    t.table_catalog, t.table_schema, t.table_name, t.table_type"
+						"query": "select      t.table_catalog, t.table_schema, t.table_name, t.table_type,\n               case when t.table_name like 'event%' then 'batch' else 'full' end load_type\nFROM        `region-us`.INFORMATION_SCHEMA.TABLES t\norder by    t.table_catalog, t.table_schema, t.table_name, t.table_type"
 					},
 					"dataset": {
 						"referenceName": "GoogleBigQueryFND",
@@ -74,7 +74,7 @@
 													"source": {
 														"type": "GoogleBigQuerySource",
 														"query": {
-															"value": "@concat('with recursive cte as (\n  /* Count and row_number by event_name and ordered with highest row count first */\n  SELECT    event_name, count(*) _count, row_number() over (order by count(*) desc) id\n  FROM      ', item().table_schema, '.', item().table_name, '\n  group by  event_name \n), rt as (\n  /* Conditional sum with prior row(s) until just before 1M, then start new running total */\n  select    id, event_name, _count, _count running_total, 1 group_id\n  from      cte\n  where     id = 1\n  union all\n  select    a.id, a.event_name, a._count,\n            case when a._count + b.running_total < 1000000 then a._count + b.running_total else a._count end running_total,\n            case when a._count + b.running_total < 1000000 then b.group_id else b.group_id + 1 end group_id\n  from      cte a\n  join      rt b on b.id = a.id - 1\n)\n\nselect ', item().table_schema, ' table_schema, ', item().table_name, ' table_name, id, group_id, event_name, _count, running_total\nfrom  rt\norder by group_id, id\n')",
+															"value": "@concat('with recursive cte as (\n  /* Count and row_number by event_name and ordered with highest row count first */\n  SELECT    event_name, count(*) _count, row_number() over (order by count(*) desc) id\n  FROM      ', item().table_schema, '.', item().table_name, '\n  group by  event_name \n), rt as (\n  /* Conditional sum with prior row(s) until just before 1M, then start new running total */\n  select    id, event_name, _count, _count running_total, 1 group_id\n  from      cte\n  where     id = 1\n  union all\n  select    a.id, a.event_name, a._count,\n            case when a._count + b.running_total < 1000000 then a._count + b.running_total else a._count end running_total,\n            case when a._count + b.running_total < 1000000 then b.group_id else b.group_id + 1 end group_id\n  from      cte a\n  join      rt b on b.id = a.id - 1\n)\n\nselect ', item().table_catalog, ' table_catalog, ', item().table_schema, ' table_schema, ', item().table_name, ' table_name, id, group_id, event_name, _count, running_total\nfrom  rt\norder by group_id, id\n')",
 															"type": "Expression"
 														}
 													},
