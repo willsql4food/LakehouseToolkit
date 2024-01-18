@@ -40,18 +40,6 @@
 			"userName": {
 				"type": "string",
 				"defaultValue": "AB092898@flooranddecor.com"
-			},
-			"pwdSecretName": {
-				"type": "string",
-				"defaultValue": "WinAuthPwd"
-			},
-			"akvBaseUrl": {
-				"type": "string",
-				"defaultValue": "https://akv-ab092898.vault.azure.net/"
-			},
-			"pwd": {
-				"type": "string",
-				"defaultValue": "AzimuthDeco1!"
 			}
 		},
 		"annotations": [],

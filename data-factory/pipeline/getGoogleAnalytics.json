@@ -29,14 +29,7 @@
 			{
 				"name": "Loop Tables",
 				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "GetTables",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
@@ -191,6 +184,102 @@
 							}
 						}
 					]
+				}
+			},
+			{
+				"name": "GetGbqObjects",
+				"description": "Add any objects available in GBQ to the load control tracker.",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "GoogleBigQuerySource",
+						"query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "if exists (select * from sys.tables where schema_id = schema_id('stage') and name = 'GoogleAnalyticsObjects') drop table stage.GoogleAnalyticsObjects",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "GoogleBigQueryFND",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "stage",
+							"tableName": "GoogleAnalyticsObjects",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				]
+			},
+			{
+				"name": "MergeLoadControl",
+				"description": "Add to dbo.GoogleAnalytics load control those objects newly found",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "GetGbqObjects",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "insert into dbo.GoogleAnalytics (TableCatalog, TableSchema, TableName, WhereClause, RowCountSource, SourceDeleted)\nselect table_catalog\nfrom stage.GoogleAnalytics \nwhere not exists ",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "dbo",
+							"tableName": "GoogleAnalytics",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					},
+					"firstRowOnly": true
 				}
 			}
 		],
