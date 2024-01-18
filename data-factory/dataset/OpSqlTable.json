@@ -17,10 +17,6 @@
 				"userName": {
 					"value": "@dataset().userName",
 					"type": "Expression"
-				},
-				"password": {
-					"value": "@dataset().pwd",
-					"type": "Expression"
 				}
 			}
 		},
