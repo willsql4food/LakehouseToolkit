@@ -5,6 +5,8 @@
 			{
 				"name": "GetTables",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -29,7 +31,16 @@
 			{
 				"name": "Loop Tables",
 				"type": "ForEach",
-				"dependsOn": [],
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "GetTables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
@@ -102,10 +113,7 @@
 															"tableName": "event_count",
 															"sqlFqdn": "localhost\\ACB",
 															"dbName": "gbq_study",
-															"userName": "AB092898@flooranddecor.com",
-															"pwdSecretName": "WinAuthPwd",
-															"akvBaseUrl": "https://akv-ab092898.vault.azure.net/",
-															"pwd": "jjj"
+															"userName": "AB092898@flooranddecor.com"
 														}
 													}
 												]
@@ -206,10 +214,9 @@
 					},
 					"sink": {
 						"type": "SqlServerSink",
-						"preCopyScript": "if exists (select * from sys.tables where schema_id = schema_id('stage') and name = 'GoogleAnalyticsObjects') drop table stage.GoogleAnalyticsObjects",
+						"preCopyScript": "truncate table stage.gbqObject",
 						"writeBehavior": "insert",
-						"sqlWriterUseTableLock": false,
-						"tableOption": "autoCreate"
+						"sqlWriterUseTableLock": false
 					},
 					"enableStaging": false,
 					"translator": {
@@ -233,7 +240,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"schemaName": "stage",
-							"tableName": "GoogleAnalyticsObjects",
+							"tableName": "gbqObject",
 							"sqlFqdn": "localhost\\ACB",
 							"dbName": "LoadControl",
 							"userName": "AB092898@flooranddecor.com"
@@ -242,8 +249,98 @@
 				]
 			},
 			{
-				"name": "MergeLoadControl",
-				"description": "Add to dbo.GoogleAnalytics load control those objects newly found",
+				"name": "GetLoadGroups",
+				"description": "Determine what is needed to load:\n* Ignore objects already marked as loaded\n* Find groupings for tables over the limit",
+				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "GetNewObjects",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "@concat('declare json nvarchar(max) = ', activity('GetGbqObjects').output.pipelineReturnValue, ';\n\nwith obj as (\n    select  TableCatalog, TableSchema, TableName, \n            case \n                when TableName like ''event%'' then ''event_name'' \n                else ', ' \n            end KeyField,\n            case \n                when TableName like ''event%'' then '' group by event_name '' \n                else '' \n            end GroupBy\n    from    openjson(json)\n        with (\n            TableCatalog nvarchar(255) ''$.TableCatalog'',\n            TableSchema nvarchar(255) ''$.TableSchema'',\n            TableName nvarchar(255) ''$.TableName''\n        ) s\n)\n\nselect string_agg(convert(nvarchar(max), sqlCmd), '' union all '') \nfrom (\n    select  sqlCmd = concat(''select '''', s.TableCatalog, '''' TableCatalog, '''', s.TableSchema, '''' TableSchema, '''', s.TableName, '''' TableName, '''',\ns.KeyField, '''' KeyField, count(*) RowCountSource from '',\ns.TableSchema, ''.'', s.TableName, '', s.GroupBy, '')\n    from    obj s\n    left join   dbo.GoogleBigQueryObjects ga on ga.TableCatalog = s.TableCatalog and ga.TableSchema = s.TableSchema and ga.TableName = s.TableName\n) r')",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "dbo",
+							"tableName": "GoogleBigQueryObjejects",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "GetNewObjects",
+				"description": "Determine which Google Big Query objects have not yet been loaded.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "GetRowCountQueries",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "declare @@json nvarchar(max) = @{activity('GetRowCountQueries').output.value}\nwith cte as (\n     select TableCatalog, TableSchema, TableName, Batch, RowCountSource\n     from open_json(@@json) \n        with (\n            TableCatalog nvarchar(255) '$.TableCatalog',\n            TableSchema nvarchar(255) '$.TableSchema',\n            TableName nvarchar(255) '$.TableName',\n            Batch nvarchar(2000) '$.Batch',\n            RowCountSource int '$.RowCountSource'\n        ) s\n), rt as (\n    /* Conditional sum with prior row(s) until just before 1M, then start new running total */\n    select      Id, Batch, RowCountSource, RowCountSource RunningTotal, 1 GroupId, \n                TableCatalog, TableSchema, TableName\n    from        cte\n    where       Id = 1\n    union all\n    select      a.Id, a.Batch, a.RowCountSource,\n                case when a.RowCountSource + b.RunningTotal < 1000000 then a.RowCountSource + b.RunningTotal else a.RowCountSource end RunningTotal,\n                case when a.RowCountSource + b.RunningTotal < 1000000 then b.GroupId else b.GroupId + 1 end GroupId,\n                TableCatalog, TableSchema, TableName\n    from        cte a\n    join        rt b on b.Id = a.Id - 1\n)\n\nselect      Id, GroupId, Batch, RowCountSource, RunningTotal,\n            TableCatalog, TableSchema, TableName\nfrom        rt\norder by    GroupId, Id",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "dbo",
+							"tableName": "gbqObjectToLoad",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "GetRowCountQueries",
+				"description": "Generates a union all row-count set of queries for each object not yet loaded from Google",
 				"type": "Lookup",
 				"dependsOn": [
 					{
@@ -264,7 +361,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "insert into dbo.GoogleAnalytics (TableCatalog, TableSchema, TableName, WhereClause, RowCountSource, SourceDeleted)\nselect table_catalog\nfrom stage.GoogleAnalytics \nwhere not exists ",
+						"sqlReaderQuery": " select string_agg(SelectCmd, ' union all ') from dbo.gbqObjectToLoadCmd",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -273,13 +370,13 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"schemaName": "dbo",
-							"tableName": "GoogleAnalytics",
+							"tableName": "customer",
 							"sqlFqdn": "localhost\\ACB",
 							"dbName": "LoadControl",
 							"userName": "AB092898@flooranddecor.com"
 						}
 					},
-					"firstRowOnly": true
+					"firstRowOnly": false
 				}
 			}
 		],
