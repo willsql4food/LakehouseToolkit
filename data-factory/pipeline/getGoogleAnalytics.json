@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('GetGbqLoadBatches').output.value",
+						"value": "@activity('Get_gbqLoadBatches').output.value",
 						"type": "Expression"
 					},
 					"activities": [
