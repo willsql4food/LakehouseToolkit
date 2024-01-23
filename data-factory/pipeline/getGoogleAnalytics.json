@@ -82,6 +82,48 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "LogFinish",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "BatchToParquet",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlServerSource",
+									"sqlReaderQuery": {
+										"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{utcNow()}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}'\nwhere   TableCatalog = @{item().TableCatalog}\n    and TableSchema = @{item().TableSchema}\n    and TableName = @{item().TableName}\n    and BatchId = @{item().BatchId}\n\n/*\n    RowCountDest = @{activity('BatchToParquet').output.rows} \n*/",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "OpSqlTable",
+									"type": "DatasetReference",
+									"parameters": {
+										"schemaName": "na",
+										"tableName": "na",
+										"sqlFqdn": "localhost\\ACB",
+										"dbName": "LoadControl",
+										"userName": "AB092898@flooranddecor.com"
+									}
+								}
+							}
 						}
 					]
 				}
@@ -182,7 +224,7 @@
 				}
 			},
 			{
-				"name": "GetRowCountQueries",
+				"name": "Get_RowCountQueries",
 				"description": "Builds a set of queries to find the row count in each Google object not yet loaded.  Applies Batch to objects anticipated to exceed query return limit imposed by Google (1M rows as of 2024-01)",
 				"type": "Lookup",
 				"dependsOn": [
@@ -228,7 +270,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "GetRowCountQueries",
+						"activity": "Get_RowCountQueries",
 						"dependencyConditions": [
 							"Succeeded"
 						]
