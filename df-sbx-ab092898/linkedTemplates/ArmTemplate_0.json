@@ -16,6 +16,14 @@
 			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		},
+		"GoogleBigQueryOA2_clientSecret": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clientSecret' of 'GoogleBigQueryOA2'"
+		},
+		"GoogleBigQueryOA2_refreshToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'refreshToken' of 'GoogleBigQueryOA2'"
+		},
 		"OnpremSqlDb_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
@@ -28,6 +36,10 @@
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
+		},
+		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
+			"type": "string",
+			"defaultValue": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
 		},
 		"RestApi_properties_typeProperties_url": {
 			"type": "string",
@@ -44,26 +56,6 @@
 		"sfdc_properties_typeProperties_username": {
 			"type": "string",
 			"defaultValue": "@{linkedService().userName}"
-		},
-		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
-			"type": "string",
-			"defaultValue": "stage"
-		},
-		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable": {
-			"type": "string",
-			"defaultValue": "PersonC"
-		},
-		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema": {
-			"type": "string",
-			"defaultValue": "dbo"
-		},
-		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid": {
-			"type": "string",
-			"defaultValue": "PersonRigid"
-		},
-		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
-			"type": "string",
-			"defaultValue": "PersonFlexible"
 		}
 	},
 	"variables": {
@@ -119,6 +111,31 @@
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
 					"connectionString": "[parameters('AzSqlDb_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryOA2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "GoogleBigQuery",
+				"typeProperties": {
+					"project": "corded-fact-410917",
+					"additionalProjects": "",
+					"requestGoogleDriveScope": false,
+					"authenticationType": "UserAuthentication",
+					"clientId": "[parameters('GoogleBigQueryOA2_properties_typeProperties_clientId')]",
+					"clientSecret": {
+						"type": "SecureString",
+						"value": "[parameters('GoogleBigQueryOA2_clientSecret')]"
+					},
+					"refreshToken": {
+						"type": "SecureString",
+						"value": "[parameters('GoogleBigQueryOA2_refreshToken')]"
+					}
 				}
 			},
 			"dependsOn": []
@@ -1061,6 +1078,52 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzPq')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzDLStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"dsFilesystem": {
+						"type": "string"
+					},
+					"dsPath": {
+						"type": "string"
+					},
+					"dsFilename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().dsFilename",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().dsPath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().dsFilesystem",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzDLStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzSqlDb')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1141,6 +1204,58 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQuery')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "GoogleBigQuery",
+				"typeProperties": {
+					"project": "fnd-cloud-project",
+					"additionalProjects": "",
+					"requestGoogleDriveScope": false,
+					"authenticationType": "ServiceAuthentication",
+					"email": "ga4-access@fnd-cloud-project.iam.gserviceaccount.com",
+					"keyFilePath": "C:\\source\\keys\\fnd-cloud-project-b2a8d27db4f3.json",
+					"trustedCertPath": "",
+					"useSystemTrustStore": false
+				},
+				"connectVia": {
+					"referenceName": "shirt-ACB",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryMirror')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "GoogleBigQuery",
+				"typeProperties": {
+					"project": "corded-fact-410917",
+					"additionalProjects": "",
+					"requestGoogleDriveScope": false,
+					"authenticationType": "ServiceAuthentication",
+					"email": "web-service@corded-fact-410917.iam.gserviceaccount.com",
+					"keyFilePath": "C:\\source\\keys\\corded-fact-410917-9141377c6eab.json",
+					"trustedCertPath": "",
+					"useSystemTrustStore": false
+				},
+				"connectVia": {
+					"referenceName": "shirt-ACB",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OnpremSqlDb')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1157,10 +1272,6 @@
 					"userName": {
 						"type": "string",
 						"defaultValue": "ab092898@flooranddecor.com"
-					},
-					"password": {
-						"type": "string",
-						"defaultValue": "AzimuthDeco1!"
 					}
 				},
 				"annotations": [],
@@ -1168,7 +1279,14 @@
 				"typeProperties": {
 					"connectionString": "[parameters('OnpremSqlDb_connectionString')]",
 					"userName": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]",
-					"password": "@{linkedService().password}"
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "WinAuthPwd"
+					}
 				},
 				"connectVia": {
 					"referenceName": "shirt-ACB",
@@ -1176,7 +1294,8 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
 			]
 		},
 		{
@@ -1540,6 +1659,48 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryFND')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GoogleBigQuery",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "GoogleBigQueryObject",
+				"schema": [],
+				"typeProperties": {
+					"dataset": "dw_mirror",
+					"table": "messages"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/GoogleBigQuery')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryMirror')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GoogleBigQueryMirror",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "GoogleBigQueryObject",
+				"schema": [],
+				"typeProperties": {
+					"dataset": "dw_mirror",
+					"table": "messages"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/GoogleBigQueryMirror')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OpSqlTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1559,10 +1720,6 @@
 						},
 						"userName": {
 							"value": "@dataset().userName",
-							"type": "Expression"
-						},
-						"password": {
-							"value": "@dataset().pwd",
 							"type": "Expression"
 						}
 					}
@@ -1587,18 +1744,6 @@
 					"userName": {
 						"type": "string",
 						"defaultValue": "AB092898@flooranddecor.com"
-					},
-					"pwdSecretName": {
-						"type": "string",
-						"defaultValue": "WinAuthPwd"
-					},
-					"akvBaseUrl": {
-						"type": "string",
-						"defaultValue": "https://akv-ab092898.vault.azure.net/"
-					},
-					"pwd": {
-						"type": "string",
-						"defaultValue": "AzimuthDeco1!"
 					}
 				},
 				"annotations": [],
@@ -1680,10 +1825,7 @@
 									"tableName": "Case",
 									"sqlFqdn": "localhost\\ACB",
 									"dbName": "SevenLetterTees",
-									"userName": "AB092898@flooranddecor.com",
-									"pwdSecretName": "WinAuthPwd",
-									"akvBaseUrl": "https://akv-ab092898.vault.azure.net/",
-									"pwd": "AzimuthDeco1!"
+									"userName": "AB092898@flooranddecor.com"
 								}
 							}
 						]
@@ -1700,14 +1842,100 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/paramtest')]",
+			"name": "[concat(parameters('factoryName'), '/getGoogleAnalytics')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "ListTables",
-						"type": "Lookup",
+						"name": "Loop Batches",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetGbqLoadBatches",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetGbqLoadBatches').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "BatchToParquet",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "GoogleBigQuerySource",
+											"query": {
+												"value": "@item().SelectCmd",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "GoogleBigQueryFND",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "AzPq",
+											"type": "DatasetReference",
+											"parameters": {
+												"dsFilesystem": "datalake",
+												"dsPath": {
+													"value": "bronze/GoogleAnalytics/@{item().FilePath}",
+													"type": "Expression"
+												},
+												"dsFilename": {
+													"value": "@item().FileName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Get_gbqObject",
+						"description": "Get all objects available in GBQ and stage them in Load Control.",
+						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -1719,7 +1947,70 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
+								"type": "GoogleBigQuerySource",
+								"query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
+							},
+							"sink": {
+								"type": "SqlServerSink",
+								"preCopyScript": "truncate table stage.gbqObject",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "GoogleBigQueryFND",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "OpSqlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"schemaName": "stage",
+									"tableName": "gbqObject",
+									"sqlFqdn": "localhost\\ACB",
+									"dbName": "LoadControl",
+									"userName": "AB092898@flooranddecor.com"
+								}
+							}
+						]
+					},
+					{
+						"name": "GetGbqLoadBatches",
+						"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Get_gbqObjectDetail",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
 								"type": "SqlServerSource",
+								"sqlReaderStoredProcedureName": "dbo.uspGetGbqLoadBatches",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -1727,16 +2018,121 @@
 								"referenceName": "OpSqlTable",
 								"type": "DatasetReference",
 								"parameters": {
-									"schemaName": "dbo",
-									"tableName": "customers",
+									"schemaName": "na",
+									"tableName": "na",
 									"sqlFqdn": "localhost\\ACB",
-									"dbName": "SevenLetterTees",
-									"userName": "AB092898@flooranddecor.com",
-									"pwdSecretName": "WinAuthPwd",
-									"akvBaseUrl": "https://akv-ab092898.vault.azure.net/"
+									"dbName": "LoadControl",
+									"userName": "AB092898@flooranddecor.com"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "GetRowCountQueries",
+						"description": "Builds a set of queries to find the row count in each Google object not yet loaded.  Applies Batch to objects anticipated to exceed query return limit imposed by Google (1M rows as of 2024-01)",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Get_gbqObject",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": " select string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "OpSqlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"schemaName": "na",
+									"tableName": "na",
+									"sqlFqdn": "localhost\\ACB",
+									"dbName": "LoadControl",
+									"userName": "AB092898@flooranddecor.com"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Get_gbqObjectDetail",
+						"description": "Execute query and store results in stage table in Load Control.",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "GetRowCountQueries",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "GoogleBigQuerySource",
+								"query": {
+									"value": "@{activity('GetRowCountQueries').output.value[0].CountCmd}\n",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlServerSink",
+								"preCopyScript": "truncate table stage.gbqObjectDetail",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
 								}
 							}
-						}
+						},
+						"inputs": [
+							{
+								"referenceName": "GoogleBigQueryFND",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "OpSqlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"schemaName": "stage",
+									"tableName": "gbqObjectDetail",
+									"sqlFqdn": "localhost\\ACB",
+									"dbName": "LoadControl",
+									"userName": "AB092898@flooranddecor.com"
+								}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -1745,44 +2141,9 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/OpSqlTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/schRunPipelines')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Scheduled trigger to run one or more pipelines (POC)",
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "SchemaDriftTest",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"plSourceSchema": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]",
-							"plSourceTable": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable')]",
-							"plTargetSchema": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema')]",
-							"plTargetTableRigid": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid')]",
-							"plTargetTableFlexible": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible')]"
-						}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 15,
-						"startTime": "2023-11-10T18:03:00",
-						"timeZone": "Eastern Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/SchemaDriftTest')]"
+				"[concat(variables('factoryId'), '/datasets/GoogleBigQueryFND')]",
+				"[concat(variables('factoryId'), '/datasets/OpSqlTable')]",
+				"[concat(variables('factoryId'), '/datasets/AzPq')]"
 			]
 		}
 	]

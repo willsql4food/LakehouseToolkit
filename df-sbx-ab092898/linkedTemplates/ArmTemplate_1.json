@@ -1,0 +1,116 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-sbx-ab092898"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
+			"type": "string",
+			"defaultValue": "stage"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable": {
+			"type": "string",
+			"defaultValue": "PersonC"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema": {
+			"type": "string",
+			"defaultValue": "dbo"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid": {
+			"type": "string",
+			"defaultValue": "PersonRigid"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
+			"type": "string",
+			"defaultValue": "PersonFlexible"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/paramtest')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ListTables",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "OpSqlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"schemaName": "dbo",
+									"tableName": "customers",
+									"sqlFqdn": "localhost\\ACB",
+									"dbName": "SevenLetterTees",
+									"userName": "AB092898@flooranddecor.com"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/schRunPipelines')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Scheduled trigger to run one or more pipelines (POC)",
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "SchemaDriftTest",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"plSourceSchema": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]",
+							"plSourceTable": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable')]",
+							"plTargetSchema": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema')]",
+							"plTargetTableRigid": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid')]",
+							"plTargetTableFlexible": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2023-11-10T18:03:00",
+						"timeZone": "Eastern Standard Time"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

@@ -16,6 +16,14 @@
 			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		},
+		"GoogleBigQueryOA2_clientSecret": {
+			"type": "secureString",
+			"metadata": "Secure string for 'clientSecret' of 'GoogleBigQueryOA2'"
+		},
+		"GoogleBigQueryOA2_refreshToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'refreshToken' of 'GoogleBigQueryOA2'"
+		},
 		"OnpremSqlDb_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
@@ -28,6 +36,10 @@
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
+		},
+		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
+			"type": "string",
+			"defaultValue": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
 		},
 		"OnpremSqlDb_properties_typeProperties_userName": {
 			"type": "string",
@@ -98,6 +110,12 @@
 					"AzSqlDb_connectionString": {
 						"value": "[parameters('AzSqlDb_connectionString')]"
 					},
+					"GoogleBigQueryOA2_clientSecret": {
+						"value": "[parameters('GoogleBigQueryOA2_clientSecret')]"
+					},
+					"GoogleBigQueryOA2_refreshToken": {
+						"value": "[parameters('GoogleBigQueryOA2_refreshToken')]"
+					},
 					"OnpremSqlDb_connectionString": {
 						"value": "[parameters('OnpremSqlDb_connectionString')]"
 					},
@@ -106,6 +124,9 @@
 					},
 					"AzKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"GoogleBigQueryOA2_properties_typeProperties_clientId": {
+						"value": "[parameters('GoogleBigQueryOA2_properties_typeProperties_clientId')]"
 					},
 					"RestApi_properties_typeProperties_url": {
 						"value": "[parameters('RestApi_properties_typeProperties_url')]"
@@ -118,6 +139,24 @@
 					},
 					"sfdc_properties_typeProperties_username": {
 						"value": "[parameters('sfdc_properties_typeProperties_username')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "df-sbx-ab092898_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
 					},
 					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]"
@@ -136,7 +175,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'df-sbx-ab092898_ArmTemplate_0')]"
+			]
 		}
 	]
 }

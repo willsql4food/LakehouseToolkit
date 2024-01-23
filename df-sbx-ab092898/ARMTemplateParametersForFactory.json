@@ -11,6 +11,12 @@
 		"AzSqlDb_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		},
+		"GoogleBigQueryOA2_clientSecret": {
+			"value": ""
+		},
+		"GoogleBigQueryOA2_refreshToken": {
+			"value": ""
+		},
 		"OnpremSqlDb_connectionString": {
 			"value": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
 		},
@@ -19,6 +25,9 @@
 		},
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://akv-ab092898.vault.azure.net/"
+		},
+		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
+			"value": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
 		},
 		"OnpremSqlDb_properties_typeProperties_userName": {
 			"value": "@{linkedService().userName}"
