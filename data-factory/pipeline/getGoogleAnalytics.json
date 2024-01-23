@@ -7,7 +7,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "GetGbqLoadBatches",
+						"activity": "Get_gbqLoadBatches",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -141,7 +141,7 @@
 				]
 			},
 			{
-				"name": "GetGbqLoadBatches",
+				"name": "Get_gbqLoadBatches",
 				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
 				"type": "Lookup",
 				"dependsOn": [
