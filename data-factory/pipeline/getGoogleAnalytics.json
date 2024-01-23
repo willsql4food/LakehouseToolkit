@@ -316,24 +316,15 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "SqlServerSource",
-						"sqlReaderQuery": {
-							"value": "declare @@json nvarchar(max) = @{activity('GetRowCountQueries').output.value}\nwith cte as (\n     select TableCatalog, TableSchema, TableName, Batch, RowCountSource\n     from open_json(@@json) \n        with (\n            TableCatalog nvarchar(255) '$.TableCatalog',\n            TableSchema nvarchar(255) '$.TableSchema',\n            TableName nvarchar(255) '$.TableName',\n            Batch nvarchar(2000) '$.Batch',\n            RowCountSource int '$.RowCountSource'\n        ) s\n), rt as (\n    /* Conditional sum with prior row(s) until just before 1M, then start new running total */\n    select      Id, Batch, RowCountSource, RowCountSource RunningTotal, 1 GroupId, \n                TableCatalog, TableSchema, TableName\n    from        cte\n    where       Id = 1\n    union all\n    select      a.Id, a.Batch, a.RowCountSource,\n                case when a.RowCountSource + b.RunningTotal < 1000000 then a.RowCountSource + b.RunningTotal else a.RowCountSource end RunningTotal,\n                case when a.RowCountSource + b.RunningTotal < 1000000 then b.GroupId else b.GroupId + 1 end GroupId,\n                TableCatalog, TableSchema, TableName\n    from        cte a\n    join        rt b on b.Id = a.Id - 1\n)\n\nselect      Id, GroupId, Batch, RowCountSource, RunningTotal,\n            TableCatalog, TableSchema, TableName\nfrom        rt\norder by    GroupId, Id",
+						"type": "GoogleBigQuerySource",
+						"query": {
+							"value": "with recursive cte as (\n@{activity('GetRowCountQueries').output.value[0].CountCmd}\n), rt as (\n    /* Conditional sum with prior row(s) until just before 1M, then start new running total */\n    select      Id, Batch, RowCountSource, RowCountSource RunningTotal, 1 GroupId, \n                TableCatalog, TableSchema, TableName\n    from        cte\n    where       Id = 1\n    union all\n    select      a.Id, a.Batch, a.RowCountSource,\n                case when a.RowCountSource + b.RunningTotal < 1000000 then a.RowCountSource + b.RunningTotal else a.RowCountSource end RunningTotal,\n                case when a.RowCountSource + b.RunningTotal < 1000000 then b.GroupId else b.GroupId + 1 end GroupId,\n                TableCatalog, TableSchema, TableName\n    from        cte a\n    join        rt b on b.Id = a.Id - 1\n)\n\nselect      Id, GroupId, Batch, RowCountSource, RunningTotal,\n            TableCatalog, TableSchema, TableName\nfrom        rt\norder by    GroupId, Id",
 							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
+						}
 					},
 					"dataset": {
-						"referenceName": "OpSqlTable",
-						"type": "DatasetReference",
-						"parameters": {
-							"schemaName": "dbo",
-							"tableName": "gbqObjectToLoad",
-							"sqlFqdn": "localhost\\ACB",
-							"dbName": "LoadControl",
-							"userName": "AB092898@flooranddecor.com"
-						}
+						"referenceName": "GoogleBigQueryFND",
+						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
 				}
@@ -361,7 +352,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": " select string_agg(SelectCmd, ' union all ') from dbo.gbqObjectToLoadCmd",
+						"sqlReaderQuery": " select string_agg(SelectCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
