@@ -8,6 +8,7 @@ ACB	2023-10-12	Initial development
 ACB	2023-12-12	Added column alias when converting data types for PK fields or when not performing DDL to allow 
                 SelectCmd to be used in sub-select by caller
                 Handled STRING_AGG 8000-byte limit
+ACB	2024-01-10	Added thrid action - Add columns only
 ======================================================================================================================= */
     (   @SourceSchema varchar(255)
     ,   @SourceTable varchar(255)
