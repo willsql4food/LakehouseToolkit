@@ -93,8 +93,10 @@
 							]
 						},
 						{
-							"name": "LogFinish",
+							"name": "LogFinishX",
 							"type": "Lookup",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [
 								{
 									"activity": "BatchToParquet",
@@ -132,6 +134,47 @@
 										"userName": "AB092898@flooranddecor.com"
 									}
 								}
+							}
+						},
+						{
+							"name": "LogFinish",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "BatchToParquet",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "OnpremSqlDb",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"serverFqdn": "localhost\\ACB",
+									"dbName": "LoadControl",
+									"userName": "ab092898@flooranddecor.com"
+								}
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
 							}
 						}
 					]
