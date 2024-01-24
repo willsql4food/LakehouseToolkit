@@ -31,7 +31,16 @@
 								"secureOutput": false,
 								"secureInput": false
 							},
-							"userProperties": [],
+							"userProperties": [
+								{
+									"name": "DestFile",
+									"value": "@{item().FileName}"
+								},
+								{
+									"name": "Query",
+									"value": "@{item().SelectCmd}"
+								}
+							],
 							"typeProperties": {
 								"source": {
 									"type": "GoogleBigQuerySource",
