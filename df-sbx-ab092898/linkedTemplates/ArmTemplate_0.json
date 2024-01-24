@@ -1961,7 +1961,7 @@
 										"source": {
 											"type": "SqlServerSource",
 											"sqlReaderQuery": {
-												"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{utcNow()}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n",
+												"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n",
 												"type": "Expression"
 											},
 											"queryTimeout": "02:00:00",
