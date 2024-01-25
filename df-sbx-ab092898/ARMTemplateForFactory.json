@@ -691,8 +691,21 @@
 							"source": {
 								"type": "SqlServerSource",
 								"sqlReaderStoredProcedureName": {
-									"value": "dbo.uspGetGbqLoadBatches @@PipelineExecutionId = @{activity('LogJobStart').output.value[0].Id}",
+									"value": "dbo.uspGetGbqLoadBatches",
 									"type": "Expression"
+								},
+								"storedProcedureParameters": {
+									"PipelineExecutionId": {
+										"type": "Int32",
+										"value": {
+											"value": "@{activity('LogJobStart').output.value[0].Id}",
+											"type": "Expression"
+										}
+									},
+									"RowsLimit": {
+										"type": "Int32",
+										"value": "1000000"
+									}
 								},
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
@@ -896,8 +909,8 @@
 						}
 					},
 					{
-						"name": "LogJobEmptyLoad",
-						"description": "There were no new batches to load, so finish job as an empty load.",
+						"name": "LogJobFail_GetObjDetail",
+						"description": "Log failure at Get_gbqObjectDetail",
 						"type": "Script",
 						"dependsOn": [
 							{
@@ -929,7 +942,7 @@
 								{
 									"type": "Query",
 									"text": {
-										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('Get_RowCountQueries').output.value[0].numBatches},\n        StatusMessage = 'Completed'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
+										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = -1,\n        StatusMessage = 'Failed'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
 										"type": "Expression"
 									}
 								}
