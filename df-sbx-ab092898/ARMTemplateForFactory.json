@@ -724,7 +724,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlServerSource",
-								"sqlReaderQuery": " select string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
+								"sqlReaderQuery": " select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -748,7 +748,7 @@
 						"type": "Copy",
 						"dependsOn": [
 							{
-								"activity": "Get_RowCountQueries",
+								"activity": "NewObjectsExist",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -806,6 +806,30 @@
 								}
 							}
 						]
+					},
+					{
+						"name": "NewObjectsExist",
+						"description": "Determine if there is at least one object to load from Google; if so, process remaining pipeline.  If not, end gracefully.",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "Get_RowCountQueries",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get_RowCountQueries').output.value",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@greater(item().numBatches, 0)",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
