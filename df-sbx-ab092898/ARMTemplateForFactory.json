@@ -776,7 +776,7 @@
 							"source": {
 								"type": "GoogleBigQuerySource",
 								"query": {
-									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select null NoNewObjects')\n",
+									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
 									"type": "Expression"
 								}
 							},
