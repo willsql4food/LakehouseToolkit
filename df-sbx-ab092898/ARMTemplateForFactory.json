@@ -485,7 +485,8 @@
 								"value": "@activity('Get_gbqLoadBatches').output.value",
 								"type": "Expression"
 							},
-							"isSequential": true,
+							"isSequential": false,
+							"batchCount": 7,
 							"activities": [
 								{
 									"name": "BatchToParquet",
@@ -493,8 +494,8 @@
 									"dependsOn": [],
 									"policy": {
 										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
+										"retry": 2,
+										"retryIntervalInSeconds": 300,
 										"secureOutput": false,
 										"secureInput": false
 									},
