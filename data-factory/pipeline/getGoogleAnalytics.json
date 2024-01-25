@@ -298,7 +298,7 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "@{activity('Get_RowCountQueries').output.value[0].CountCmd}\n",
+							"value": "@{activity('NewObjectsExist').output.value[0].CountCmd}\n",
 							"type": "Expression"
 						}
 					},
