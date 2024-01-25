@@ -2128,7 +2128,7 @@
 									"userName": "AB092898@flooranddecor.com"
 								}
 							},
-							"firstRowOnly": true
+							"firstRowOnly": false
 						}
 					},
 					{
@@ -2379,7 +2379,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Get_RowCountQueries').output.firstRow",
+								"value": "@activity('Get_RowCountQueries').output.value",
 								"type": "Expression"
 							},
 							"condition": {
@@ -2403,7 +2403,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Get_RowCountQueries').output.firstRow",
+								"value": "@activity('Get_RowCountQueries').output.value",
 								"type": "Expression"
 							},
 							"condition": {
