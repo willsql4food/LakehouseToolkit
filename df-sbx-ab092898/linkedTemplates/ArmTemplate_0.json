@@ -2155,7 +2155,7 @@
 							"source": {
 								"type": "GoogleBigQuerySource",
 								"query": {
-									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0], 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select null NoNewObjects')\n",
+									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select null NoNewObjects')\n",
 									"type": "Expression"
 								}
 							},
@@ -2229,7 +2229,7 @@
 								{
 									"type": "Query",
 									"text": {
-										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('Get_RowCountQueries').output.value[0].numRows},\n        StatusMessage = 'Succeeded'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
+										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('Get_RowCountQueries').output.value[0].numBatches},\n        StatusMessage = 'Succeeded'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
 										"type": "Expression"
 									}
 								}
@@ -2308,7 +2308,7 @@
 								{
 									"type": "Query",
 									"text": {
-										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = -1,\n        StatusMessage = 'Failed'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
+										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('Get_RowCountQueries').output.value[0].numBatches},\n        StatusMessage = 'Completed'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
 										"type": "Expression"
 									}
 								}
