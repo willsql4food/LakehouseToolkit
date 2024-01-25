@@ -2137,7 +2137,7 @@
 						"type": "Copy",
 						"dependsOn": [
 							{
-								"activity": "NewObjectsExist",
+								"activity": "Get_RowCountQueries",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -2155,7 +2155,7 @@
 							"source": {
 								"type": "GoogleBigQuerySource",
 								"query": {
-									"value": "@{activity('NewObjectsExist').output.value[0].CountCmd}\n",
+									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0], 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select null NoNewObjects')\n",
 									"type": "Expression"
 								}
 							},
@@ -2205,12 +2205,6 @@
 								"dependencyConditions": [
 									"Succeeded"
 								]
-							},
-							{
-								"activity": "NoNewBatches",
-								"dependencyConditions": [
-									"Succeeded"
-								]
 							}
 						],
 						"policy": {
@@ -2235,7 +2229,7 @@
 								{
 									"type": "Query",
 									"text": {
-										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('NewObjectsExist').output.value[0].numRows},\n        StatusMessage = 'Succeeded'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
+										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('Get_RowCountQueries').output.value[0].numRows},\n        StatusMessage = 'Succeeded'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
 										"type": "Expression"
 									}
 								}
@@ -2281,54 +2275,12 @@
 						}
 					},
 					{
-						"name": "LogJobFail",
-						"description": "Job failed, so close out the record with -1 BatchCount and the error detail.",
+						"name": "LogJobEmptyLoad",
+						"description": "There were no new batches to load, so finish job as an empty load.",
 						"type": "Script",
 						"dependsOn": [
 							{
-								"activity": "LogJobStart",
-								"dependencyConditions": [
-									"Failed"
-								]
-							},
-							{
-								"activity": "Get_gbqObject",
-								"dependencyConditions": [
-									"Failed"
-								]
-							},
-							{
-								"activity": "Get_RowCountQueries",
-								"dependencyConditions": [
-									"Failed"
-								]
-							},
-							{
 								"activity": "Get_gbqObjectDetail",
-								"dependencyConditions": [
-									"Failed"
-								]
-							},
-							{
-								"activity": "Get_gbqLoadBatches",
-								"dependencyConditions": [
-									"Failed"
-								]
-							},
-							{
-								"activity": "Loop Batches",
-								"dependencyConditions": [
-									"Failed"
-								]
-							},
-							{
-								"activity": "LogJobFinish",
-								"dependencyConditions": [
-									"Failed"
-								]
-							},
-							{
-								"activity": "NoNewBatches",
 								"dependencyConditions": [
 									"Failed"
 								]
@@ -2362,54 +2314,6 @@
 								}
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
-						}
-					},
-					{
-						"name": "NewObjectsExist",
-						"description": "There is at least one new object available in Google Big Query, so pass the query along to the pipeline.",
-						"type": "Filter",
-						"dependsOn": [
-							{
-								"activity": "Get_RowCountQueries",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Get_RowCountQueries').output.value",
-								"type": "Expression"
-							},
-							"condition": {
-								"value": "@greater(item().numBatches, 0)",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "NoNewBatches",
-						"description": "There are no new objects in Google Big Query since last pipeline execution.  Go straight to end of pipeline logging.",
-						"type": "Filter",
-						"dependsOn": [
-							{
-								"activity": "Get_RowCountQueries",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Get_RowCountQueries').output.value",
-								"type": "Expression"
-							},
-							"condition": {
-								"value": "@lessOrEquals(item().numBatches, 0)",
-								"type": "Expression"
-							}
 						}
 					}
 				],
