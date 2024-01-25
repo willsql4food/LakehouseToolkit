@@ -372,7 +372,7 @@
 							"userName": "AB092898@flooranddecor.com"
 						}
 					},
-					"timeout": "0.0:00:10",
+					"timeout": "0.00:00:10",
 					"sleep": 5
 				}
 			},
