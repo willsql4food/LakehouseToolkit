@@ -1,344 +1,368 @@
 {
-    "name": "getGoogleAnalytics",
-    "properties": {
-        "activities": [
-            {
-                "name": "Loop Batches",
-                "type": "ForEach",
-                "dependsOn": [
-                    {
-                        "activity": "Get_gbqLoadBatches",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "userProperties": [],
-                "typeProperties": {
-                    "items": {
-                        "value": "@activity('Get_gbqLoadBatches').output.value",
-                        "type": "Expression"
-                    },
-                    "isSequential": false,
-                    "batchCount": 7,
-                    "activities": [
-                        {
-                            "name": "BatchToParquet",
-                            "type": "Copy",
-                            "dependsOn": [],
-                            "policy": {
-                                "timeout": "0.12:00:00",
-                                "retry": 2,
-                                "retryIntervalInSeconds": 300,
-                                "secureOutput": false,
-                                "secureInput": false
-                            },
-                            "userProperties": [
-                                {
-                                    "name": "DestFile",
-                                    "value": "@{item().FileName}"
-                                },
-                                {
-                                    "name": "Query",
-                                    "value": "@{item().SelectCmd}"
-                                }
-                            ],
-                            "typeProperties": {
-                                "source": {
-                                    "type": "GoogleBigQuerySource",
-                                    "query": {
-                                        "value": "@item().SelectCmd",
-                                        "type": "Expression"
-                                    }
-                                },
-                                "sink": {
-                                    "type": "ParquetSink",
-                                    "storeSettings": {
-                                        "type": "AzureBlobFSWriteSettings"
-                                    },
-                                    "formatSettings": {
-                                        "type": "ParquetWriteSettings"
-                                    }
-                                },
-                                "enableStaging": false,
-                                "translator": {
-                                    "type": "TabularTranslator",
-                                    "typeConversion": true,
-                                    "typeConversionSettings": {
-                                        "allowDataTruncation": true,
-                                        "treatBooleanAsNumber": false
-                                    }
-                                }
-                            },
-                            "inputs": [
-                                {
-                                    "referenceName": "GoogleBigQueryFND",
-                                    "type": "DatasetReference"
-                                }
-                            ],
-                            "outputs": [
-                                {
-                                    "referenceName": "AzPq",
-                                    "type": "DatasetReference",
-                                    "parameters": {
-                                        "dsFilesystem": "datalake",
-                                        "dsPath": {
-                                            "value": "bronze/GoogleAnalytics/@{item().FilePath}",
-                                            "type": "Expression"
-                                        },
-                                        "dsFilename": {
-                                            "value": "@item().FileName",
-                                            "type": "Expression"
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "name": "LogFinish",
-                            "type": "Script",
-                            "dependsOn": [
-                                {
-                                    "activity": "BatchToParquet",
-                                    "dependencyConditions": [
-                                        "Succeeded"
-                                    ]
-                                }
-                            ],
-                            "policy": {
-                                "timeout": "0.12:00:00",
-                                "retry": 0,
-                                "retryIntervalInSeconds": 30,
-                                "secureOutput": false,
-                                "secureInput": false
-                            },
-                            "userProperties": [],
-                            "linkedServiceName": {
-                                "referenceName": "OnpremSqlDb",
-                                "type": "LinkedServiceReference",
-                                "parameters": {
-                                    "serverFqdn": "localhost\\ACB",
-                                    "dbName": "LoadControl",
-                                    "userName": "ab092898@flooranddecor.com"
-                                }
-                            },
-                            "typeProperties": {
-                                "scripts": [
-                                    {
-                                        "type": "Query",
-                                        "text": {
-                                            "value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n",
-                                            "type": "Expression"
-                                        }
-                                    }
-                                ],
-                                "scriptBlockExecutionTimeout": "02:00:00"
-                            }
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "Get_gbqObject",
-                "description": "Get all objects available in GBQ and stage them in Load Control.",
-                "type": "Copy",
-                "dependsOn": [],
-                "policy": {
-                    "timeout": "0.12:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "GoogleBigQuerySource",
-                        "query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
-                    },
-                    "sink": {
-                        "type": "SqlServerSink",
-                        "preCopyScript": "truncate table stage.gbqObject",
-                        "writeBehavior": "insert",
-                        "sqlWriterUseTableLock": false
-                    },
-                    "enableStaging": false,
-                    "translator": {
-                        "type": "TabularTranslator",
-                        "typeConversion": true,
-                        "typeConversionSettings": {
-                            "allowDataTruncation": true,
-                            "treatBooleanAsNumber": false
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "GoogleBigQueryFND",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "OpSqlTable",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "schemaName": "stage",
-                            "tableName": "gbqObject",
-                            "sqlFqdn": "localhost\\ACB",
-                            "dbName": "LoadControl",
-                            "userName": "AB092898@flooranddecor.com"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "Get_gbqLoadBatches",
-                "description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
-                "type": "Lookup",
-                "dependsOn": [
-                    {
-                        "activity": "Get_gbqObjectDetail",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "0.12:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "SqlServerSource",
-                        "sqlReaderStoredProcedureName": "dbo.uspGetGbqLoadBatches",
-                        "queryTimeout": "02:00:00",
-                        "partitionOption": "None"
-                    },
-                    "dataset": {
-                        "referenceName": "OpSqlTable",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "schemaName": "na",
-                            "tableName": "na",
-                            "sqlFqdn": "localhost\\ACB",
-                            "dbName": "LoadControl",
-                            "userName": "AB092898@flooranddecor.com"
-                        }
-                    },
-                    "firstRowOnly": false
-                }
-            },
-            {
-                "name": "Get_RowCountQueries",
-                "description": "Builds a set of queries to find the row count in each Google object not yet loaded.  Applies Batch to objects anticipated to exceed query return limit imposed by Google (1M rows as of 2024-01)",
-                "type": "Lookup",
-                "dependsOn": [
-                    {
-                        "activity": "Get_gbqObject",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "0.12:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "SqlServerSource",
-                        "sqlReaderQuery": " select string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
-                        "queryTimeout": "02:00:00",
-                        "partitionOption": "None"
-                    },
-                    "dataset": {
-                        "referenceName": "OpSqlTable",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "schemaName": "na",
-                            "tableName": "na",
-                            "sqlFqdn": "localhost\\ACB",
-                            "dbName": "LoadControl",
-                            "userName": "AB092898@flooranddecor.com"
-                        }
-                    },
-                    "firstRowOnly": false
-                }
-            },
-            {
-                "name": "Get_gbqObjectDetail",
-                "description": "Execute query and store results in stage table in Load Control.",
-                "type": "Copy",
-                "dependsOn": [
-                    {
-                        "activity": "Get_RowCountQueries",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "policy": {
-                    "timeout": "0.12:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
-                    "secureOutput": false,
-                    "secureInput": false
-                },
-                "userProperties": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "GoogleBigQuerySource",
-                        "query": {
-                            "value": "@{activity('Get_RowCountQueries').output.value[0].CountCmd}\n",
-                            "type": "Expression"
-                        }
-                    },
-                    "sink": {
-                        "type": "SqlServerSink",
-                        "preCopyScript": "truncate table stage.gbqObjectDetail",
-                        "writeBehavior": "insert",
-                        "sqlWriterUseTableLock": false
-                    },
-                    "enableStaging": false,
-                    "translator": {
-                        "type": "TabularTranslator",
-                        "typeConversion": true,
-                        "typeConversionSettings": {
-                            "allowDataTruncation": true,
-                            "treatBooleanAsNumber": false
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "GoogleBigQueryFND",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "OpSqlTable",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "schemaName": "stage",
-                            "tableName": "gbqObjectDetail",
-                            "sqlFqdn": "localhost\\ACB",
-                            "dbName": "LoadControl",
-                            "userName": "AB092898@flooranddecor.com"
-                        }
-                    }
-                ]
-            }
-        ],
-        "annotations": []
-    }
+	"name": "getGoogleAnalytics",
+	"properties": {
+		"activities": [
+			{
+				"name": "Loop Batches",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqLoadBatches",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_gbqLoadBatches').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 7,
+					"activities": [
+						{
+							"name": "BatchToParquet",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 300,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "DestFile",
+									"value": "@{item().FileName}"
+								},
+								{
+									"name": "Query",
+									"value": "@{item().SelectCmd}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "GoogleBigQuerySource",
+									"query": {
+										"value": "@item().SelectCmd",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "GoogleBigQueryFND",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "AzPq",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsFilesystem": "datalake",
+										"dsPath": {
+											"value": "bronze/GoogleAnalytics/@{item().FilePath}",
+											"type": "Expression"
+										},
+										"dsFilename": {
+											"value": "@item().FileName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "LogFinish",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "BatchToParquet",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "OnpremSqlDb",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"serverFqdn": "localhost\\ACB",
+									"dbName": "LoadControl",
+									"userName": "ab092898@flooranddecor.com"
+								}
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Get_gbqObject",
+				"description": "Get all objects available in GBQ and stage them in Load Control.",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "GoogleBigQuerySource",
+						"query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "truncate table stage.gbqObject",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "GoogleBigQueryFND",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "stage",
+							"tableName": "gbqObject",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				]
+			},
+			{
+				"name": "Get_gbqLoadBatches",
+				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqObjectDetail",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderStoredProcedureName": "dbo.uspGetGbqLoadBatches",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "na",
+							"tableName": "na",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Get_RowCountQueries",
+				"description": "Builds a set of queries to find the row count in each Google object not yet loaded.  Applies Batch to objects anticipated to exceed query return limit imposed by Google (1M rows as of 2024-01)",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqObject",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": " select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "na",
+							"tableName": "na",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Get_gbqObjectDetail",
+				"description": "Execute query and store results in stage table in Load Control.",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "NewObjectsExist",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "GoogleBigQuerySource",
+						"query": {
+							"value": "@{activity('Get_RowCountQueries').output.value[0].CountCmd}\n",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"preCopyScript": "truncate table stage.gbqObjectDetail",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "GoogleBigQueryFND",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "OpSqlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "stage",
+							"tableName": "gbqObjectDetail",
+							"sqlFqdn": "localhost\\ACB",
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				]
+			},
+			{
+				"name": "NewObjectsExist",
+				"description": "Determine if there is at least one object to load from Google; if so, process remaining pipeline.  If not, end gracefully.",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get_RowCountQueries",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_RowCountQueries').output.value",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@greater(item().numBatches, 0)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
 }
