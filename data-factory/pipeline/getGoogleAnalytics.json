@@ -41,6 +41,14 @@
 								{
 									"name": "Query",
 									"value": "@{item().SelectCmd}"
+								},
+								{
+									"name": "TableName",
+									"value": "@{item().TableName}"
+								},
+								{
+									"name": "BatchId",
+									"value": "@{item().BatchId}"
 								}
 							],
 							"typeProperties": {
