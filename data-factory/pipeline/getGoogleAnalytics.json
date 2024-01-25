@@ -249,7 +249,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "NewObjectsExist",
+						"activity": "Get_gbqObject",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -281,7 +281,7 @@
 							"userName": "AB092898@flooranddecor.com"
 						}
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
@@ -290,7 +290,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Get_RowCountQueries",
+						"activity": "NewObjectsExist",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -308,7 +308,7 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "@{activity('Get_RowCountQueries').output.value[0].CountCmd}\n",
+							"value": "@{activity('NewObjectsExist').output.value[0].CountCmd}\n",
 							"type": "Expression"
 						}
 					},
@@ -349,34 +349,6 @@
 				]
 			},
 			{
-				"name": "NewObjectsExist",
-				"type": "Validation",
-				"dependsOn": [
-					{
-						"activity": "Get_gbqObject",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "OpSqlTable",
-						"type": "DatasetReference",
-						"parameters": {
-							"schemaName": "dbo",
-							"tableName": "gbqObjectToLoadCmd",
-							"sqlFqdn": "localhost\\ACB",
-							"dbName": "LoadControl",
-							"userName": "AB092898@flooranddecor.com"
-						}
-					},
-					"timeout": "0.00:05:00",
-					"sleep": 5
-				}
-			},
-			{
 				"name": "LogJobFinish",
 				"type": "Script",
 				"dependsOn": [
@@ -387,9 +359,9 @@
 						]
 					},
 					{
-						"activity": "NewObjectsExist",
+						"activity": "NoNewBatches",
 						"dependencyConditions": [
-							"Failed"
+							"Succeeded"
 						]
 					}
 				],
@@ -506,6 +478,12 @@
 						"dependencyConditions": [
 							"Failed"
 						]
+					},
+					{
+						"activity": "NoNewBatches",
+						"dependencyConditions": [
+							"Failed"
+						]
 					}
 				],
 				"policy": {
@@ -536,6 +514,54 @@
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "NewObjectsExist",
+				"description": "There is at least one new object available in Google Big Query, so pass the query along to the pipeline.",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get_RowCountQueries",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_RowCountQueries').output.firstRow",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@greater(item().numBatches, 0)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "NoNewBatches",
+				"description": "There are no new objects in Google Big Query since last pipeline execution.  Go straight to end of pipeline logging.",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get_RowCountQueries",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_RowCountQueries').output.firstRow",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@lessOrEquals(item().numBatches, 0)",
+						"type": "Expression"
+					}
 				}
 			}
 		],
