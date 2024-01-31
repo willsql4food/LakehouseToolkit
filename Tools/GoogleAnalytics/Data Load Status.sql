@@ -12,4 +12,4 @@ select      case when RowCountSource <> RowCountDest then '***' else '' end Mism
             RowCountSource - RowCountDest Variance
 from        dbo.gbqWatermark
 where       LoadedDateUTC is not null
-order by    Mismatch desc, TableName desc, BatchId
+order by    Mismatch desc, right(TableName, 8) desc, TableName, BatchId
