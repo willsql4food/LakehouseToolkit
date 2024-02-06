@@ -1,1 +1,1 @@
-Initialized by Azure Data Factory!
+Initialized by Azure Data Factory, but need to build it out properly one day.
