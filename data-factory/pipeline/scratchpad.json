@@ -1,6 +1,7 @@
 {
-	"name": "paramtest",
+	"name": "scratchpad",
 	"properties": {
+		"description": "Just hacking around",
 		"activities": [
 			{
 				"name": "ListTables",
@@ -17,6 +18,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
+						"sqlReaderQuery": "select top 5 TableName, BatchId, SubBatchId\nfrom dbo.gbqWatermark\nwhere SubBatchId is not null\nunion all\nselect top 5 TableName, BatchId, SubBatchId\nfrom dbo.gbqWatermark\nwhere SubBatchId is null",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -27,15 +29,67 @@
 							"schemaName": "dbo",
 							"tableName": "customers",
 							"sqlFqdn": "localhost\\ACB",
-							"dbName": "SevenLetterTees",
-							"userName": "AB092898@flooranddecor.com",
-							"pwdSecretName": "WinAuthPwd",
-							"akvBaseUrl": "https://akv-ab092898.vault.azure.net/"
+							"dbName": "LoadControl",
+							"userName": "AB092898@flooranddecor.com"
 						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "DoSomeStuffForEach",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "ListTables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('ListTables').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "WriteSomething",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Something",
+									"value": "@{concat(item().BatchId, '.', item().SubBatchId)}"
+								},
+								{
+									"name": "NullCheck",
+									"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}"
+								}
+							],
+							"typeProperties": {
+								"variableName": "Something",
+								"value": {
+									"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}",
+									"type": "Expression"
+								}
+							}
+						}
+					]
 				}
 			}
 		],
+		"variables": {
+			"Something": {
+				"type": "String",
+				"defaultValue": "uninit"
+			}
+		},
 		"annotations": []
 	}
 }
