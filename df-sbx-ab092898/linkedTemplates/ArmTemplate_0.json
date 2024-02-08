@@ -124,7 +124,6 @@
 				"type": "GoogleBigQuery",
 				"typeProperties": {
 					"project": "corded-fact-410917",
-					"additionalProjects": "",
 					"requestGoogleDriveScope": false,
 					"authenticationType": "UserAuthentication",
 					"clientId": "[parameters('GoogleBigQueryOA2_properties_typeProperties_clientId')]",
@@ -1212,7 +1211,6 @@
 				"type": "GoogleBigQuery",
 				"typeProperties": {
 					"project": "fnd-cloud-project",
-					"additionalProjects": "",
 					"requestGoogleDriveScope": false,
 					"authenticationType": "ServiceAuthentication",
 					"email": "ga4-access@fnd-cloud-project.iam.gserviceaccount.com",
@@ -1238,7 +1236,6 @@
 				"type": "GoogleBigQuery",
 				"typeProperties": {
 					"project": "corded-fact-410917",
-					"additionalProjects": "",
 					"requestGoogleDriveScope": false,
 					"authenticationType": "ServiceAuthentication",
 					"email": "web-service@corded-fact-410917.iam.gserviceaccount.com",
@@ -2091,7 +2088,10 @@
 									},
 									"RowsLimit": {
 										"type": "Int32",
-										"value": "1000000"
+										"value": {
+											"value": "@pipeline().parameters.BatchRowLimit",
+											"type": "Expression"
+										}
 									}
 								},
 								"queryTimeout": "02:00:00",
@@ -2340,6 +2340,12 @@
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"BatchRowLimit": {
+						"type": "int",
+						"defaultValue": 400000
+					}
 				},
 				"annotations": []
 			},
