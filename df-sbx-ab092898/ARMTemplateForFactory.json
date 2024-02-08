@@ -518,7 +518,7 @@
 										},
 										{
 											"name": "Batch",
-											"value": "@{concat(item().BatchId, '.', item().SubBatchId)}"
+											"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}"
 										}
 									],
 									"typeProperties": {
@@ -606,7 +606,7 @@
 											{
 												"type": "Query",
 												"text": {
-													"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(greater(length(item().SubBatchId), 0), concat(' and SubBatchId = ', item().SubBatchId), '')}\n",
+													"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n",
 													"type": "Expression"
 												}
 											}
@@ -985,10 +985,11 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/paramtest')]",
+			"name": "[concat(parameters('factoryName'), '/scratchpad')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"description": "Just hacking around",
 				"activities": [
 					{
 						"name": "ListTables",
@@ -1005,6 +1006,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlServerSource",
+								"sqlReaderQuery": "select top 5 TableName, BatchId, SubBatchId\nfrom dbo.gbqWatermark\nwhere SubBatchId is not null\nunion all\nselect top 5 TableName, BatchId, SubBatchId\nfrom dbo.gbqWatermark\nwhere SubBatchId is null",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -1015,15 +1017,69 @@
 									"schemaName": "dbo",
 									"tableName": "customers",
 									"sqlFqdn": "localhost\\ACB",
-									"dbName": "SevenLetterTees",
+									"dbName": "LoadControl",
 									"userName": "AB092898@flooranddecor.com"
 								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "DoSomeStuffForEach",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "ListTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('ListTables').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "WriteSomething",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [
+										{
+											"name": "Something",
+											"value": "@{concat(item().BatchId, '.', item().SubBatchId)}"
+										},
+										{
+											"name": "NullCheck",
+											"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}"
+										}
+									],
+									"typeProperties": {
+										"variableName": "Something",
+										"value": {
+											"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}",
+											"type": "Expression"
+										}
+									}
+								}
+							]
 						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"Something": {
+						"type": "String",
+						"defaultValue": "uninit"
+					}
 				},
 				"annotations": []
 			},

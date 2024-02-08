@@ -1890,7 +1890,7 @@
 										},
 										{
 											"name": "Batch",
-											"value": "@{concat(item().BatchId, '.', item().SubBatchId)}"
+											"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}"
 										}
 									],
 									"typeProperties": {
@@ -1978,7 +1978,7 @@
 											{
 												"type": "Query",
 												"text": {
-													"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(greater(length(item().SubBatchId), 0), concat(' and SubBatchId = ', item().SubBatchId), '')}\n",
+													"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n",
 													"type": "Expression"
 												}
 											}
