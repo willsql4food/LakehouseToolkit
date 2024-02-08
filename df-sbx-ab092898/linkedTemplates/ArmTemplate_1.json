@@ -26,6 +26,10 @@
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
 			"type": "string",
 			"defaultValue": "PersonFlexible"
+		},
+		"trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit": {
+			"type": "int",
+			"defaultValue": 1000000
 		}
 	},
 	"variables": {
@@ -125,7 +129,9 @@
 							"referenceName": "getGoogleAnalytics",
 							"type": "PipelineReference"
 						},
-						"parameters": {}
+						"parameters": {
+							"BatchRowLimit": "[parameters('trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit')]"
+						}
 					}
 				],
 				"type": "ScheduleTrigger",

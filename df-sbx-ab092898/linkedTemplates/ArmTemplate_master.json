@@ -77,6 +77,10 @@
 			"type": "string",
 			"defaultValue": "PersonFlexible"
 		},
+		"trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit": {
+			"type": "int",
+			"defaultValue": 1000000
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -172,6 +176,9 @@
 					},
 					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
 						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible')]"
+					},
+					"trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit": {
+						"value": "[parameters('trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit')]"
 					}
 				}
 			},
