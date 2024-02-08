@@ -49,6 +49,10 @@
 								{
 									"name": "BatchId",
 									"value": "@{item().BatchId}"
+								},
+								{
+									"name": "SubBatchId",
+									"value": "@{item().SubBatchId}"
 								}
 							],
 							"typeProperties": {
