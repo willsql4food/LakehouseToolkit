@@ -8,6 +8,9 @@
 				"pipelineReference": {
 					"referenceName": "getGoogleAnalytics",
 					"type": "PipelineReference"
+				},
+				"parameters": {
+					"BatchRowLimit": 1000000
 				}
 			}
 		],
