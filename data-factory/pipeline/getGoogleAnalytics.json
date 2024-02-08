@@ -496,7 +496,7 @@
 		"parameters": {
 			"BatchRowLimit": {
 				"type": "int",
-				"defaultValue": 400000
+				"defaultValue": 1000000
 			}
 		},
 		"annotations": []
