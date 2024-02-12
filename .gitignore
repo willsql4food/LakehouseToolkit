@@ -1,0 +1,4 @@
+LoadControl/LoadControl/bin/*
+LoadControl/.vs/*
+LoadControl/LoadControl/obj/*
+.suo
