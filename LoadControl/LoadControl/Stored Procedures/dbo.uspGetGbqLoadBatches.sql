@@ -1,4 +1,4 @@
-﻿create or alter procedure dbo.uspGetGbqLoadBatches (@RowsLimit int = 1e6, @PipelineExecutionId int = 0)
+﻿create procedure dbo.uspGetGbqLoadBatches (@RowsLimit int = 1e6, @PipelineExecutionId int = 0)
 /*  ===================================================================================================================
     When            Who                     What
     --------------  ---------------------   ---------------------------------------------------------------------------
