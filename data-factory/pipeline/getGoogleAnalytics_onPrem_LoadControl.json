@@ -1,5 +1,5 @@
 {
-	"name": "getGoogleAnalytics",
+	"name": "getGoogleAnalytics_onPrem_LoadControl",
 	"properties": {
 		"activities": [
 			{
