@@ -76,6 +76,7 @@
   <ItemGroup>
     <None Include="Localhost.ACB.publish.xml" />
     <None Include="AzSandbox.LoadControl.publish.xml" />
+    <None Include="sqldb-dev-datalakehouse.database.windows.net.publish.xml" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Script.PostDeployment.sql" />
