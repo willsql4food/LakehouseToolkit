@@ -19,8 +19,14 @@
 			"accountKey": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
-					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference"
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKVBaseURL",
+							"type": "Expression"
+						}
+					}
 				},
 				"secretName": {
 					"value": "@linkedService().lsSecretName",
