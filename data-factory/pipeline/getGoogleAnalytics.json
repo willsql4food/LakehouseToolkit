@@ -86,18 +86,21 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "AzPq",
+									"referenceName": "DLBronzeParquetKV",
 									"type": "DatasetReference",
 									"parameters": {
-										"dsFilesystem": "datalake",
-										"dsPath": {
+										"dsURL": "https://sadevdatalakehouse.dfs.core.windows.net",
+										"dsSecretName": "sas-key-sadatalakehouse",
+										"dsFileSystem": "datalake",
+										"dsDirectory": {
 											"value": "bronze/GoogleAnalytics/@{item().FilePath}",
 											"type": "Expression"
 										},
-										"dsFilename": {
+										"dsFileName": {
 											"value": "@item().FileName",
 											"type": "Expression"
-										}
+										},
+										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
 									}
 								}
 							]
@@ -122,12 +125,17 @@
 							},
 							"userProperties": [],
 							"linkedServiceName": {
-								"referenceName": "OnpremSqlDb",
+								"referenceName": "GenericAzureSqlDatabaseMI",
 								"type": "LinkedServiceReference",
 								"parameters": {
-									"serverFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "ab092898@flooranddecor.com"
+									"lsServerName": {
+										"value": "@variables('varLCSQLServer')",
+										"type": "Expression"
+									},
+									"lsDatabaseName": {
+										"value": "@variables('varLCSQLDatabase')",
+										"type": "Expression"
+									}
 								}
 							},
 							"typeProperties": {
@@ -407,12 +415,17 @@
 				},
 				"userProperties": [],
 				"linkedServiceName": {
-					"referenceName": "OnpremSqlDb",
+					"referenceName": "GenericAzureSqlDatabaseMI",
 					"type": "LinkedServiceReference",
 					"parameters": {
-						"serverFqdn": "localhost\\ACB",
-						"dbName": "LoadControl",
-						"userName": "ab092898@flooranddecor.com"
+						"lsServerName": {
+							"value": "@variables('varLCSQLServer')",
+							"type": "Expression"
+						},
+						"lsDatabaseName": {
+							"value": "@variables('varLCSQLDatabase')",
+							"type": "Expression"
+						}
 					}
 				},
 				"typeProperties": {
