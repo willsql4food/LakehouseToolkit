@@ -1,0 +1,30 @@
+{
+	"name": "WatermarkMI",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GenericAzureSqlDatabaseMI",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsServerName": {
+					"value": "@dataset().dsServerName",
+					"type": "Expression"
+				},
+				"lsDatabaseName": {
+					"value": "@dataset().dsDatabaseName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"dsServerName": {
+				"type": "string"
+			},
+			"dsDatabaseName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}

@@ -1,0 +1,38 @@
+{
+	"name": "GenericAzureDataLakeStorageGen2KV",
+	"properties": {
+		"parameters": {
+			"lsURL": {
+				"type": "string"
+			},
+			"lsSecretName": {
+				"type": "string"
+			},
+			"lsKVBaseURL": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "@{linkedService().lsURL}",
+			"accountKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKVBaseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().lsSecretName",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}
