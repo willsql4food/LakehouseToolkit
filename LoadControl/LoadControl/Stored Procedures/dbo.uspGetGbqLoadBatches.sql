@@ -6,6 +6,7 @@
     2024-02-06      A. Carter Burleigh      Added logic to break single-term batches in multiple pieces when term has
                                             more rows than the limit
     2024-02-12      A. Carter Burleigh      Switched sequence generator from recursive CTE to function call
+    2024-02-14      A. Carter Burleigh      Switched back to recursive CTE as my target DBs are... compat level 150
 
     --------------
     Purpose
@@ -66,16 +67,24 @@ begin
                     SubBatchDomain = SubBatchMax - SubBatchMin 
         from        rt
         where       rt.RowCountSource > @RowsLimit
+    ), generate_series as (
+        select      TableCatalog, TableSchema, TableName, BatchId, [value] = NumSlices - 1, NumSlices, RowCountSource
+        from        sb
+        union all
+        select      i.TableCatalog, i.TableSchema, i.TableName, i.BatchId, i.[value] - 1, i.NumSlices, i.RowCountSource
+        from        generate_series i
+        where       i.[value] > 0
     ), slc as (
         /* Cut the domain of the sub-batch into adjacent ranges of approximately equal distances */
-        select      TableCatalog, TableSchema, TableName, BatchCol, BatchTerm, 
-                    SubBatchCol, RowCountSource,  BatchId,
-                    SubBatchId = s.value, NumSlices,
-                    SubBatchRange = SubBatchDomain / NumSlices,
-                    RangeStart = SubBatchMin + s.value * SubBatchDomain / NumSlices,
-                    RangeEnd = SubBatchMin + (1 + s.value) * SubBatchDomain / NumSlices
+        select      sb.TableCatalog, sb.TableSchema, sb.TableName, sb.BatchCol, sb.BatchTerm, 
+                    sb.SubBatchCol, sb.RowCountSource, sb.BatchId,
+                    SubBatchId = gs.[value], sb.NumSlices,
+                    SubBatchRange = sb.SubBatchDomain / sb.NumSlices,
+                    RangeStart = sb.SubBatchMin + gs.[value] * sb.SubBatchDomain / sb.NumSlices,
+                    RangeEnd = sb.SubBatchMin + (1 + gs.[value]) * sb.SubBatchDomain / sb.NumSlices
         from        sb 
-        join        generate_series(0, (select max(NumSlices) - 1 from sb)) s on s.value < sb.NumSlices /* Zero based SubBatchId sequence... */
+        -- join        generate_series(0, (select max(NumSlices) - 1 from sb)) gs on gs.[value] < sb.NumSlices /* Zero based SubBatchId sequence... */
+        join        generate_series gs on gs.[value] < sb.NumSlices /* Zero based SubBatchId sequence... */
     )
 
     /* Add to the watermark rows for each (Object, Batch, SubBatch) needed */
