@@ -181,7 +181,7 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"preCopyScript": "truncate table [stage].[gbqObject]",
+						"preCopyScript": "delete from [stage].[gbqObject]",
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
 						"disableMetricsCollection": false
@@ -355,7 +355,7 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"preCopyScript": "truncate table [stage].[gbqObjectDetail]",
+						"preCopyScript": "delete from [stage].[gbqObjectDetail]",
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
 						"disableMetricsCollection": false
