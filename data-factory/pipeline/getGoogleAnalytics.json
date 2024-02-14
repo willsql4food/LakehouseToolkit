@@ -207,7 +207,7 @@
 								"value": "@variables('varLCSQLDatabase')",
 								"type": "Expression"
 							},
-							"dsSchema": "dbo",
+							"dsSchema": "stage",
 							"dsTable": "gbqObject"
 						}
 					}
@@ -235,11 +235,8 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "SqlServerSource",
-						"sqlReaderStoredProcedureName": {
-							"value": "dbo.uspGetGbqLoadBatches",
-							"type": "Expression"
-						},
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "dbo.uspGetGbqLoadBatches",
 						"storedProcedureParameters": {
 							"PipelineExecutionId": {
 								"type": "Int32",
@@ -260,14 +257,17 @@
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "OpSqlTable",
+						"referenceName": "WatermarkMI",
 						"type": "DatasetReference",
 						"parameters": {
-							"schemaName": "na",
-							"tableName": "na",
-							"sqlFqdn": "localhost\\ACB",
-							"dbName": "LoadControl",
-							"userName": "AB092898@flooranddecor.com"
+							"dsServerName": {
+								"value": "@variables('varLCSQLServer')",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@variables('varLCSQLDatabase')",
+								"type": "Expression"
+							}
 						}
 					},
 					"firstRowOnly": false
@@ -295,20 +295,23 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "SqlServerSource",
+						"type": "AzureSqlSource",
 						"sqlReaderQuery": " select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "OpSqlTable",
+						"referenceName": "WatermarkMI",
 						"type": "DatasetReference",
 						"parameters": {
-							"schemaName": "na",
-							"tableName": "na",
-							"sqlFqdn": "localhost\\ACB",
-							"dbName": "LoadControl",
-							"userName": "AB092898@flooranddecor.com"
+							"dsServerName": {
+								"value": "@variables('varLCSQLServer')",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@variables('varLCSQLDatabase')",
+								"type": "Expression"
+							}
 						}
 					},
 					"firstRowOnly": false
@@ -343,10 +346,11 @@
 						}
 					},
 					"sink": {
-						"type": "SqlServerSink",
+						"type": "AzureSqlSink",
 						"preCopyScript": "truncate table stage.gbqObjectDetail",
 						"writeBehavior": "insert",
-						"sqlWriterUseTableLock": false
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
 					},
 					"enableStaging": false,
 					"translator": {
@@ -366,14 +370,19 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "OpSqlTable",
+						"referenceName": "LoadControlTable",
 						"type": "DatasetReference",
 						"parameters": {
-							"schemaName": "stage",
-							"tableName": "gbqObjectDetail",
-							"sqlFqdn": "localhost\\ACB",
-							"dbName": "LoadControl",
-							"userName": "AB092898@flooranddecor.com"
+							"dsServerName": {
+								"value": "@variables('varLCSQLServer')",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@variables('varLCSQLDatabase')",
+								"type": "Expression"
+							},
+							"dsSchema": "stage",
+							"dsTable": "gbqObjectDetail"
 						}
 					}
 				]
@@ -480,12 +489,17 @@
 				},
 				"userProperties": [],
 				"linkedServiceName": {
-					"referenceName": "OnpremSqlDb",
+					"referenceName": "GenericAzureSqlDatabaseMI",
 					"type": "LinkedServiceReference",
 					"parameters": {
-						"serverFqdn": "localhost\\ACB",
-						"dbName": "LoadControl",
-						"userName": "ab092898@flooranddecor.com"
+						"lsServerName": {
+							"value": "@variables('varLCSQLServer')",
+							"type": "Expression"
+						},
+						"lsDatabaseName": {
+							"value": "@variables('varLCSQLDatabase')",
+							"type": "Expression"
+						}
 					}
 				},
 				"typeProperties": {
