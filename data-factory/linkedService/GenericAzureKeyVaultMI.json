@@ -1,0 +1,15 @@
+{
+	"name": "GenericAzureKeyVaultMI",
+	"properties": {
+		"parameters": {
+			"lsBaseURL": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "@{linkedService().lsBaseURL}"
+		}
+	}
+}
