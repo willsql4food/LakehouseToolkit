@@ -559,7 +559,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "with cte as (\r\n    select      concat('table_catalog = ''', TableCatalog, '''', ' and table_schema = ''', TableSchema, '''', ' and table_name = ''', TableName, '''') condition\r\n    from        dbo.gbqObjectToLoad\r\n    group by    TableCatalog, TableSchema, TableName\r\n)\r\nselect      SelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\r\n        +   'from `region-us`.INFORMATION_SCHEMA.COLUMNS c',\r\n            WhereClause = concat(' where ', string_agg(condition, ' or '))\r\nfrom        cte",
+						"sqlReaderQuery": "with cte as (\r\n    select      concat('table_catalog = ''', TableCatalog, '''', ' and table_schema = ''', TableSchema, '''', ' and table_name = ''', TableName, '''') gbqCondition,\r\n                concat('TableCatalog = ''', TableCatalog, '''', ' and TableSchema = ''', TableSchema, '''', ' and TableName = ''', TableName, '''') sqlCondition\r\n    from        dbo.gbqObjectToLoad\r\n    group by    TableCatalog, TableSchema, TableName\r\n)\r\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\r\n        +   'from `region-us`.INFORMATION_SCHEMA.COLUMNS c'\r\n        +   concat(' where ', string_agg(gbqCondition, ' or ')),\r\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ', string_agg(sqlCondition, ' or ')\r\nfrom        cte",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -604,14 +604,14 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nconcat(activity('Get_ColumnQuery').output.value[0].SelectCmd, activity('Get_ColumnQuery').output.value[0].WhereClause), 'select ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
+							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
 							"type": "Expression"
 						}
 					},
 					"sink": {
 						"type": "AzureSqlSink",
 						"preCopyScript": {
-							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nconcat('delete from dbo.gbqColumn', activity('Get_ColumnQuery').output.value[0].WhereClause), 'select ''Nothing to remove'' as AdfMessage')\n",
+							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].sqlDeleteCmd, 'select ''Nothing to remove'' as AdfMessage')\n",
 							"type": "Expression"
 						},
 						"writeBehavior": "insert",
