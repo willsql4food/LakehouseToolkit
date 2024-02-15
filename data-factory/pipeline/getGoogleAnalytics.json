@@ -89,8 +89,8 @@
 									"referenceName": "DLBronzeParquetKV",
 									"type": "DatasetReference",
 									"parameters": {
-										"dsURL": "https://sadevdatalakehouse.dfs.core.windows.net",
-										"dsSecretName": "sas-key-sadatalakehouse",
+										"dsURL": "https://staab09289802.dfs.core.windows.net",
+										"dsSecretName": "key-staab09289802",
 										"dsFileSystem": "datalake",
 										"dsDirectory": {
 											"value": "bronze/GoogleAnalytics/@{item().FilePath}",
