@@ -233,6 +233,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "Get_gbqColumn",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -306,7 +312,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": " select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
+						"sqlReaderQuery": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -529,6 +535,128 @@
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
 				}
+			},
+			{
+				"name": "Get_ColumnQuery",
+				"description": "Builds a query to run against Google to find the column definition for each Google object not yet loaded.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqObject",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "with cte as (\r\n    select      concat('table_catalog = ''', TableCatalog, '''', ' and table_schema = ''', TableSchema, '''', ' and table_name = ''', TableName, '''') condition\r\n    from        dbo.gbqObjectToLoad\r\n    group by    TableCatalog, TableSchema, TableName\r\n)\r\nselect      SelectCmd = 'select TableCatalog = table_catalog, TableSchema = table_schema, TableName = table_name, ColumnName = column_name, ColumnId = ordinal_position, DataType = data_type '\r\n        +   'from `region-us`.INFORMATION_SCHEMA.COLUMNS c where '\r\n        +   string_agg(condition, ' or ')\r\nfrom        cte",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@variables('varLCSQLServer')",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@variables('varLCSQLDatabase')",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Get_gbqColumn",
+				"description": "Get the column definitions of each object to load",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Get_ColumnQuery",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "GoogleBigQuerySource",
+						"query": {
+							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].SelectCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, ''na'' ColumnName, 0 ColumnId, '''' DataType')\n",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": false,
+							"keys": [
+								"TableCatalog",
+								"TableSchema",
+								"TableName",
+								"ColumnName"
+							]
+						},
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "GoogleBigQueryFND",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "LoadControlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@variables('varLCSQLServer')",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@variables('varLCSQLDatabase')",
+								"type": "Expression"
+							},
+							"dsSchema": "dbo",
+							"dsTable": "gbqColumn"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
