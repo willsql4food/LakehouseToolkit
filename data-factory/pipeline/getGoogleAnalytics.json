@@ -5,6 +5,8 @@
 			{
 				"name": "Loop Batches",
 				"type": "ForEach",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqLoadBatches",
