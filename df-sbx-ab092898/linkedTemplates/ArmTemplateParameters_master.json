@@ -11,6 +11,9 @@
 		"AzSqlDb_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		},
+		"GenericAzureSqlDatabaseMI_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
+		},
 		"GoogleBigQueryOA2_clientSecret": {
 			"value": ""
 		},
@@ -25,6 +28,12 @@
 		},
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://akv-ab092898.vault.azure.net/"
+		},
+		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+			"value": "@{linkedService().lsURL}"
+		},
+		"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
+			"value": "@{linkedService().lsBaseURL}"
 		},
 		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
 			"value": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
@@ -56,7 +65,7 @@
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
 			"value": "PersonFlexible"
 		},
-		"trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit": {
+		"trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit": {
 			"value": 1000000
 		},
 		"containerUri": {

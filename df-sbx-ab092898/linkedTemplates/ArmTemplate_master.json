@@ -16,6 +16,11 @@
 			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		},
+		"GenericAzureSqlDatabaseMI_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'GenericAzureSqlDatabaseMI'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
+		},
 		"GoogleBigQueryOA2_clientSecret": {
 			"type": "secureString",
 			"metadata": "Secure string for 'clientSecret' of 'GoogleBigQueryOA2'"
@@ -36,6 +41,14 @@
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
+		},
+		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsURL}"
+		},
+		"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsBaseURL}"
 		},
 		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
 			"type": "string",
@@ -77,7 +90,7 @@
 			"type": "string",
 			"defaultValue": "PersonFlexible"
 		},
-		"trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit": {
+		"trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit": {
 			"type": "int",
 			"defaultValue": 1000000
 		},
@@ -114,6 +127,9 @@
 					"AzSqlDb_connectionString": {
 						"value": "[parameters('AzSqlDb_connectionString')]"
 					},
+					"GenericAzureSqlDatabaseMI_connectionString": {
+						"value": "[parameters('GenericAzureSqlDatabaseMI_connectionString')]"
+					},
 					"GoogleBigQueryOA2_clientSecret": {
 						"value": "[parameters('GoogleBigQueryOA2_clientSecret')]"
 					},
@@ -129,11 +145,17 @@
 					"AzKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
 					},
+					"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
+						"value": "[parameters('GenericAzureKeyVaultMI_properties_typeProperties_baseUrl')]"
+					},
 					"GoogleBigQueryOA2_properties_typeProperties_clientId": {
 						"value": "[parameters('GoogleBigQueryOA2_properties_typeProperties_clientId')]"
 					},
 					"RestApi_properties_typeProperties_url": {
 						"value": "[parameters('RestApi_properties_typeProperties_url')]"
+					},
+					"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+						"value": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]"
 					},
 					"OnpremSqlDb_properties_typeProperties_userName": {
 						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
@@ -177,8 +199,8 @@
 					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
 						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible')]"
 					},
-					"trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit": {
-						"value": "[parameters('trg-1430-utc_properties_getGoogleAnalytics_parameters_BatchRowLimit')]"
+					"trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit": {
+						"value": "[parameters('trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit')]"
 					}
 				}
 			},
