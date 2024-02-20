@@ -37,6 +37,305 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/SchemaDriftTest')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ConformTblRigid",
+						"description": "Auto Deployed\nLoad data into target table without changing its structure.\nRisks: truncation, loss of precision, special characters.",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "dbo.uspConformTable",
+								"storedProcedureParameters": {
+									"SourceSchema": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plSourceSchema",
+											"type": "Expression"
+										}
+									},
+									"SourceTable": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plSourceTable",
+											"type": "Expression"
+										}
+									},
+									"TargetSchema": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plTargetSchema",
+											"type": "Expression"
+										}
+									},
+									"TargetTable": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plTargetTableRigid",
+											"type": "Expression"
+										}
+									},
+									"Options": {
+										"type": "String",
+										"value": "{\"Perform DDL\": 0}"
+									}
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzSqlDb",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "InsertScriptRigid",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "ConformTblRigid",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "AzSqlDb",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"serverName": "sql-ab092898.database.windows.net",
+								"dbName": "txn"
+							}
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": {
+										"value": "@concat(activity('ConformTblRigid').output.firstRow.InsertCmd, ' ', activity('ConformTblRigid').output.firstRow.SelectCmd)",
+										"type": "Expression"
+									}
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "ConformTblFlexible",
+						"description": "Change Target Table\nExecute the conform table stored procedure with Perform DML = 1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "dbo.uspConformTable",
+								"storedProcedureParameters": {
+									"SourceSchema": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plSourceSchema",
+											"type": "Expression"
+										}
+									},
+									"SourceTable": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plSourceTable",
+											"type": "Expression"
+										}
+									},
+									"TargetSchema": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plTargetSchema",
+											"type": "Expression"
+										}
+									},
+									"TargetTable": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.plTargetTableFlexible",
+											"type": "Expression"
+										}
+									},
+									"Options": {
+										"type": "String",
+										"value": "{\"Perform DDL\": 1}"
+									}
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzSqlDb",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "InsertScriptFlexible",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "ConformTblFlexible",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "AzSqlDb",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"serverName": "sql-ab092898.database.windows.net",
+								"dbName": "txn"
+							}
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": {
+										"value": "@concat(activity('ConformTblFlexible').output.firstRow.InsertCmd, ' ', activity('ConformTblFlexible').output.firstRow.SelectCmd)",
+										"type": "Expression"
+									}
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "CopyPersonFlexible",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "InsertScriptFlexible",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select top 10 FirstName, reverse(LastName) LastName from dbo.PersonFlexible",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzSqlDb",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzSqlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"schemaName": "dbo",
+									"tableName": "PersonFlexible",
+									"sqlFqdn": "sql-ab092898.database.windows.net",
+									"dbName": "txn"
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"plSourceSchema": {
+						"type": "string",
+						"defaultValue": "Stage"
+					},
+					"plSourceTable": {
+						"type": "string",
+						"defaultValue": "PersonA"
+					},
+					"plTargetSchema": {
+						"type": "string",
+						"defaultValue": "dbo"
+					},
+					"plTargetTableRigid": {
+						"type": "string",
+						"defaultValue": "PersonRigid"
+					},
+					"plTargetTableFlexible": {
+						"type": "string",
+						"defaultValue": "PersonFlexible"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DLBronzeParquetKV')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -84,6 +383,10 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().dsFileName",
+							"type": "Expression"
+						},
 						"folderPath": {
 							"value": "@dataset().dsDirectory",
 							"type": "Expression"
@@ -284,6 +587,8 @@
 					{
 						"name": "Loop Batches",
 						"type": "ForEach",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Skipped",
 						"dependsOn": [
 							{
 								"activity": "Get_gbqLoadBatches",
@@ -369,8 +674,8 @@
 											"referenceName": "DLBronzeParquetKV",
 											"type": "DatasetReference",
 											"parameters": {
-												"dsURL": "https://sadevdatalakehouse.dfs.core.windows.net",
-												"dsSecretName": "sas-key-sadatalakehouse",
+												"dsURL": "https://staab09289802.dfs.core.windows.net",
+												"dsSecretName": "key-staab09289802",
 												"dsFileSystem": "datalake",
 												"dsDirectory": {
 													"value": "bronze/GoogleAnalytics/@{item().FilePath}",
@@ -512,6 +817,12 @@
 								"dependencyConditions": [
 									"Succeeded"
 								]
+							},
+							{
+								"activity": "Get_gbqColumn",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
 						"policy": {
@@ -585,7 +896,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": " select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
+								"sqlReaderQuery": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -809,6 +1120,124 @@
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
 						}
+					},
+					{
+						"name": "Get_ColumnQuery",
+						"description": "Builds a query to run against Google to find the column definition for each Google object not yet loaded.",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Get_gbqObject",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "with cte as (\r\n    select      concat('table_catalog = ''', TableCatalog, '''', ' and table_schema = ''', TableSchema, '''', ' and table_name = ''', TableName, '''') gbqCondition,\r\n                concat('TableCatalog = ''', TableCatalog, '''', ' and TableSchema = ''', TableSchema, '''', ' and TableName = ''', TableName, '''') sqlCondition\r\n    from        dbo.gbqObjectToLoad\r\n    group by    TableCatalog, TableSchema, TableName\r\n)\r\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\r\n        +   'from `region-us`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\r\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\r\nfrom        cte",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "WatermarkMI",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsServerName": {
+										"value": "@variables('varLCSQLServer')",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@variables('varLCSQLDatabase')",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Get_gbqColumn",
+						"description": "Get the column definitions of each object to load",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Get_ColumnQuery",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "GoogleBigQuerySource",
+								"query": {
+									"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": {
+									"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].sqlDeleteCmd, 'select ''Nothing to remove'' as AdfMessage')\n",
+									"type": "Expression"
+								},
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "GoogleBigQueryFND",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "LoadControlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsServerName": {
+										"value": "@variables('varLCSQLServer')",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@variables('varLCSQLDatabase')",
+										"type": "Expression"
+									},
+									"dsSchema": "dbo",
+									"dsTable": "gbqColumn"
+								}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -1489,7 +1918,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SchemaDriftTest')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/trg-1430-utc')]",
