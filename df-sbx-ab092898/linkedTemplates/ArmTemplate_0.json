@@ -16,6 +16,11 @@
 			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		},
+		"GenericAzureSqlDatabaseMI_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'GenericAzureSqlDatabaseMI'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
+		},
 		"GoogleBigQueryOA2_clientSecret": {
 			"type": "secureString",
 			"metadata": "Secure string for 'clientSecret' of 'GoogleBigQueryOA2'"
@@ -37,6 +42,10 @@
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
 		},
+		"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsBaseURL}"
+		},
 		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
 			"type": "string",
 			"defaultValue": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
@@ -44,6 +53,10 @@
 		"RestApi_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().baseUrl}"
+		},
+		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsURL}"
 		},
 		"OnpremSqlDb_properties_typeProperties_userName": {
 			"type": "string",
@@ -111,6 +124,45 @@
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
 					"connectionString": "[parameters('AzSqlDb_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GenericAzureKeyVaultMI')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"lsBaseURL": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('GenericAzureKeyVaultMI_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GenericAzureSqlDatabaseMI')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"lsServerName": {
+						"type": "string"
+					},
+					"lsDatabaseName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('GenericAzureSqlDatabaseMI_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -1203,6 +1255,136 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/LoadControlTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GenericAzureSqlDatabaseMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsServerName": {
+							"value": "@dataset().dsServerName",
+							"type": "Expression"
+						},
+						"lsDatabaseName": {
+							"value": "@dataset().dsDatabaseName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"dsServerName": {
+						"type": "string"
+					},
+					"dsDatabaseName": {
+						"type": "string"
+					},
+					"dsSchema": {
+						"type": "string"
+					},
+					"dsTable": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().dsSchema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().dsTable",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/GenericAzureSqlDatabaseMI')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WatermarkMI')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GenericAzureSqlDatabaseMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsServerName": {
+							"value": "@dataset().dsServerName",
+							"type": "Expression"
+						},
+						"lsDatabaseName": {
+							"value": "@dataset().dsDatabaseName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"dsServerName": {
+						"type": "string"
+					},
+					"dsDatabaseName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/GenericAzureSqlDatabaseMI')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GenericAzureDataLakeStorageGen2KV')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"lsURL": {
+						"type": "string"
+					},
+					"lsSecretName": {
+						"type": "string"
+					},
+					"lsKVBaseURL": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "GenericAzureKeyVaultMI",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"lsBaseURL": {
+									"value": "@linkedService().lsKVBaseURL",
+									"type": "Expression"
+								}
+							}
+						},
+						"secretName": {
+							"value": "@linkedService().lsSecretName",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/GoogleBigQuery')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1653,707 +1835,6 @@
 				"[concat(variables('factoryId'), '/datasets/AzSqlDb')]",
 				"[concat(variables('factoryId'), '/linkedServices/AzSqlDb')]",
 				"[concat(variables('factoryId'), '/datasets/AzSqlTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryFND')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "GoogleBigQuery",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "GoogleBigQueryObject",
-				"schema": [],
-				"typeProperties": {
-					"dataset": "dw_mirror",
-					"table": "messages"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/GoogleBigQuery')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryMirror')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "GoogleBigQueryMirror",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "GoogleBigQueryObject",
-				"schema": [],
-				"typeProperties": {
-					"dataset": "dw_mirror",
-					"table": "messages"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/GoogleBigQueryMirror')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/OpSqlTable')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "On premise SQL Server, named table.",
-				"linkedServiceName": {
-					"referenceName": "OnpremSqlDb",
-					"type": "LinkedServiceReference",
-					"parameters": {
-						"serverFqdn": {
-							"value": "@dataset().sqlFqdn",
-							"type": "Expression"
-						},
-						"dbName": {
-							"value": "@dataset().dbName",
-							"type": "Expression"
-						},
-						"userName": {
-							"value": "@dataset().userName",
-							"type": "Expression"
-						}
-					}
-				},
-				"parameters": {
-					"schemaName": {
-						"type": "string",
-						"defaultValue": "dbo"
-					},
-					"tableName": {
-						"type": "string",
-						"defaultValue": "customer"
-					},
-					"sqlFqdn": {
-						"type": "string",
-						"defaultValue": "localhost\\ACB"
-					},
-					"dbName": {
-						"type": "string",
-						"defaultValue": "SevenLetterTees"
-					},
-					"userName": {
-						"type": "string",
-						"defaultValue": "AB092898@flooranddecor.com"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": {
-						"value": "@dataset().schemaName",
-						"type": "Expression"
-					},
-					"table": {
-						"value": "@dataset().tableName",
-						"type": "Expression"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/OnpremSqlDb')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DL to OnPremSql')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Copy data1",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "ParquetSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": false,
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "ParquetReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlServerSink",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "AzDLStorePq",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "OpSqlTable",
-								"type": "DatasetReference",
-								"parameters": {
-									"schemaName": "dbo",
-									"tableName": "Case",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "SevenLetterTees",
-									"userName": "AB092898@flooranddecor.com"
-								}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/AzDLStorePq')]",
-				"[concat(variables('factoryId'), '/datasets/OpSqlTable')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/getGoogleAnalytics')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Loop Batches",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Get_gbqLoadBatches",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Get_gbqLoadBatches').output.value",
-								"type": "Expression"
-							},
-							"isSequential": false,
-							"batchCount": 7,
-							"activities": [
-								{
-									"name": "BatchToParquet",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 2,
-										"retryIntervalInSeconds": 300,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [
-										{
-											"name": "DestFile",
-											"value": "@{item().FileName}"
-										},
-										{
-											"name": "Query",
-											"value": "@{item().SelectCmd}"
-										},
-										{
-											"name": "TableName",
-											"value": "@{item().TableName}"
-										},
-										{
-											"name": "Batch",
-											"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}"
-										}
-									],
-									"typeProperties": {
-										"source": {
-											"type": "GoogleBigQuerySource",
-											"query": {
-												"value": "@item().SelectCmd",
-												"type": "Expression"
-											}
-										},
-										"sink": {
-											"type": "ParquetSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "ParquetWriteSettings"
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "GoogleBigQueryFND",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "AzPq",
-											"type": "DatasetReference",
-											"parameters": {
-												"dsFilesystem": "datalake",
-												"dsPath": {
-													"value": "bronze/GoogleAnalytics/@{item().FilePath}",
-													"type": "Expression"
-												},
-												"dsFilename": {
-													"value": "@item().FileName",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								},
-								{
-									"name": "LogFinish",
-									"type": "Script",
-									"dependsOn": [
-										{
-											"activity": "BatchToParquet",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"linkedServiceName": {
-										"referenceName": "OnpremSqlDb",
-										"type": "LinkedServiceReference",
-										"parameters": {
-											"serverFqdn": "localhost\\ACB",
-											"dbName": "LoadControl",
-											"userName": "ab092898@flooranddecor.com"
-										}
-									},
-									"typeProperties": {
-										"scripts": [
-											{
-												"type": "Query",
-												"text": {
-													"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n",
-													"type": "Expression"
-												}
-											}
-										],
-										"scriptBlockExecutionTimeout": "02:00:00"
-									}
-								}
-							]
-						}
-					},
-					{
-						"name": "Get_gbqObject",
-						"description": "Get all objects available in GBQ and stage them in Load Control.",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "LogJobStart",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "GoogleBigQuerySource",
-								"query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
-							},
-							"sink": {
-								"type": "SqlServerSink",
-								"preCopyScript": "truncate table stage.gbqObject",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "GoogleBigQueryFND",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "OpSqlTable",
-								"type": "DatasetReference",
-								"parameters": {
-									"schemaName": "stage",
-									"tableName": "gbqObject",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
-								}
-							}
-						]
-					},
-					{
-						"name": "Get_gbqLoadBatches",
-						"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Get_gbqObjectDetail",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderStoredProcedureName": {
-									"value": "dbo.uspGetGbqLoadBatches",
-									"type": "Expression"
-								},
-								"storedProcedureParameters": {
-									"PipelineExecutionId": {
-										"type": "Int32",
-										"value": {
-											"value": "@{activity('LogJobStart').output.value[0].Id}",
-											"type": "Expression"
-										}
-									},
-									"RowsLimit": {
-										"type": "Int32",
-										"value": {
-											"value": "@pipeline().parameters.BatchRowLimit",
-											"type": "Expression"
-										}
-									}
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "OpSqlTable",
-								"type": "DatasetReference",
-								"parameters": {
-									"schemaName": "na",
-									"tableName": "na",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
-								}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "Get_RowCountQueries",
-						"description": "Builds a set of queries to find the row count in each Google object not yet loaded.  Applies Batch to objects anticipated to exceed query return limit imposed by Google (1M rows as of 2024-01)",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "Get_gbqObject",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": " select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "OpSqlTable",
-								"type": "DatasetReference",
-								"parameters": {
-									"schemaName": "na",
-									"tableName": "na",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
-								}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "Get_gbqObjectDetail",
-						"description": "Execute query and store results in stage table in Load Control.",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "Get_RowCountQueries",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "GoogleBigQuerySource",
-								"query": {
-									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
-									"type": "Expression"
-								}
-							},
-							"sink": {
-								"type": "SqlServerSink",
-								"preCopyScript": "truncate table stage.gbqObjectDetail",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "GoogleBigQueryFND",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "OpSqlTable",
-								"type": "DatasetReference",
-								"parameters": {
-									"schemaName": "stage",
-									"tableName": "gbqObjectDetail",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
-								}
-							}
-						]
-					},
-					{
-						"name": "LogJobFinish",
-						"type": "Script",
-						"dependsOn": [
-							{
-								"activity": "Loop Batches",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"linkedServiceName": {
-							"referenceName": "OnpremSqlDb",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"serverFqdn": "localhost\\ACB",
-								"dbName": "LoadControl",
-								"userName": "ab092898@flooranddecor.com"
-							}
-						},
-						"typeProperties": {
-							"scripts": [
-								{
-									"type": "Query",
-									"text": {
-										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('Get_RowCountQueries').output.value[0].numBatches},\n        StatusMessage = 'Succeeded'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
-										"type": "Expression"
-									}
-								}
-							],
-							"scriptBlockExecutionTimeout": "02:00:00"
-						}
-					},
-					{
-						"name": "LogJobStart",
-						"description": "Record the Pipeline start in LoadControl and capture the Id of the row for use in auditing.",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress'",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "OpSqlTable",
-								"type": "DatasetReference",
-								"parameters": {
-									"schemaName": "na",
-									"tableName": "na",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
-								}
-							},
-							"firstRowOnly": false
-						}
-					},
-					{
-						"name": "LogJobFail_GetObjDetail",
-						"description": "Log failure at Get_gbqObjectDetail",
-						"type": "Script",
-						"dependsOn": [
-							{
-								"activity": "Get_gbqObjectDetail",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"linkedServiceName": {
-							"referenceName": "OnpremSqlDb",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"serverFqdn": "localhost\\ACB",
-								"dbName": "LoadControl",
-								"userName": "ab092898@flooranddecor.com"
-							}
-						},
-						"typeProperties": {
-							"scripts": [
-								{
-									"type": "Query",
-									"text": {
-										"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = -1,\n        StatusMessage = 'Failed'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
-										"type": "Expression"
-									}
-								}
-							],
-							"scriptBlockExecutionTimeout": "02:00:00"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"BatchRowLimit": {
-						"type": "int",
-						"defaultValue": 1000000
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/GoogleBigQueryFND')]",
-				"[concat(variables('factoryId'), '/datasets/OpSqlTable')]",
-				"[concat(variables('factoryId'), '/linkedServices/OnpremSqlDb')]",
-				"[concat(variables('factoryId'), '/datasets/AzPq')]"
 			]
 		}
 	]
