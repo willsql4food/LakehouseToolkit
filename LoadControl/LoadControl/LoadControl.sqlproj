@@ -66,6 +66,7 @@
     <Build Include="Schemas\history.sql" />
     <Build Include="Tables\dbo.gbqWatermark.sql" />
     <Build Include="Schemas\stage.sql" />
+    <Build Include="Tables\gbqColumn.sql" />
     <Build Include="Tables\stage.gbqObject.sql" />
     <Build Include="Views\dbo.gbqObjectToLoad.sql" />
     <Build Include="Views\dbo.gbqObjectToLoadCmd.sql" />

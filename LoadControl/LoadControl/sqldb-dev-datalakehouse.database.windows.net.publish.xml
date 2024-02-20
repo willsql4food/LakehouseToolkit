@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TargetDatabaseName>LoadControl</TargetDatabaseName>
-    <TargetConnectionString>Data Source=sqldb-dev-datalakehouse.database.windows.net;Initial Catalog=master;User ID="Burleigh, Carter - AB092898@flooranddecor.com";Password=******;Connect Timeout=30;Authentication=ActiveDirectoryInteractive;Application Name=azdata;Command Timeout=30</TargetConnectionString>
+    <TargetConnectionString>Data Source=sqldb-dev-datalakehouse.database.windows.net;Initial Catalog=LoadControl;Authentication=Active Directory Default;Connect Timeout=30;Application Name=azdata;Command Timeout=30</TargetConnectionString>
     <AllowIncompatiblePlatform>True</AllowIncompatiblePlatform>
     <DropPermissionsNotInSource>False</DropPermissionsNotInSource>
     <DropObjectsNotInSource>False</DropObjectsNotInSource>
