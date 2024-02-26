@@ -8,6 +8,7 @@ create function udtSchemaExpand(
     ,   @sink_sep nvarchar(255)
 )
 returns @final table (position int, element nvarchar(max), source nvarchar(max), sink nvarchar(max))
+with schemabinding
 as
 begin
     declare @id int;
@@ -64,7 +65,7 @@ begin
 
     /* Build the layers - inner most structure is level 0, its parent 1, etc. */
     declare @layer_id tinyint = 0
-    while exists (select * from @brackets)
+    while exists (select 1 from @brackets)
     begin
         /*  Reorder the remaining brackets so we can find newly adjacent pairs
             Set the id field to their relative order based on position */
@@ -91,7 +92,7 @@ begin
         from        @layers
         where       layer_id = @layer_id - 1
 
-        while exists(select * from @replace_elements)
+        while exists(select 1 from @replace_elements)
         begin
             select  @id = (select top 1 id from @replace_elements)
 
@@ -131,14 +132,14 @@ begin
         /* Remove bracket rows already paired up */
         delete      b
         from        @brackets b
-        where exists (  select * from @layers x where x.open_position = b.position or x.close_position = b.position)
+        where exists (  select 1 from @layers x where x.open_position = b.position or x.close_position = b.position)
     end;
 
     /* ====================================================================================================================
         Populate source and sink 'fully qualified' names
     ==================================================================================================================== */
     select @id = (select max(layer_id) from @elements)
-    while exists (select * from @elements where layer_id <= @id)
+    while exists (select 1 from @elements where layer_id <= @id)
     begin
 
         insert into @final (position, element, source, sink)
