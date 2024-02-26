@@ -68,6 +68,7 @@
     <Build Include="Schemas\stage.sql" />
     <Build Include="Tables\gbqColumn.sql" />
     <Build Include="Tables\stage.gbqObject.sql" />
+    <Build Include="User Defined Functions\udtSchemaExpand.sql" />
     <Build Include="Views\dbo.gbqObjectToLoad.sql" />
     <Build Include="Views\dbo.gbqObjectToLoadCmd.sql" />
     <Build Include="Tables\stage.gbqObjectDetail.sql" />
