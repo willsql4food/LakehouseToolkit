@@ -28,3 +28,4 @@ select      TableName, [path], sink = ColumnName + '_' + [path]
 from        comb 
 for         json path, root('Transform')
 */
+
