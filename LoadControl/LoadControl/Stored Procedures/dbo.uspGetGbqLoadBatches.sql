@@ -7,6 +7,7 @@
                                             more rows than the limit
     2024-02-12      A. Carter Burleigh      Switched sequence generator from recursive CTE to function call
     2024-02-14      A. Carter Burleigh      Switched back to recursive CTE as my target DBs are... compat level 150
+    2024-02-26      A. Carter Burleigh      Added expansion of complex fields to their simple components
 
     --------------
     Purpose
@@ -118,23 +119,79 @@ begin
                 PipelineExecutionId = @PipelineExecutionId
     from        slc
 
-    /* Return a list of batches to load.  Include:
-        * SELECT statement
-        * Folder path 
-        * File name 
-    */
-    select      TableCatalog, TableSchema, TableName, BatchId, SubBatchId,
-                concat_ws('/', 
-                    TableCatalog, TableSchema, 
-                    left(TableName, len(TableName) - 9),            /* Remove _YYYYMMDD */
-                    substring(TableName, len(TableName) - 7, 4),    /* YYYY */
-                    substring(TableName, len(TableName) - 3, 2),    /* MM */
-                    right(TableName, 2)                             /* DD */
-                ) FilePath,
-                concat_ws('.', TableName, 'Batch', BatchId, SubBatchId, 'parquet') [FileName],
-                concat('select * from ', TableSchema, '.', TableName, WhereClause) SelectCmd
-    from        dbo.gbqWatermark
-    where       LoadedDateUtc is null
+    /* ====================================================================================================================
+        Return a list of batches to load.  Include:
+            * SELECT statement
+            * Folder path
+            * File name
+            * JSON definition of column mappings for ADF write step
+    ==================================================================================================================== */
+
+    /* How to parse the column data type definitions fetched from Google */
+    declare @open nvarchar(255) = 'STRUCT<'
+        ,   @close nvarchar(255) = '>'
+        ,   @el_delim nchar(1) = ','
+        ,   @id_delim nchar(1) = ' '
+        ,   @src_sep nvarchar(255) = '.'
+        ,   @snk_sep nvarchar(255) = '__';
+
+    /* ================================================================================================================
+       A CTE to get all the columns for each table to load
+       for compound columns expand the schema to treat each element as a simple column
+    ================================================================================================================ */
+    with cols as (
+        /* Those compound columns */
+        select      c.TableCatalog
+                ,   c.TableSchema
+                ,   c.TableName
+                ,   c.ColumnId
+                ,   Source = concat_ws(@src_sep, c.ColumnName, d.source)
+                ,   Sink = concat_ws(@snk_sep, c.ColumnName, d.sink)
+                ,   d.[position]
+        from        dbo.gbqColumn c
+        cross apply dbo.udtSchemaExpand(c.DataType, @open, @close, @el_delim, @id_delim, @src_sep, @snk_sep) d
+        where       c.DataType like concat(@open, '%')
+        /* The simple columns */
+        union all
+        select      c.TableCatalog
+                ,   c.TableSchema
+                ,   c.TableName
+                ,   c.ColumnId
+                ,   Source = c.ColumnName
+                ,   Sink = c.ColumnName
+                ,   [position] = 0
+        from        dbo.gbqColumn c
+        where       c.DataType not like concat(@open, '%')
+    )
+    /* ================================================================================================================
+        Use the CTE multiple ways
+            string_agg the select columns together
+            get a JSON format Translator & mapping definition for ADF to use in writing the parquet destination
+    ================================================================================================================ */
+    select      wm.TableCatalog
+            ,   wm.TableSchema
+            ,   wm.TableName
+            ,   wm.BatchId
+            ,   wm.SubBatchId
+            ,   concat_ws('/', 
+                    wm.TableCatalog, wm.TableSchema, 
+                    left(wm.TableName, len(wm.TableName) - 9),            /* Remove _YYYYMMDD */
+                    substring(wm.TableName, len(wm.TableName) - 7, 4),    /* YYYY */
+                    substring(wm.TableName, len(wm.TableName) - 3, 2),    /* MM */
+                    right(wm.TableName, 2)                             /* DD */
+                ) FilePath
+            ,   concat_ws('.', wm.TableName, 'Batch', wm.BatchId, wm.SubBatchId, 'parquet') [FileName]
+            ,   SelectCmd = concat('select ', string_agg(concat(src.Source, ' as ', src.Sink), ', ') within group (order by ColumnId, [position])
+                                , ' from ', wm.TableSchema, '.', wm.TableName, wm.WhereClause)
+    from        dbo.gbqWatermark wm
+    join        cols src on src.TableCatalog = wm.TableCatalog and src.TableSchema = wm.TableSchema and src.TableName = wm.TableName
+    where       wm.LoadedDateUtc is null 
+    group by    wm.TableCatalog
+            ,   wm.TableSchema
+            ,   wm.TableName
+            ,   wm.BatchId
+            ,   wm.SubBatchId
+            ,   wm.WhereClause
 end
 
 go
