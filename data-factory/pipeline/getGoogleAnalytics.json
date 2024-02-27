@@ -5,8 +5,6 @@
 			{
 				"name": "Loop Batches",
 				"type": "ForEach",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqLoadBatches",
@@ -72,8 +70,12 @@
 								},
 								"enableStaging": false,
 								"translator": {
-									"value": "@item().mappings",
-									"type": "Expression"
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
 								}
 							},
 							"inputs": [
