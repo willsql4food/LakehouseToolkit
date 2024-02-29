@@ -60,9 +60,9 @@ for o in objects:
 
 # COMMAND ----------
 
-pseudo_users = spark.read.format("parquet").load(f"{datapath}/pseudonymous_users/*/*/*/*")
-users = spark.read.format("parquet").load(f"{datapath}/users/*/*/*/*")
-events = spark.read.format("parquet").load(f"{datapath}/events/*/*/*/*")
+pseudo_users = spark.read.format("parquet").load(f"{datapath}/pseudonymous_users/2024/*/*/*")
+users = spark.read.format("parquet").load(f"{datapath}/users/2024/*/*/*")
+events = spark.read.format("parquet").load(f"{datapath}/events/2024/*/*/*")
 
 print(f"pseudonymous_users: {pseudo_users.count():,} records")
 print(f"users: {users.count():,} records")
