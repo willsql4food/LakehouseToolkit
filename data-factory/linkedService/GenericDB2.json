@@ -1,0 +1,34 @@
+{
+	"name": "GenericDB2",
+	"properties": {
+		"parameters": {
+			"lsKVBaseURL": {
+				"type": "string"
+			},
+			"lsSecretName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Db2",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKVBaseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().lsSecretName",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}
