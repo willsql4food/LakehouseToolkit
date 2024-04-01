@@ -3,10 +3,12 @@
 	"properties": {
 		"parameters": {
 			"lsKVBaseURL": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
 			},
 			"lsSecretName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "qa-conn-string-mms"
 			}
 		},
 		"annotations": [],
