@@ -8,6 +8,7 @@
     2024-02-12      A. Carter Burleigh      Switched sequence generator from recursive CTE to function call
     2024-02-14      A. Carter Burleigh      Switched back to recursive CTE as my target DBs are... compat level 150
     2024-02-26      A. Carter Burleigh      Added expansion of complex fields to their simple components
+    2024-04-04      A. Carter Burleigh      Shim to get around some recursion issue caused by April data...
 
     --------------
     Purpose
@@ -29,7 +30,7 @@ begin
         select      RowId = row_number() over (partition by TableCatalog, TableSchema, TableName order by RowCountSource desc), 
                     TableCatalog, TableSchema, TableName, BatchCol, BatchTerm, RowCountSource, SubBatchCol, 
                     SubBatchMin, SubBatchMax
-        from        stage.gbqObjectDetail
+        from        stage.gbqObjectDetail where TableName like '%202403%'
     ), rt as (
         /* Conditional sum with prior row(s) until just before limit, then start new running total */
         select      RowId, TableCatalog, TableSchema, TableName, BatchCol, BatchTerm, 
