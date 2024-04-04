@@ -85,7 +85,11 @@ begin
                     RangeEnd = sb.SubBatchMin + (1 + gs.[value]) * sb.SubBatchDomain / sb.NumSlices
         from        sb 
         -- join        generate_series(0, (select max(NumSlices) - 1 from sb)) gs on gs.[value] < sb.NumSlices /* Zero based SubBatchId sequence... */
-        join        generate_series gs on gs.[value] < sb.NumSlices /* Zero based SubBatchId sequence... */
+        join        generate_series gs on   gs.[value] < sb.NumSlices /* Zero based SubBatchId sequence... */
+									and		gs.TableCatalog = sb.TableCatalog
+									and		gs.TableSchema = sb.TableSchema
+									and		gs.TableName = sb.TableName
+									and		gs.BatchId = sb.BatchId
     )
 
     /* Add to the watermark rows for each (Object, Batch, SubBatch) needed */
