@@ -20,6 +20,10 @@ where       wm.RowCountDest is null
 group by    right(TableName, 8)
 order by    right(TableName, 8)
 
+/* Sample most recently loaded rows */
+select 		top 10 *
+from		dbo.gbqWatermark wm
+order by	LoadedDateUTC desc
 
 /* ====================================================================================================================
     Action
@@ -27,11 +31,17 @@ order by    right(TableName, 8)
 /* Mark everything as loaded */
 -- update dbo.gbqWatermark set LoadedDateUTC = '1971-01-01' where LoadedDateUTC is null
 
-/* Turn on a single day */
+/* Turn on a single day or range */
+/*
 update      dbo.gbqWatermark 
 set         LoadedDateUTC = null
         ,   RowCountDest = null
-where       TableName like '%users%20240225'
-
+where       TableName like '%2023%'
+*/
 select		*
 from		dbo.gbqObjectToLoad
+order by	right(TableName, 8) desc
+
+select		*
+from		stage.gbqObject
+order by	right(TableName, 8) desc
