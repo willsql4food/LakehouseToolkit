@@ -9,6 +9,7 @@
     2024-02-14      A. Carter Burleigh      Switched back to recursive CTE as my target DBs are... compat level 150
     2024-02-26      A. Carter Burleigh      Added expansion of complex fields to their simple components
     2024-04-04      A. Carter Burleigh      Shim to get around some recursion issue caused by April data...
+    2024-04-05      A. Carter Burleigh      Remove shim and add recursion safety 100 row bracket on running total
 
     --------------
     Purpose
@@ -27,18 +28,18 @@ begin
     */
     with cte as (
          /* Number the rows for each batch term, by table in descending order of batch term size */
-        select      RowId = row_number() over (partition by TableCatalog, TableSchema, TableName order by RowCountSource desc), 
+        select      RowId = row_number() over (partition by TableCatalog, TableSchema, TableName order by BatchTerm desc), 
                     TableCatalog, TableSchema, TableName, BatchCol, BatchTerm, RowCountSource, SubBatchCol, 
                     SubBatchMin, SubBatchMax
-        from        stage.gbqObjectDetail where TableName like '%202403%'
+        from        stage.gbqObjectDetail
     ), rt as (
         /* Conditional sum with prior row(s) until just before limit, then start new running total */
         select      RowId, TableCatalog, TableSchema, TableName, BatchCol, BatchTerm, 
                     SubBatchCol, SubBatchMin, SubBatchMax, RowCountSource, 
                     RunningTotal = RowCountSource, 
-                    BatchId = 1
+                    BatchId = 1 + 100 * (RowId / 100)
         from        cte
-        where       RowId = 1
+        where       (RowId % 100) = 1
         union all
         select      a.RowId, a.TableCatalog, a.TableSchema, a.TableName, a.BatchCol, a.BatchTerm,
                     a.SubBatchCol, a.SubBatchMin, a.SubBatchMax, a.RowCountSource,
@@ -57,6 +58,9 @@ begin
                             and b.TableSchema = a.TableSchema 
                             and b.TableName = a.TableName
                             and b.RowId = a.RowId - 1
+							-- Prevent exceeding recursion limit when there are more than about 100 rows
+							-- 	by assuring the combined rows are in the same bracket of 100
+							and	(b.RowId / 100) = (a.RowId / 100)
     ), sb as (
         /*  Find any terms that need to be run in multiple sub-batches 
             Use integer division to get number of sub-batches, adding one to get remaining partial */
@@ -107,7 +111,7 @@ begin
     from        rt
     where       not exists (    select      *
                                 from        dbo.gbqWatermark x
-                                where       x.TableCatalog = rt.TableCatalog and x.TableSchema = rt.TableSchema and x.TableName = rt.TableName )
+                                where       x.TableCatalog = rt.TableCatalog and x.TableSchema = rt.TableSchema and x.TableName = rt.TableName and x.BatchId = rt.BatchId )
         and     TableName <> 'na'
         and     RowCountSource <= @RowsLimit
     group by    TableCatalog, TableSchema, TableName, BatchId, BatchCol
@@ -123,6 +127,9 @@ begin
                 RowCountSource = case when SubBatchId = 0 then RowCountSource else null end, 
                 PipelineExecutionId = @PipelineExecutionId
     from        slc
+    where       not exists (    select      *
+                                from        dbo.gbqWatermark x
+                                where       x.TableCatalog = slc.TableCatalog and x.TableSchema = slc.TableSchema and x.TableName = slc.TableName and x.BatchId = slc.BatchId and x.SubBatchId = slc.SubBatchId )
 
     /* ====================================================================================================================
         Return a list of batches to load.  Include:
