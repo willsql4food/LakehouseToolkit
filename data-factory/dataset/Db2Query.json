@@ -1,0 +1,34 @@
+{
+	"name": "Db2Query",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GenericDB2",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsKVBaseURL": "https://akv-ab092898.vault.azure.net/",
+				"lsSecretName": "qa-conn-string-mms"
+			}
+		},
+		"parameters": {
+			"dsSchemaName": {
+				"type": "string"
+			},
+			"dsTableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Db2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().dsSchemaName",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().dsTableName",
+				"type": "Expression"
+			}
+		}
+	}
+}
