@@ -1,5 +1,5 @@
 {
-	"name": "Db2Query",
+	"name": "Db2Table",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "GenericDB2",
