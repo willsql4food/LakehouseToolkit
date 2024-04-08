@@ -1,4 +1,4 @@
-create function udtSchemaExpand(
+create function dbo.udtSchemaExpand(
         @string nvarchar(max)
     ,   @open nvarchar(255)
     ,   @close nvarchar(255)
