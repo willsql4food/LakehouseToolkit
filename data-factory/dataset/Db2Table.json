@@ -9,26 +9,12 @@
 				"lsSecretName": "qa-conn-string-mms"
 			}
 		},
-		"parameters": {
-			"dsSchemaName": {
-				"type": "string"
-			},
-			"dsTableName": {
-				"type": "string"
-			}
-		},
 		"annotations": [],
 		"type": "Db2Table",
 		"schema": [],
 		"typeProperties": {
-			"schema": {
-				"value": "@dataset().dsSchemaName",
-				"type": "Expression"
-			},
-			"table": {
-				"value": "@dataset().dsTableName",
-				"type": "Expression"
-			}
+			"schema": "SYSIBM",
+			"table": "SQLCOLUMNS"
 		}
 	}
 }

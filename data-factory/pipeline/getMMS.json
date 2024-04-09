@@ -1,0 +1,32 @@
+{
+	"name": "getMMS",
+	"properties": {
+		"activities": [
+			{
+				"name": "getSomething",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": "SELECT table_cat, table_schem, table_name, count(*) num_cols FROM sysibm.SQLCOLUMNS\ngroup by table_cat, table_schem, table_name"
+					},
+					"dataset": {
+						"referenceName": "Db2Table",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"annotations": []
+	}
+}
