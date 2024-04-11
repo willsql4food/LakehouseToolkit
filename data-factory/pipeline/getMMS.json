@@ -20,11 +20,60 @@
 						"query": "SELECT table_cat, table_schem, table_name, count(*) num_cols FROM sysibm.SQLCOLUMNS\ngroup by table_cat, table_schem, table_name"
 					},
 					"dataset": {
-						"referenceName": "Db2Table",
+						"referenceName": "Db2",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
 				}
+			},
+			{
+				"name": "getColumnList",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": "select * FROM sysibm.SQLCOLUMNS"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Db2",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DLBronzeParquetKV",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"annotations": []
