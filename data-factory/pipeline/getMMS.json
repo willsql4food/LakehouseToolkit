@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "getSomething",
+				"name": "getPipelineParameters",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -16,12 +16,24 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "Db2Source",
-						"query": "SELECT table_cat, table_schem, table_name, count(*) num_cols FROM sysibm.SQLCOLUMNS\ngroup by table_cat, table_schem, table_name"
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select name from sys.tables",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "Db2",
-						"type": "DatasetReference"
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
 					},
 					"firstRowOnly": false
 				}
