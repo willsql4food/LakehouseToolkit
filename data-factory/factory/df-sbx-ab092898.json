@@ -1,5 +1,13 @@
 {
 	"name": "df-sbx-ab092898",
+	"properties": {
+		"globalParameters": {
+			"gpEnvironment": {
+				"type": "string",
+				"value": "SBX"
+			}
+		}
+	},
 	"location": "eastus",
 	"identity": {
 		"type": "SystemAssigned",
