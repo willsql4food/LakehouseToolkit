@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="Schemas\history.sql" />
+    <Build Include="Stored Procedures\dbo.uspLogPipelineStart.sql" />
     <Build Include="Tables\dbo.gbqColumn.sql" />
     <Build Include="Tables\dbo.gbqWatermark.sql" />
     <Build Include="Schemas\stage.sql" />
