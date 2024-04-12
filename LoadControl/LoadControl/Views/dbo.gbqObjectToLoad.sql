@@ -11,4 +11,4 @@
 	where		not exists (select	* 
 							from	dbo.gbqWatermark o
 							where	o.TableCatalog = n.TableCatalog and o.TableSchema = n.TableSchema and o.TableName = n.TableName
-								and	o.LoadedDateUTC is not null)
+								and	o.LoadedDateUtc is not null)

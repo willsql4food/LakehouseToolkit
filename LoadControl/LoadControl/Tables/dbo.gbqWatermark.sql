@@ -12,7 +12,7 @@ CREATE TABLE dbo.gbqWatermark
 	WhereClause				nvarchar(max) not null default 'where 1 = 1',
 	RowCountSource			int null,
 	RowCountDest			int null,
-	LoadedDateUTC			datetime null,
+	LoadedDateUtc			datetime null,
 	DestinationUri			nvarchar(4000) null,
 	SourceDeleted			bit null,
 	PipelineExecutionId		int not null default 0,
