@@ -14,7 +14,11 @@ using (
 			'Google Analytics to datalakehouse', 'Pipeline_getGoogleAnalytics', 0, 'DEV'
 		,	'Pipeline_getGoogleAnalytics', 'n/a'
 		,	'{"parameters": [ {"name": "dsDatabricksWorkspaceUrl", "value": "https://adb-6146281808029158.18.azuredatabricks.net"}
-							, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-datalakehouse/providers/Microsoft.Databricks/workspaces/dbworkspace-dev-datalakehouse"}]}', 'n/a'
+							, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-datalakehouse/providers/Microsoft.Databricks/workspaces/dbworkspace-dev-datalakehouse"}
+							, {"name": "dsURL", "value": "https://sadevdatalakehouse.dfs.core.windows.net"}
+							, {"name": "dsSecretName", "value": "sa-ak"}
+							, {"name": "dsKVBaseURL", "value": "https://kv-dev-datalakehouse.vault.azure.net/"}
+							]}', 'n/a'
 		,	'n/a', 'n/a'
 		,	'n/a', 'n/a', 'n/a', 'n/a'
 		,	'Pipeline_getGoogleAnalytics', 'n/a', '{"parameters": [{"name": "n/a", "value": "n/a"}]}', 'n/a'
@@ -70,6 +74,7 @@ when not matched by target then
 	,	IsActive, SourceQuery
 	)
 ;
+go
 
 /* ====================================================================================================================
 	ParameterMap entries
@@ -78,8 +83,8 @@ merge into dbo.ParameterMap as tgt
 using (
 	values (
 			'Pipeline_getGoogleAnalytics'
-		,	'dsDatabricksWorkspaceUrl, dsDatabricksWorkspaceId'
-		,	'<Direction>dsDatabricksWorkspaceUrl varchar(255), <Direction>dsDatabricksWorkspaceId varchar(255)'
+		,	'dsDatabricksWorkspaceUrl, dsDatabricksWorkspaceId, dsURL, dsSecretName, dsKVBaseURL'
+		,	'<Direction>dsDatabricksWorkspaceUrl varchar(255), <Direction>dsDatabricksWorkspaceId varchar(255), <Direction>dsURL varchar(255), <Direction>dsSecretName varchar(255), <Direction>dsKVBaseURL varchar(255)'
 		,	1
 		)
 	-- ,	(
@@ -98,3 +103,4 @@ when not matched by target then
 	insert (ServiceType, ParameterString, ParameterDefinitionString, IsActive)
 	values (ServiceType, ParameterString, ParameterDefinitionString, IsActive)
 ;
+go

@@ -16,5 +16,6 @@ begin
 	select		0, 'Dummy', 'Dummy', '1901-01-01'
 	set identity_insert dbo.adfPipelineExecution off
 end
+go
 
 :r .\Scripts\GoogleAnalyticsParameters.sql

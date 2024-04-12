@@ -64,7 +64,6 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="Schemas\history.sql" />
-    <Build Include="Scripts\GoogleAnalyticsParameters.sql" />
     <Build Include="Stored Procedures\dbo.GetWatermark.sql" />
     <Build Include="Tables\dbo.gbqColumn.sql" />
     <Build Include="Tables\dbo.gbqWatermark.sql" />
@@ -86,6 +85,9 @@
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Script.PostDeployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scripts\GoogleAnalyticsParameters.sql" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Condition="'$(NetCoreBuild)' == 'true'">
