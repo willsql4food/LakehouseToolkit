@@ -1,8 +1,3 @@
-set ANSI_NULLS on
-go
-set QUOTED_IDENTIFIER on
-go
-
 /* ====================================================================================================================
 	Table:		dbo.Watermark
 	Author:		Chris Hatcher
@@ -32,10 +27,8 @@ create table [dbo].[Watermark]
 	,	[SinkConnection]				varchar(2000) null
 	,	[SinkObjectName]				varchar(255) not null
 	,	[IsActive]						bit not null
-	,	[CreateDateUtc]					datetime2(7) null
-	,	constraint [DF_Watermark_CreateDateUtc]  default (sysutcdatetime()) for [CreateDateUtc]
-	,	[UpdateDateUtc]					datetime2(7) null
-	,	constraint [DF_Watermark_UpdateDateUtc]  default (sysutcdatetime()) for [UpdateDateUtc]
+	,	[CreateDateUtc]					datetime2(7) constraint [DF_Watermark_CreateDateUtc] default (sysutcdatetime()) null
+	,	[UpdateDateUtc]					datetime2(7) constraint [DF_Watermark_UpdateDateUtc] default (sysutcdatetime()) null
 	,	[SourceQuery]					varchar(2000) null
 ) on [PRIMARY]
 go
@@ -43,7 +36,6 @@ go
 /* ====================================================================================================================
 	Update trigger for capturing Update date
 ==================================================================================================================== */
-
 create trigger [dbo].[tru_Watermark_UpdateDateUtc]
 	on [dbo].[Watermark]
 	for update
@@ -51,10 +43,9 @@ create trigger [dbo].[tru_Watermark_UpdateDateUtc]
 	if not update(UpdateDateUtc)
 	begin
 		update	o
-		set 	UpdateDateUtc = SYSUTCDATETIME()
+		set 	o.UpdateDateUtc = SYSUTCDATETIME()
 		from 	dbo.Watermark o
 		join	inserted i on o.Id = i.Id
-	end
-go
+	end;
 
-alter table [dbo].[Watermark] ENABLE trigger [tru_Watermark_UpdateDateUtc]
+alter table [dbo].[Watermark] ENABLE trigger [tru_Watermark_UpdateDateUtc];

@@ -1,8 +1,3 @@
-set ANSI_NULLS on
-go
-set QUOTED_IDENTIFIER on
-go
-
 /* ====================================================================================================================
 	Table:		dbo.ParameterMap 
 	Author:		Chris Hatcher
@@ -17,11 +12,9 @@ create table [dbo].[ParameterMap]
 	,	[ParameterString]				varchar(1000) null
 	,	[ParameterDefinitionString]		varchar(2000) null
 	,	[IsActive]						bit not null
-	,	[CreateDateUtc]					datetime2(7) null
-	,	constraint [DF_ParameterMap_CreateDateUtc]  default (sysutcdatetime()) for [CreateDateUtc]
-	,	[UpdateDateUtc]					datetime2(7) null
-	,	constraint [DF_ParameterMap_UpdateDateUtc]  default (sysutcdatetime()) for [UpdateDateUtc]
-) on [PRIMARY]
+	,	[CreateDateUtc]					datetime2(7) constraint [DF_ParameterMap_CreateDateUtc] default (sysutcdatetime()) null
+	,	[UpdateDateUtc]					datetime2(7) constraint [DF_ParameterMap_UpdateDateUtc] default (sysutcdatetime()) null
+) on [PRIMARY];
 go
 
 /* ====================================================================================================================
@@ -34,11 +27,10 @@ create trigger [dbo].[tru_ParameterMap_UpdateDateUtc]
 	if not update(UpdateDateUtc)
 	begin
 		update	o
-		set		UpdateDateUtc = SYSUTCDATETIME()
-		from	dbo.Watermark o
+		set		o.UpdateDateUtc = SYSUTCDATETIME()
+		from	dbo.ParameterMap o
 		join	inserted i on o.Id = i.Id
-	end
-go
+	end;
 
-alter table [dbo].[ParameterMap] ENABLE trigger [tru_ParameterMap_UpdateDateUtc]
-go
+
+alter table [dbo].[ParameterMap] ENABLE trigger [tru_ParameterMap_UpdateDateUtc];

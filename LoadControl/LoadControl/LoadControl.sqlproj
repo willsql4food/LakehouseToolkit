@@ -64,10 +64,12 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="Schemas\history.sql" />
-    <Build Include="Stored Procedures\dbo.uspLogPipelineStart.sql" />
+    <Build Include="Scripts\GoogleAnalyticsParameters.sql" />
     <Build Include="Tables\dbo.gbqColumn.sql" />
     <Build Include="Tables\dbo.gbqWatermark.sql" />
     <Build Include="Schemas\stage.sql" />
+    <Build Include="Tables\dbo.ParameterMap.sql" />
+    <Build Include="Tables\dbo.Watermark.sql" />
     <Build Include="Tables\stage.gbqObject.sql" />
     <Build Include="User Defined Functions\dbo.udtSchemaExpand.sql" />
     <Build Include="Views\dbo.gbqObjectToLoad.sql" />
