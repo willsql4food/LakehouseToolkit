@@ -1,8 +1,3 @@
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE PROCEDURE [dbo].[GetWatermark]
  	@BatchName varchar(255),
 	@SourceServiceType varchar(60),
@@ -118,5 +113,4 @@ BEGIN CATCH
 	DROP TABLE ##SinkParameters
 
 	RETURN
-END CATCH
-GO
+END CATCH;
