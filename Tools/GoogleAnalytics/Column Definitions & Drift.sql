@@ -11,6 +11,7 @@ with col as (
 			,	DataType
 			,	count(*) NumOccurrences
 	from		dbo.gbqColumn
+	where		TableName <> 'na'
 	group by	TableCatalog
 			,	TableSchema
 			,	left(TableName, len(TableName) - 9)
