@@ -18,6 +18,7 @@ using (
 							, {"name": "dsURL", "value": "https://sadevdatalakehouse.dfs.core.windows.net"}
 							, {"name": "dsSecretName", "value": "sa-ak"}
 							, {"name": "dsKVBaseURL", "value": "https://kv-dev-datalakehouse.vault.azure.net/"}
+							, {"name": "dsStorageAccount", "value": "sadevdatalakehouse"}
 							]}', 'n/a'
 		,	'n/a', 'n/a'
 		,	'n/a', 'n/a', 'n/a', 'n/a'
@@ -83,8 +84,8 @@ merge into dbo.ParameterMap as tgt
 using (
 	values (
 			'Pipeline_getGoogleAnalytics'
-		,	'dsDatabricksWorkspaceUrl, dsDatabricksWorkspaceId, dsURL, dsSecretName, dsKVBaseURL'
-		,	'<Direction>dsDatabricksWorkspaceUrl varchar(255), <Direction>dsDatabricksWorkspaceId varchar(255), <Direction>dsURL varchar(255), <Direction>dsSecretName varchar(255), <Direction>dsKVBaseURL varchar(255)'
+		,	'dsDatabricksWorkspaceUrl, dsDatabricksWorkspaceId, dsURL, dsSecretName, dsKVBaseURL, dsStorageAccount'
+		,	'<Direction>dsDatabricksWorkspaceUrl varchar(255), <Direction>dsDatabricksWorkspaceId varchar(255), <Direction>dsURL varchar(255), <Direction>dsSecretName varchar(255), <Direction>dsKVBaseURL varchar(255), <Direction>dsStorageAccount varchar(255)'
 		,	1
 		)
 	-- ,	(
