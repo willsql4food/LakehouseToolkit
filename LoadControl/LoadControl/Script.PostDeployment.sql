@@ -18,4 +18,4 @@ begin
 end
 go
 
-:r .\Scripts\GoogleAnalyticsParameters.sql
+:r .\Scripts\$(TargetEnvironment)\GoogleAnalyticsParameters.sql

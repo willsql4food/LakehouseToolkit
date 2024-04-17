@@ -58,6 +58,10 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="Schemas" />
+    <Folder Include="Scripts\DEV" />
+    <Folder Include="Scripts\PRD" />
+    <Folder Include="Scripts\QA" />
+    <Folder Include="Scripts\SBX" />
     <Folder Include="Tables" />
     <Folder Include="Views" />
     <Folder Include="Stored Procedures" />
@@ -79,21 +83,27 @@
     <Build Include="Tables\dbo.adfPipelineExecution.sql" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DEV.publish.xml" />
     <None Include="Localhost.ACB.publish.xml" />
-    <None Include="AzSandbox.LoadControl.publish.xml" />
-    <None Include="sqldb-dev-datalakehouse.database.windows.net.publish.xml" />
+    <None Include="SBX.publish.xml" />
+    <None Include="Scripts\DEV\GoogleAnalyticsParameters.sql" />
+    <None Include="Scripts\PRD\GoogleAnalyticsParameters.sql" />
+    <None Include="Scripts\QA\GoogleAnalyticsParameters.sql" />
+    <None Include="Scripts\SBX\GoogleAnalyticsParameters.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Script.PostDeployment.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\GoogleAnalyticsParameters.sql" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Condition="'$(NetCoreBuild)' == 'true'">
       <Version>1.0.0</Version>
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="TargetEnvironment">
+      <DefaultValue>SBX</DefaultValue>
+    </SqlCmdVariable>
   </ItemGroup>
   <Import Project="$(NETCoreTargetsPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" Condition="'$(NetCoreBuild)' == 'true'" />
   <Target Name="BeforeBuild">
