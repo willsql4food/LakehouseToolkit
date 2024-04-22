@@ -283,7 +283,9 @@
 						"type": "ParquetSource",
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
+							"recursive": false,
+							"wildcardFolderPath": "bronze/MMS/Audit/Raw",
+							"wildcardFileName": "*.parquet",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -326,7 +328,18 @@
 				"outputs": [
 					{
 						"referenceName": "DLBronzeParquetKVFile",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"dsURL": "https://staab09289802.dfs.core.windows.net",
+							"dsSecretName": "key-staab09289802",
+							"dsFileSystem": "datalake",
+							"dsDirectory": "bronze/MMS/Audit",
+							"dsFileName": {
+								"value": "@{formatDateTime(utcNow(), 'yyyymmdd')}_row_counts.parquet",
+								"type": "Expression"
+							},
+							"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+						}
 					}
 				]
 			}
