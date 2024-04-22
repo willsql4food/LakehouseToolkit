@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select name from sys.tables",
+						"sqlReaderQuery": "select 'POMHDR' tbl, '' notes\nunion select 'POMDTL', ''\nunion select 'POMDSQ', ''\nunion select 'POMXTK', '(this was previously an issue, may need some assistance with this one)'\nunion select 'EDAASNI', ''",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -41,7 +41,16 @@
 			{
 				"name": "getColumnList",
 				"type": "Copy",
-				"dependsOn": [],
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "getPipelineParameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -53,7 +62,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "Db2Source",
-						"query": "select * FROM sysibm.SQLCOLUMNS"
+						"query": "select * FROM sysibm.SQLTABLES where table_name in ('POMHDR' ,\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')"
 					},
 					"sink": {
 						"type": "ParquetSink",
@@ -83,6 +92,240 @@
 				"outputs": [
 					{
 						"referenceName": "DLBronzeParquetKV",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "LoopTables",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "getTableList",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('getTableList').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "SampleRows",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "Db2Source",
+									"query": {
+										"value": "select * from @{item().table_schem}.@{item().table_name} limit 100",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Db2",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DLBronzeParquetKV",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsURL": "https://staab09289802.dfs.core.windows.net",
+										"dsSecretName": "key-staab09289802",
+										"dsFileSystem": "datalake",
+										"dsDirectory": "bronze/MMS",
+										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+									}
+								}
+							]
+						},
+						{
+							"name": "CountRows",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "Db2Source",
+									"query": {
+										"value": "select '@{item().table_schem}.@{item().table_name}' tbl, count(*) num_rows from @{item().table_schem}.@{item().table_name}",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Db2",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DLBronzeParquetKV",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsURL": "https://staab09289802.dfs.core.windows.net",
+										"dsSecretName": "key-staab09289802",
+										"dsFileSystem": "datalake",
+										"dsDirectory": "bronze/MMS/Audit/Raw",
+										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "getTableList",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": "select * FROM sysibm.SQLTABLES where table_name in ('POMHDR' ,\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')"
+					},
+					"dataset": {
+						"referenceName": "Db2",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "MergeRowCounts",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "LoopTables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DLBronzeParquetKV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsURL": "https://staab09289802.dfs.core.windows.net",
+							"dsSecretName": "key-staab09289802",
+							"dsFileSystem": "datalake",
+							"dsDirectory": "bronze/MMS/Audit/Raw",
+							"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DLBronzeParquetKVFile",
 						"type": "DatasetReference"
 					}
 				]
