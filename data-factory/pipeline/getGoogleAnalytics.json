@@ -96,10 +96,6 @@
 											"value": "bronze/GoogleAnalytics/@{item().FilePath}",
 											"type": "Expression"
 										},
-										"dsFileName": {
-											"value": "@item().FileName",
-											"type": "Expression"
-										},
 										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
 									}
 								}

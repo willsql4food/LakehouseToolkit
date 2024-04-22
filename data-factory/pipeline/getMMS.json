@@ -189,7 +189,7 @@
 								"source": {
 									"type": "Db2Source",
 									"query": {
-										"value": "select '@{item().table_schem}.@{item().table_name}' tbl, count(*) num_rows from @{item().table_schem}.@{item().table_name}",
+										"value": "select '@{item().table_schem}.@{item().table_name}' tbl, count(*) num_rows, '@{utcNow()}' measure_time from @{item().table_schem}.@{item().table_name}",
 										"type": "Expression"
 									}
 								},
