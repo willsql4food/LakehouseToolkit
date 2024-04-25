@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetDatabaseName>LoadControl</TargetDatabaseName>
     <TargetConnectionString>Data Source=sqldb-dev-datalakehouse.database.windows.net;Initial Catalog=LoadControl;Authentication=Active Directory Default;Connect Timeout=30;Application Name=azdata;Command Timeout=30</TargetConnectionString>
-    <DeployScriptFileName>LoadControl.sql</DeployScriptFileName>
+    <DeployScriptFileName>DEV.LoadControl.sql</DeployScriptFileName>
     <AllowIncompatiblePlatform>True</AllowIncompatiblePlatform>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <DropPermissionsNotInSource>False</DropPermissionsNotInSource>
@@ -14,4 +14,9 @@
     <AllowDropBlockingAssemblies>False</AllowDropBlockingAssemblies>
     <ProfileVersionNumber>1</ProfileVersionNumber>
   </PropertyGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="TargetEnvironment">
+      <Value>DEV</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
 </Project>

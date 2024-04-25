@@ -19,25 +19,26 @@ using (
 			'Google Analytics to datalakehouse', 'Pipeline_getGoogleAnalytics', 0, 'PRD'
 		,	'Pipeline_getGoogleAnalytics', 'GoogleAnalytics'
 		,	'{"parameters": [ {"name": "dsDatabricksWorkspaceUrl", "value": "https://adb-5021193002559265.5.azuredatabricks.net"}
-, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/88bc7912-ce49-4397-bd6b-9ea15477e36f/resourceGroups/rg-prod-datalakehouse/providers/Microsoft.Databricks/workspaces/dbworkspace-prod-datalakehouse"}
-, {"name": "dsURL", "value": "https://saproddatalakehouse.dfs.core.windows.net/"}
+, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/88bc7912-ce49-4397-bd6b-9ea15477e36f/resourceGroups/rg-prod-datalakehouse/providers/Microsoft.Databricks/workspaces/dbworkspace-prod-datalakehouse"}]}'
+		,	'n/a', 'n/a', 'n/a'
+		,	'n/a', 'n/a', 'n/a', 'n/a'
+		,	'Pipeline_getGoogleAnalytics', 'n/a'
+		,	'{"parameters": [{"name": "dsURL", "value": "https://saproddatalakehouse.dfs.core.windows.net/"}
 , {"name": "dsSecretName", "value": "sa-ak"}
 , {"name": "dsKVBaseURL", "value": "https://kv-prod-datalakehouse.vault.azure.net/"}
 , {"name": "dsStorageAccount", "value": "saproddatalakehouse"}
 , {"name": "SinkdsFileSystem", "value": "datalake"}
 , {"name": "SinkdsDirectory", "value": "bronze"}]}'
-		,	'n/a', 'n/a', 'n/a'
-		,	'n/a', 'n/a', 'n/a', 'n/a'
-		,	'Pipeline_getGoogleAnalytics', 'n/a', '{"parameters": [{"name": "n/a", "value": "n/a"}]}', 'n/a'
-		,	1, 'n/a'
+		,	'n/a', 1, 'n/a'
 		)
 	-- ,	(	
 	--		'BatchName', 'BatchType', -1 /* BatchStep */, 'Environment'
 	-- 	,	'SourceServiceType', 'SourceName', 'SourceConnection'
 	--	,	'SourceObjectName', 'SourcePKFieldName', 'SourcePKFieldValue'
 	-- 	,	'SourceWatermarkFieldName', 'SourceWatermarkFieldValue', 'SourceWatermarkDataType', 'SourceWatermarkTimezone'
-	-- 	,	'SinkServiceType', 'SinkName', 'SinkConnection', 'SinkObjectName'
-	-- 	,	1 /* IsActive */, 'SourceQuery'
+	-- 	,	'SinkServiceType', 'SinkName'
+	--	,	'SinkConnection'
+	--	,	'SinkObjectName', 1 /* IsActive */, 'SourceQuery'
 	-- 	)
 	) as src (
 		BatchName, BatchType, BatchStep, Environment

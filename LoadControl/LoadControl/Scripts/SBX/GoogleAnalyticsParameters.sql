@@ -18,26 +18,27 @@ using (
 	values (
 			'Google Analytics to datalakehouse', 'Pipeline_getGoogleAnalytics', 0, 'SBX'
 		,	'Pipeline_getGoogleAnalytics', 'GoogleAnalytics'
-		,	'{"parameters": [{"name": "dsDatabricksWorkspaceUrl", "value": "https://adb-6146281808029158.18.azuredatabricks.net"}
-, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-datalakehouse/providers/Microsoft.Databricks/workspaces/dbworkspace-dev-datalakehouse"}
-, {"name": "dsURL", "value": "https://sadevdatalakehouse.dfs.core.windows.net"}
-, {"name": "dsSecretName", "value": "sa-ak"}
-, {"name": "dsKVBaseURL", "value": "https://kv-dev-datalakehouse.vault.azure.net/"}
-, {"name": "dsStorageAccount", "value": "sadevdatalakehouse"}
-, {"name": "dsFileSystem", "value": "datalake"}
-, {"name": "dsDirectory", "value": "bronze"}]}'
+		,	'{"parameters": [{"name": "dsDatabricksWorkspaceUrl", "value": "https://adb-7286372339506263.3.azuredatabricks.net"}
+, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898"}]}'
 		,	'n/a', 'n/a', 'n/a'
 		,	'n/a', 'n/a', 'n/a', 'n/a'
-		,	'Pipeline_getGoogleAnalytics', 'n/a', '{"parameters": [{"name": "n/a", "value": "n/a"}]}', 'n/a'
-		,	1, 'n/a'
+		,	'Pipeline_getGoogleAnalytics', 'n/a'
+		,	'{"parameters": [{"name": "dsURL", "value": "https://staab09289802.dfs.core.windows.net"}
+, {"name": "dsSecretName", "value": "key-staab09289802"}
+, {"name": "dsKVBaseURL", "value": "https://akv-092898.vault.azure.net/"}
+, {"name": "dsStorageAccount", "value": "staab09289802"}
+, {"name": "dsFileSystem", "value": "datalake"}
+, {"name": "dsDirectory", "value": "bronze"}]}'
+		,	'n/a', 1, 'n/a'
 		)
 	-- ,	(	
 	--		'BatchName', 'BatchType', -1 /* BatchStep */, 'Environment'
 	-- 	,	'SourceServiceType', 'SourceName', 'SourceConnection'
 	--	,	'SourceObjectName', 'SourcePKFieldName', 'SourcePKFieldValue'
 	-- 	,	'SourceWatermarkFieldName', 'SourceWatermarkFieldValue', 'SourceWatermarkDataType', 'SourceWatermarkTimezone'
-	-- 	,	'SinkServiceType', 'SinkName', 'SinkConnection', 'SinkObjectName'
-	-- 	,	1 /* IsActive */, 'SourceQuery'
+	-- 	,	'SinkServiceType', 'SinkName'
+	--	,	'SinkConnection'
+	--	,	'SinkObjectName', 1 /* IsActive */, 'SourceQuery'
 	-- 	)
 	) as src (
 		BatchName, BatchType, BatchStep, Environment
@@ -110,11 +111,4 @@ when not matched by target then
 	insert (ServiceType, ParameterString, ParameterDefinitionString, IsActive)
 	values (ServiceType, ParameterString, ParameterDefinitionString, IsActive)
 ;
-go
-
-if not exists(select * from sys.schemas s join sys.tables t on t.schema_id = s.schema_id where s.name = 'dbo' and t.name = 'graffiti')
-	select 'Carter was here (Here: $(TargetEnvironment))' msg, current_timestamp update_timestamp into dbo.graffiti;
-else
-	insert into dbo.graffiti (msg, update_timestamp)
-	select 'Carter was here (Here: $(TargetEnvironment))' msg, current_timestamp update_timestamp;
 go

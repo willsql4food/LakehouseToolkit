@@ -9,6 +9,8 @@ Post-Deployment Script Template
                SELECT * FROM [$(TableName)]					
 --------------------------------------------------------------------------------------
 */
+
+go
 if not exists(select * from dbo.adfPipelineExecution where Id = 0)
 begin
 	set identity_insert dbo.adfPipelineExecution on
@@ -16,6 +18,7 @@ begin
 	select		0, 'Dummy', 'Dummy', '1901-01-01'
 	set identity_insert dbo.adfPipelineExecution off
 end
+
 go
 
-:r .\Scripts\$(TargetEnvironment)\GoogleAnalyticsParameters.sql
+:r .\Scripts\DEV\GoogleAnalyticsParameters.sql

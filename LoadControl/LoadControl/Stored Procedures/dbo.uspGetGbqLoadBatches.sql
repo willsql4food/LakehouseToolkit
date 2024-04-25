@@ -10,6 +10,7 @@
     2024-02-26      A. Carter Burleigh      Added expansion of complex fields to their simple components
     2024-04-04      A. Carter Burleigh      Shim to get around some recursion issue caused by April data...
     2024-04-05      A. Carter Burleigh      Remove shim and add recursion safety 100 row bracket on running total
+    2024-04-24      A. Carter Burleigh      TEMPORARILY DISABLE pseudonymous_users
 
     --------------
     Purpose
@@ -32,6 +33,7 @@ begin
                     TableCatalog, TableSchema, TableName, BatchCol, BatchTerm, RowCountSource, SubBatchCol, 
                     SubBatchMin, SubBatchMax
         from        stage.gbqObjectDetail
+        where       TableName not like '%pseudonymous%'
     ), rt as (
         /* Conditional sum with prior row(s) until just before limit, then start new running total */
         select      RowId, TableCatalog, TableSchema, TableName, BatchCol, BatchTerm, 

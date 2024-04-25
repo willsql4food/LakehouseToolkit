@@ -67,7 +67,14 @@
     <Folder Include="Stored Procedures" />
   </ItemGroup>
   <ItemGroup>
+    <Build Include="Config\Tables\Dataset.sql" />
+    <Build Include="dbo\Tables\Authenticate.sql" />
+    <Build Include="db_datareader for df-dev-datalakehouse-bi.sql" />
+    <Build Include="db_datawriter for df-dev-datalakehouse-bi.sql" />
+    <Build Include="db_owner for df-dev-datalakehouse-bi.sql" />
     <Build Include="Schemas\history.sql" />
+    <Build Include="Security\Config.sql" />
+    <Build Include="Security\df-dev-datalakehouse-bi.sql" />
     <Build Include="Stored Procedures\dbo.GetWatermark.sql" />
     <Build Include="Tables\dbo.gbqColumn.sql" />
     <Build Include="Tables\dbo.gbqWatermark.sql" />
@@ -85,14 +92,16 @@
   <ItemGroup>
     <None Include="DEV.publish.xml" />
     <None Include="Localhost.ACB.publish.xml" />
+    <None Include="PRD.publish.xml" />
+    <None Include="QA.publish.xml" />
     <None Include="SBX.publish.xml" />
-    <None Include="Scripts\DEV\GoogleAnalyticsParameters.sql" />
-    <None Include="Scripts\PRD\GoogleAnalyticsParameters.sql" />
-    <None Include="Scripts\QA\GoogleAnalyticsParameters.sql" />
-    <None Include="Scripts\SBX\GoogleAnalyticsParameters.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Script.PostDeployment.sql" />
+    <None Include="Scripts/SBX/GoogleAnalyticsParameters.sql" />
+    <None Include="Scripts/DEV/GoogleAnalyticsParameters.sql" />
+    <None Include="Scripts/QA/GoogleAnalyticsParameters.sql" />
+    <None Include="Scripts/PRD/GoogleAnalyticsParameters.sql" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Condition="'$(NetCoreBuild)' == 'true'">
@@ -101,9 +110,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <SqlCmdVariable Include="TargetEnvironment">
-      <DefaultValue>SBX</DefaultValue>
-    </SqlCmdVariable>
+    <SqlCmdVariable Include="TargetEnvironment" />
   </ItemGroup>
   <Import Project="$(NETCoreTargetsPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" Condition="'$(NetCoreBuild)' == 'true'" />
   <Target Name="BeforeBuild">

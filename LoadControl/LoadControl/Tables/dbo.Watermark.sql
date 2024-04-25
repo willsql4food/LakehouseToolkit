@@ -4,39 +4,38 @@
 ---	----------	-------------------------------------------------------------------------------------------------------
 ACB	2024-04-11	Scripted from DB for inclusion in DB Project / DACPAC deployment
 ==================================================================================================================== */
-create table [dbo].[Watermark]
-(
-		[Id]							int identity(1,1) not null
-	,	constraint [PK_Watermark] primary key clustered (Id)
-	,	[BatchName]						varchar(255) not null
-	,	[BatchType]						varchar(30) not null
-	,	[BatchStep]						smallint not null
-	,	[Environment]					varchar(30) not null
-	,	[SourceServiceType]				varchar(60) not null
-	,	[SourceName]					varchar(255) not null
-	,	[SourceConnection]				varchar(2000) null
-	,	[SourceObjectName]				varchar(255) not null
-	,	[SourcePKFieldName]				varchar(255) not null
-	,	[SourcePKFieldValue]			varchar(255) null
-	,	[SourceWatermarkFieldName]		varchar(255) not null
-	,	[SourceWatermarkFieldValue]		varchar(255) null
-	,	[SourceWatermarkDataType]		varchar(255) not null
-	,	[SourceWatermarkTimezone]		varchar(30) null
-	,	[SinkServiceType]				varchar(60) not null
-	,	[SinkName]						varchar(255) not null
-	,	[SinkConnection]				varchar(2000) null
-	,	[SinkObjectName]				varchar(255) not null
-	,	[IsActive]						bit not null
-	,	[CreateDateUtc]					datetime2(7) constraint [DF_Watermark_CreateDateUtc] default (sysutcdatetime()) null
-	,	[UpdateDateUtc]					datetime2(7) constraint [DF_Watermark_UpdateDateUtc] default (sysutcdatetime()) null
-	,	[SourceQuery]					varchar(2000) null
-) on [PRIMARY]
+CREATE TABLE [dbo].[Watermark] (
+    [Id]                        INT            IDENTITY (1, 1) NOT NULL,
+    [BatchName]                 VARCHAR (255)  NOT NULL,
+    [BatchType]                 VARCHAR (30)   NOT NULL,
+    [BatchStep]                 SMALLINT       NOT NULL,
+    [Environment]               VARCHAR (30)   NOT NULL,
+    [SourceServiceType]         VARCHAR (60)   NOT NULL,
+    [SourceName]                VARCHAR (255)  NOT NULL,
+    [SourceConnection]          VARCHAR (2000) NULL,
+    [SourceObjectName]          VARCHAR (255)  NOT NULL,
+    [SourcePKFieldName]         VARCHAR (255)  NOT NULL,
+    [SourcePKFieldValue]        VARCHAR (255)  NULL,
+    [SourceWatermarkFieldName]  VARCHAR (255)  NOT NULL,
+    [SourceWatermarkFieldValue] VARCHAR (255)  NULL,
+    [SourceWatermarkDataType]   VARCHAR (255)  NOT NULL,
+    [SourceWatermarkTimezone]   VARCHAR (30)   NULL,
+    [SinkServiceType]           VARCHAR (60)   NOT NULL,
+    [SinkName]                  VARCHAR (255)  NOT NULL,
+    [SinkConnection]            VARCHAR (2000) NULL,
+    [SinkObjectName]            VARCHAR (255)  NOT NULL,
+    [IsActive]                  BIT            NOT NULL,
+    [CreateDateUtc]             DATETIME2 (7)  CONSTRAINT [DF_Watermark_CreateDateUtc] DEFAULT (sysutcdatetime()) NULL,
+    [UpdateDateUtc]             DATETIME2 (7)  CONSTRAINT [DF_Watermark_UpdateDateUtc] DEFAULT (sysutcdatetime()) NULL,
+    [SourceQuery]               VARCHAR (2000) NULL,
+    CONSTRAINT [PK_Watermark] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
 go
 
 /* ====================================================================================================================
 	Update trigger for capturing Update date
 ==================================================================================================================== */
-create trigger [dbo].[tru_Watermark_UpdateDateUtc]
+CREATE trigger [dbo].[tru_Watermark_UpdateDateUtc]
 	on [dbo].[Watermark]
 	for update
 	as

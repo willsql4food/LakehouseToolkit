@@ -19,25 +19,26 @@ using (
 			'Google Analytics to datalakehouse', 'Pipeline_getGoogleAnalytics', 0, 'QA'
 		,	'Pipeline_getGoogleAnalytics', 'GoogleAnalytics'
 		,	'{"parameters": [ {"name": "dsDatabricksWorkspaceUrl", "value": "https://adb-5614243852841313.13.azuredatabricks.net"}
-, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/383a26c8-b3c4-4ebd-b85d-638b1ea9de49/resourceGroups/rg-qa-datalakehouse/providers/Microsoft.Databricks/workspaces/dbworkspace-qa-datalakehouse"}
-, {"name": "dsURL", "value": "https://saqadatalakehouse.dfs.core.windows.net/"}
+, {"name": "dsDatabricksWorkspaceId", "value": "/subscriptions/383a26c8-b3c4-4ebd-b85d-638b1ea9de49/resourceGroups/rg-qa-datalakehouse/providers/Microsoft.Databricks/workspaces/dbworkspace-qa-datalakehouse"}]}'
+		,	'n/a', 'n/a', 'n/a'
+		,	'n/a', 'n/a', 'n/a', 'n/a'
+		,	'Pipeline_getGoogleAnalytics', 'n/a'
+		,	'{"parameters": [{"name": "dsURL", "value": "https://saqadatalakehouse.dfs.core.windows.net/"}
 , {"name": "dsSecretName", "value": "sa-ak"}
 , {"name": "dsKVBaseURL", "value": "https://kv-qa-datalakehouse.vault.azure.net/"}
 , {"name": "dsStorageAccount", "value": "saqadatalakehouse"}
 , {"name": "SinkdsFileSystem", "value": "datalake"}
 , {"name": "SinkdsDirectory", "value": "bronze"}]}'
-		,	'n/a', 'n/a', 'n/a'
-		,	'n/a', 'n/a', 'n/a', 'n/a'
-		,	'Pipeline_getGoogleAnalytics', 'n/a', '{"parameters": [{"name": "n/a", "value": "n/a"}]}', 'n/a'
-		,	1, 'n/a'
+		,	'n/a', 1, 'n/a'
 		)
 	-- ,	(	
 	--		'BatchName', 'BatchType', -1 /* BatchStep */, 'Environment'
 	-- 	,	'SourceServiceType', 'SourceName', 'SourceConnection'
 	--	,	'SourceObjectName', 'SourcePKFieldName', 'SourcePKFieldValue'
 	-- 	,	'SourceWatermarkFieldName', 'SourceWatermarkFieldValue', 'SourceWatermarkDataType', 'SourceWatermarkTimezone'
-	-- 	,	'SinkServiceType', 'SinkName', 'SinkConnection', 'SinkObjectName'
-	-- 	,	1 /* IsActive */, 'SourceQuery'
+	-- 	,	'SinkServiceType', 'SinkName'
+	--	,	'SinkConnection'
+	--	,	'SinkObjectName', 1 /* IsActive */, 'SourceQuery'
 	-- 	)
 	) as src (
 		BatchName, BatchType, BatchStep, Environment
