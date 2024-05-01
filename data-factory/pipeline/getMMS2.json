@@ -276,7 +276,7 @@
 			},
 			"varSourceServiceType": {
 				"type": "String",
-				"defaultValue": "TEMPLATE"
+				"defaultValue": "DB2"
 			},
 			"varSinkServiceType": {
 				"type": "String",
