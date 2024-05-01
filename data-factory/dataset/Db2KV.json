@@ -1,12 +1,26 @@
 {
-	"name": "Db2",
+	"name": "Db2KV",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "GenericDB2",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"lsKVBaseURL": "https://akv-ab092898.vault.azure.net/",
-				"lsSecretName": "qa-conn-string-mms"
+				"lsKVBaseURL": {
+					"value": "@dataset().dsKVBaseURL",
+					"type": "Expression"
+				},
+				"lsSecretName": {
+					"value": "@dataset().dsSecretName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"dsKVBaseURL": {
+				"type": "string"
+			},
+			"dsSecretName": {
+				"type": "string"
 			}
 		},
 		"annotations": [],

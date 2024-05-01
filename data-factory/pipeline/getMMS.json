@@ -86,7 +86,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "Db2",
+						"referenceName": "Db2KV",
 						"type": "DatasetReference"
 					}
 				],
@@ -164,7 +164,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "Db2",
+									"referenceName": "Db2KV",
 									"type": "DatasetReference"
 								}
 							],
@@ -227,7 +227,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "Db2",
+									"referenceName": "Db2KV",
 									"type": "DatasetReference"
 								}
 							],
@@ -266,7 +266,7 @@
 						"query": "select * FROM sysibm.SQLTABLES where table_name in ('POMHDR' ,\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')"
 					},
 					"dataset": {
-						"referenceName": "Db2",
+						"referenceName": "Db2KV",
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
