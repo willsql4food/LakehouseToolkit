@@ -222,7 +222,17 @@
 												"inputs": [
 													{
 														"referenceName": "Db2KV",
-														"type": "DatasetReference"
+														"type": "DatasetReference",
+														"parameters": {
+															"dsKVBaseURL": {
+																"value": "@item().SourcedsKVBaseURL",
+																"type": "Expression"
+															},
+															"dsSecretName": {
+																"value": "@item().SourcedsSecretName",
+																"type": "Expression"
+															}
+														}
 													}
 												],
 												"outputs": [
@@ -285,7 +295,7 @@
 			},
 			"varSourceServiceType": {
 				"type": "String",
-				"defaultValue": "DB2"
+				"defaultValue": "Db2KV"
 			},
 			"varSinkServiceType": {
 				"type": "String",
