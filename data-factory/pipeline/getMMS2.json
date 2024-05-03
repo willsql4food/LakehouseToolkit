@@ -200,7 +200,7 @@
 													"source": {
 														"type": "Db2Source",
 														"query": {
-															"value": "SELECT * FROM '@{item().SourceObjectName}' limit 100",
+															"value": "SELECT * FROM @{item().SourceObjectName} limit 100",
 															"type": "Expression"
 														}
 													},
