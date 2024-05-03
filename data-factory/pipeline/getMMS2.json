@@ -23,6 +23,8 @@
 			{
 				"name": "Get Watermark List",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -274,6 +276,42 @@
 							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Get Watermark Records",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select @@servername as sn, db_name() as db\r\n/*\r\ndeclare @tmp table (    [Id]                        INT,\r\n    [BatchName]                 VARCHAR (255)  NOT NULL,\r\n    [BatchType]                 VARCHAR (30)   NOT NULL,\r\n    [BatchStep]                 SMALLINT       NOT NULL,\r\n    [Environment]               VARCHAR (30)   NOT NULL,\r\n    [SourceServiceType]         VARCHAR (60)   NOT NULL,\r\n    [SourceName]                VARCHAR (255)  NOT NULL,\r\n    [SourceConnection]          VARCHAR (2000) NULL,\r\n    [SourceObjectName]          VARCHAR (255)  NOT NULL,\r\n    [SourcePKFieldName]         VARCHAR (255)  NOT NULL,\r\n    [SourcePKFieldValue]        VARCHAR (255)  NULL,\r\n    [SourceWatermarkFieldName]  VARCHAR (255)  NOT NULL,\r\n    [SourceWatermarkFieldValue] VARCHAR (255)  NULL,\r\n    [SourceWatermarkDataType]   VARCHAR (255)  NOT NULL,\r\n    [SourceWatermarkTimezone]   VARCHAR (30)   NULL,\r\n    [SinkServiceType]           VARCHAR (60)   NOT NULL,\r\n    [SinkName]                  VARCHAR (255)  NOT NULL,\r\n    [SinkConnection]            VARCHAR (2000) NULL,\r\n    [SinkObjectName]            VARCHAR (255)  NOT NULL,\r\n    [IsActive]                  BIT            NOT NULL,\r\n    [CreateDateUtc]             DATETIME2 (7) NULL,\r\n    [UpdateDateUtc]             DATETIME2 (7) NULL,\r\n    [SourceQuery]               VARCHAR (2000) NULL\r\n)\r\n\r\nUPDATE dbo.Watermark \r\nSET SourceWatermarkFieldValue = '2024-05-03 18:45:19' \r\noutput inserted.* into @tmp\r\nWHERE Id = 10\r\n\r\nselect * from @tmp\r\n*/",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
 				}
 			}
 		],
