@@ -355,7 +355,10 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": false,
-							"wildcardFolderPath": "bronze/MMS/Audit/Raw",
+							"wildcardFolderPath": {
+								"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+								"type": "Expression"
+							},
 							"wildcardFileName": "*.parquet",
 							"enablePartitionDiscovery": false
 						},
