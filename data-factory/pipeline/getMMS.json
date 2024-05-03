@@ -87,7 +87,17 @@
 				"inputs": [
 					{
 						"referenceName": "Db2KV",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"outputs": [
@@ -98,9 +108,15 @@
 							"dsURL": "https://staab09289802.dfs.core.windows.net",
 							"dsSecretName": "key-staab09289802",
 							"dsFileSystem": "datalake",
-							"dsDirectory": "bronze/MMS/Audit",
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit",
+								"type": "Expression"
+							},
 							"dsFileName": "TableDefinitions.parquet",
-							"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
 						}
 					}
 				]
@@ -165,7 +181,17 @@
 							"inputs": [
 								{
 									"referenceName": "Db2KV",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@pipeline().parameters.prmSecretName",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
@@ -176,12 +202,18 @@
 										"dsURL": "https://staab09289802.dfs.core.windows.net",
 										"dsSecretName": "key-staab09289802",
 										"dsFileSystem": "datalake",
-										"dsDirectory": "bronze/MMS",
+										"dsDirectory": {
+											"value": "@pipeline().parameters.prmPath",
+											"type": "Expression"
+										},
 										"dsFileName": {
 											"value": "@{item().table_schem}.@{item().table_name}.parquet",
 											"type": "Expression"
 										},
-										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										}
 									}
 								}
 							]
@@ -228,7 +260,17 @@
 							"inputs": [
 								{
 									"referenceName": "Db2KV",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@pipeline().parameters.prmSecretName",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
@@ -239,8 +281,14 @@
 										"dsURL": "https://staab09289802.dfs.core.windows.net",
 										"dsSecretName": "key-staab09289802",
 										"dsFileSystem": "datalake",
-										"dsDirectory": "bronze/MMS/Audit/Raw",
-										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+										"dsDirectory": {
+											"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+											"type": "Expression"
+										},
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										}
 									}
 								}
 							]
@@ -267,7 +315,17 @@
 					},
 					"dataset": {
 						"referenceName": "Db2KV",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
 					},
 					"firstRowOnly": false
 				}
@@ -333,8 +391,14 @@
 							"dsURL": "https://staab09289802.dfs.core.windows.net",
 							"dsSecretName": "key-staab09289802",
 							"dsFileSystem": "datalake",
-							"dsDirectory": "bronze/MMS/Audit/Raw",
-							"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+								"type": "Expression"
+							},
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -346,17 +410,37 @@
 							"dsURL": "https://staab09289802.dfs.core.windows.net",
 							"dsSecretName": "key-staab09289802",
 							"dsFileSystem": "datalake",
-							"dsDirectory": "bronze/MMS/Audit",
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit",
+								"type": "Expression"
+							},
 							"dsFileName": {
 								"value": "@{formatDateTime(utcNow(), 'yyyyMMdd-HHmm')}_row_counts.parquet",
 								"type": "Expression"
 							},
-							"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
 						}
 					}
 				]
 			}
 		],
+		"parameters": {
+			"prmKVBaseURL": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"prmSecretName": {
+				"type": "string",
+				"defaultValue": "qa-conn-string-mms"
+			},
+			"prmPath": {
+				"type": "string",
+				"defaultValue": "bronze/MMS_QA"
+			}
+		},
 		"annotations": []
 	}
 }
