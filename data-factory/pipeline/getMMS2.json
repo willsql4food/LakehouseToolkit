@@ -200,7 +200,7 @@
 													"source": {
 														"type": "Db2Source",
 														"query": {
-															"value": "SELECT * FROM '@{item().SourceObjectName}' WHERE '@{item().SourceWatermarkFieldName}' > '@{if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideStartDate, 'yyyy-MM-dd HH:mm:ss'), formatDateTime(item().SourceWatermarkFieldValue, 'yyyy-MM-dd HH:mm:ss'))}' AND '@{item().SourceWatermarkFieldName}' <= '@{if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'yyyy-MM-dd HH:mm:ss'),formatDateTime(variables('varWatermarkTimestamp'), 'yyyy-MM-dd HH:mm:ss'))}' limit 100",
+															"value": "SELECT * FROM '@{item().SourceObjectName}' limit 100",
 															"type": "Expression"
 														}
 													},
