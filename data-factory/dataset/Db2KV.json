@@ -27,8 +27,8 @@
 		"type": "Db2Table",
 		"schema": [],
 		"typeProperties": {
-			"schema": "SYSIBM",
-			"table": "SQLCOLUMNS"
+			"schema": "",
+			"table": ""
 		}
 	}
 }
