@@ -585,7 +585,10 @@
 								"value": "@{pipeline().parameters.prmPath}/Audit",
 								"type": "Expression"
 							},
-							"dsFileName": "TableDefinitions.parquet",
+							"dsFileName": {
+								"value": "@{formatDateTime(utcNow(), 'yyyyMMdd-HHmm')}_date_ranges.parquet",
+								"type": "Expression"
+							},
 							"dsKVBaseURL": {
 								"value": "@pipeline().parameters.prmKVBaseURL",
 								"type": "Expression"
