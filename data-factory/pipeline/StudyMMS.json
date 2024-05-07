@@ -534,11 +534,11 @@
 			},
 			"prmSecretName": {
 				"type": "string",
-				"defaultValue": "qa-conn-string-mms"
+				"defaultValue": "MMS-PROD"
 			},
 			"prmPath": {
 				"type": "string",
-				"defaultValue": "bronze/MMS_QA"
+				"defaultValue": "bronze/MMS_PROD"
 			}
 		},
 		"annotations": []
