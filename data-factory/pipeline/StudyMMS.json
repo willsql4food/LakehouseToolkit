@@ -61,7 +61,7 @@
 					"source": {
 						"type": "Db2Source",
 						"query": {
-							"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, t.REMARKS\n, t.TYPE_CAT\n, t.TYPE_SCHEM\n, t.TYPE_NAME as table_type_name\n, t.SELF_REFERENCING_COL_NAME\n, t.REF_GENERATION\n, t.DBNAME\n, t.TABLE_TEXT\n, c.COLUMN_NAME\n, c.DATA_TYPE\n, c.TYPE_NAME as column_type_name\n, c.COLUMN_SIZE\n, c.BUFFER_LENGTH\n, c.DECIMAL_DIGITS\n, c.NUM_PREC_RADIX\n, c.NULLABLE\n, c.REMARKS as column_remarks\n, c.COLUMN_DEF\n, c.SQL_DATA_TYPE\n, c.SQL_DATETIME_SUB\n, c.CHAR_OCTET_LENGTH\n, c.ORDINAL_POSITION\n, c.IS_NULLABLE\n, c.JDBC_DATA_TYPE\n, c.SCOPE_CATALOG\n, c.SCOPE_SCHEMA\n, c.SCOPE_TABLE\n, c.SOURCE_DATA_TYPE\n, c.PSEUDO_COLUMN\n, c.COLUMN_TEXT\n, c.SYSTEM_COLUMN_NAME\n, c.I_DATA_TYPE\n, c.HIDDEN\n, c.HAS_DEFAULT\n, c.SOURCE_TYPE_NAME\n, c.SOURCE_SQL_DATA_TYPE\n, c.SOURCE_JDBC_DATA_TYPE\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLcolumns c on c.TABLE_CAT = t.TABLE_CAT and c.TABLE_SCHEM = t.TABLE_SCHEM and c.TABLE_NAME = t.TABLE_NAME\nwhere t.table_name in ('POMHDR' ,\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')",
+							"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, t.REMARKS\n, t.TYPE_CAT\n, t.TYPE_SCHEM\n, t.TYPE_NAME as table_type_name\n, t.SELF_REFERENCING_COL_NAME\n, t.REF_GENERATION\n, t.DBNAME\n, t.TABLE_TEXT\n, c.COLUMN_NAME\n, c.DATA_TYPE\n, c.TYPE_NAME as column_type_name\n, c.COLUMN_SIZE\n, c.BUFFER_LENGTH\n, c.DECIMAL_DIGITS\n, c.NUM_PREC_RADIX\n, c.NULLABLE\n, c.REMARKS as column_remarks\n, c.COLUMN_DEF\n, c.SQL_DATA_TYPE\n, c.SQL_DATETIME_SUB\n, c.CHAR_OCTET_LENGTH\n, c.ORDINAL_POSITION\n, c.IS_NULLABLE\n, c.JDBC_DATA_TYPE\n, c.SCOPE_CATALOG\n, c.SCOPE_SCHEMA\n, c.SCOPE_TABLE\n, c.SOURCE_DATA_TYPE\n, c.PSEUDO_COLUMN\n, c.COLUMN_TEXT\n, c.SYSTEM_COLUMN_NAME\n, c.I_DATA_TYPE\n, c.HIDDEN\n, c.HAS_DEFAULT\n, c.SOURCE_TYPE_NAME\n, c.SOURCE_SQL_DATA_TYPE\n, c.SOURCE_JDBC_DATA_TYPE\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLcolumns c on c.TABLE_CAT = t.TABLE_CAT and c.TABLE_SCHEM = t.TABLE_SCHEM and c.TABLE_NAME = t.TABLE_NAME\nwhere t.table_name in ('POMHDR' ,\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')\nor t.table_name like 'INV%' and t.table_name not like '%DUPE%'",
 							"type": "Expression"
 						}
 					},
@@ -299,6 +299,8 @@
 			{
 				"name": "getTableList",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "getPipelineParameters",
@@ -437,83 +439,10 @@
 				]
 			},
 			{
-				"name": "getDateCols",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "getColumnList",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "ParquetSource",
-						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "ParquetReadSettings"
-						}
-					},
-					"dataset": {
-						"referenceName": "DLBronzeParquetKVFile",
-						"type": "DatasetReference",
-						"parameters": {
-							"dsURL": "https://staab09289802.dfs.core.windows.net",
-							"dsSecretName": "key-staab09289802",
-							"dsFileSystem": "datalake",
-							"dsDirectory": {
-								"value": "@{pipeline().parameters.prmPath}/Audit",
-								"type": "Expression"
-							},
-							"dsFileName": "TableDefinitions.parquet",
-							"dsKVBaseURL": {
-								"value": "@pipeline().parameters.prmKVBaseURL",
-								"type": "Expression"
-							}
-						}
-					},
-					"firstRowOnly": false
-				}
-			},
-			{
-				"name": "DateFields",
-				"type": "Filter",
-				"dependsOn": [
-					{
-						"activity": "getDateCols",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('getDateCols').output.value",
-						"type": "Expression"
-					},
-					"condition": {
-						"value": "@or(endswith(item().COLUMN_NAME, 'DT'), endswith(item().COLUMN_NAME, 'DAT'))",
-						"type": "Expression"
-					}
-				}
-			},
-			{
 				"name": "getTimestamps",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "getPipelineParameters",
