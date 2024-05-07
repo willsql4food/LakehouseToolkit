@@ -155,7 +155,7 @@
 								"source": {
 									"type": "Db2Source",
 									"query": {
-										"value": "select * from @{item().table_schem}.@{item().table_name} limit 100",
+										"value": "select * from @{item().table_schem}.@{item().table_name} limit 1000",
 										"type": "Expression"
 									}
 								},
@@ -299,8 +299,6 @@
 			{
 				"name": "getTableList",
 				"type": "Lookup",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "getPipelineParameters",
@@ -320,7 +318,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "Db2Source",
-						"query": "select * FROM sysibm.SQLTABLES where table_name in ('POMHDR' ,\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')"
+						"query": "select        t.table_schem, t.table_name\nFROM       sysibm.SQLTABLES t \nwhere       t.table_name in ('POMHDR' ,\n                            'POMDTL',\n                            'POMDSQ',\n                            'POMXTK',\n                            'EDAASNI',\n                            'INVATD',\n                            'INVATR',\n                            'INVAUD',\n                            'INVAVG',\n                            'INVBAL',\n                            'INVBALED')\n    and     t.table_schem in ('MM760DVL', 'MM760LIB', 'MMLIBARCH', 'QGPL', 'STKUPD')"
 					},
 					"dataset": {
 						"referenceName": "Db2KV",
