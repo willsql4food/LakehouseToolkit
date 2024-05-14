@@ -64,6 +64,14 @@
 									"value": "@pipeline().globalParameters.gpEnvironment",
 									"type": "Expression"
 								}
+							},
+							"RollingDays": {
+								"type": "Decimal",
+								"value": "0.0"
+							},
+							"WatermarkTimestamp": {
+								"type": "Datetime",
+								"value": "1901-01-01"
 							}
 						},
 						"queryTimeout": "02:00:00",
