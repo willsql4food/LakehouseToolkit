@@ -195,7 +195,16 @@
 													"secureOutput": false,
 													"secureInput": false
 												},
-												"userProperties": [],
+												"userProperties": [
+													{
+														"name": "Source",
+														"value": "@{item().SourceObjectName}"
+													},
+													{
+														"name": "Destination",
+														"value": "@{item().SinkdsFileSystem}/@{concat(item().SinkdsDirectory, '/', item().SourceName, '/', item().SinkObjectName, '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'yyyy'),formatDateTime(variables('varWatermarkTimestamp'), 'yyyy')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'MM'),formatDateTime(variables('varWatermarkTimestamp'), 'MM')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'dd'),formatDateTime(variables('varWatermarkTimestamp'), 'dd')))}/@{concat(item().SinkdsFileName, '.parquet')}"
+													}
+												],
 												"typeProperties": {
 													"source": {
 														"type": "Db2Source",
