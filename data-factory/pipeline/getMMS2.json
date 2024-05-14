@@ -256,12 +256,12 @@
 																"value": "@item().SinkdsFileSystem",
 																"type": "Expression"
 															},
-															"dsFileName": {
-																"value": "@item().SinkdsFileName",
-																"type": "Expression"
-															},
 															"dsDirectory": {
 																"value": "@concat(item().SinkdsDirectory, '/', item().SourceName, '/', item().SinkObjectName, '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'yyyy'),formatDateTime(variables('varWatermarkTimestamp'), 'yyyy')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'MM'),formatDateTime(variables('varWatermarkTimestamp'), 'MM')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'dd'),formatDateTime(variables('varWatermarkTimestamp'), 'dd')))",
+																"type": "Expression"
+															},
+															"dsFileName": {
+																"value": "@concat(item().SinkdsFileName, '.parquet')",
 																"type": "Expression"
 															},
 															"dsKVBaseURL": {
