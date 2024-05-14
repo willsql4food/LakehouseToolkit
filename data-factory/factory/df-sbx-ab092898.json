@@ -12,7 +12,7 @@
 			},
 			"gpWMDatabase": {
 				"type": "string",
-				"value": "LoadControl"
+				"value": "LoadContrail"
 			}
 		}
 	},
