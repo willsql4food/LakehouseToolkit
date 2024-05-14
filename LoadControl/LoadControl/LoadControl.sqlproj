@@ -65,6 +65,13 @@
     <Folder Include="Tables" />
     <Folder Include="Views" />
     <Folder Include="Stored Procedures" />
+    <Folder Include="Scripts\" />
+    <Folder Include="Config\" />
+    <Folder Include="Config\Tables\" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="Security\" />
+    <Folder Include="User Defined Functions\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Config\Tables\Dataset.sql" />

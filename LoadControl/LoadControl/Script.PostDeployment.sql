@@ -21,4 +21,4 @@ end
 
 go
 
-:r .\Scripts\DEV\GoogleAnalyticsParameters.sql
+--:r .\Scripts\DEV\GoogleAnalyticsParameters.sql
