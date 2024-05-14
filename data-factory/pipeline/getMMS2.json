@@ -241,7 +241,7 @@
 												],
 												"outputs": [
 													{
-														"referenceName": "DLBronzeParquetKV",
+														"referenceName": "DLBronzeParquetKVFile",
 														"type": "DatasetReference",
 														"parameters": {
 															"dsURL": {
@@ -254,6 +254,10 @@
 															},
 															"dsFileSystem": {
 																"value": "@item().SinkdsFileSystem",
+																"type": "Expression"
+															},
+															"dsFileName": {
+																"value": "@item().SinkdsFileName",
 																"type": "Expression"
 															},
 															"dsDirectory": {
