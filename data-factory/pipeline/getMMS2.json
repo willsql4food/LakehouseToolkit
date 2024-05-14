@@ -200,7 +200,7 @@
 													"source": {
 														"type": "Db2Source",
 														"query": {
-															"value": "SELECT * FROM @{item().SourceObjectName}",
+															"value": "@{if(equals(item().SourceQuery, null), concat('SELECT * FROM ', item().SourceObjectName), item().SourceQuery)}\n",
 															"type": "Expression"
 														}
 													},
