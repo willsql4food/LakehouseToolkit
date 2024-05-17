@@ -41,6 +41,8 @@
 			{
 				"name": "getColumnList",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "getPipelineParameters",
@@ -275,7 +277,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "DLBronzeParquetKV",
+									"referenceName": "DLBronzeParquetKVFile",
 									"type": "DatasetReference",
 									"parameters": {
 										"dsURL": "https://staab09289802.dfs.core.windows.net",
@@ -283,6 +285,10 @@
 										"dsFileSystem": "datalake",
 										"dsDirectory": {
 											"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+											"type": "Expression"
+										},
+										"dsFileName": {
+											"value": "@{item().table_schem}.@{item().table_name}.@{formatDateTime(utcNow(), 'YYYY-mm-dd')}.parquet",
 											"type": "Expression"
 										},
 										"dsKVBaseURL": {
