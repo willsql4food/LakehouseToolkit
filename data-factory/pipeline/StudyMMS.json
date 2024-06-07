@@ -3,52 +3,9 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "getPipelineParameters",
-				"type": "Lookup",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select 'POMHDR' tbl, '' notes\nunion select 'POMDTL', ''\nunion select 'POMDSQ', ''\nunion select 'POMXTK', '(this was previously an issue, may need some assistance with this one)'\nunion select 'EDAASNI', ''",
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "WatermarkMI",
-						"type": "DatasetReference",
-						"parameters": {
-							"dsServerName": {
-								"value": "@pipeline().globalParameters.gpWMSQL",
-								"type": "Expression"
-							},
-							"dsDatabaseName": {
-								"value": "@pipeline().globalParameters.gpWMDatabase",
-								"type": "Expression"
-							}
-						}
-					},
-					"firstRowOnly": false
-				}
-			},
-			{
 				"name": "getColumnList",
 				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "getPipelineParameters",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -305,14 +262,7 @@
 			{
 				"name": "getTableList",
 				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "getPipelineParameters",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -324,7 +274,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "Db2Source",
-						"query": "select        t.table_schem, t.table_name\nFROM       sysibm.SQLTABLES t \nwhere       t.table_name in (\n'EDAASNI', \n'INVADI', \n'INVALC', \n'INVATD', \n'INVATR', \n'INVAUD', \n'INVAVG', \n'INVBAL', \n'INVBALQ1', \n'INVBALQ2', \n'INVBLX', \n'INVCAJ', \n'INVCAL', \n'INVCALDS', \n'INVCBF', \n'INVCBL', \n'INVCBX', \n'INVCCD', \n'INVCCH', \n'INVCCS', \n'INVCDL', \n'INVCDT', \n'INVCHS', \n'INVCHS1', \n'INVCHS2', \n'INVCHS3', \n'INVCMD', \n'INVCMH', \n'INVCMM', \n'INVCPP', \n'INVCPR', \n'INVCQE', \n'INVCQM', \n'INVCYS', \n'INVCZN', \n'INVCZS', \n'INVDAT', \n'INVDATIKB', \n'INVDFT', \n'INVDLT', \n'INVDPT', \n'INVDPTDS', \n'INVDSC', \n'INVDSCDS', \n'INVDSK', \n'INVDSS', \n'INVEBF', \n'INVEDT', \n'INVEFC', \n'INVEHC', \n'INVEHD', \n'INVEHH', \n'INVEHS', \n'INVEHW', \n'INVEMD', \n'INVEMH', \n'INVEMM', \n'INVENX', \n'INVEPD', \n'INVEPH', \n'INVEPR', \n'INVEQE', \n'INVEQM', \n'INVEST', \n'INVETP', \n'INVEUP', \n'INVEVA', \n'INVEVC', \n'INVEVD', \n'INVEVH', \n'INVEWD', \n'INVEWS', \n'INVEXC', \n'INVFIN', \n'INVFINDS', \n'INVGFM', \n'INVGHD', \n'INVGLI', \n'INVGPC', \n'INVGPD', \n'INVGPM', \n'INVGPO', \n'INVGPS', \n'INVGPT', \n'INVGPTED1', \n'INVGPTED2', \n'INVGRH', \n'INVGRS', \n'INVGSF', \n'INVGSL', \n'INVHAJ', \n'INVHLD', \n'INVHLDDS', \n'INVHLH', \n'INVHLHDS', \n'INVHMG', \n'INVHST', \n'INVHST1', \n'INVHST2', \n'INVHST3', \n'INVHSW', \n'INVIFG', \n'INVINT', \n'INVJOB', \n'INVLBL', \n'INVLTX', \n'INVMBD', \n'INVMBH', \n'INVMDL', \n'INVMFG', \n'INVMOD', \n'INVMSA', \n'INVMSADS', \n'INVMST', \n'INVMSTDS', \n'INVMSW', \n'INVMTA', \n'INVMTADS', \n'INVMVA', \n'INVOAD', \n'INVOADDS', \n'INVOAT', \n'INVOATDS', \n'INVOHF', \n'INVOICE_LINKING_TABLE', \n'INVOPN', \n'INVOPNDS', \n'INVORD', \n'INVPDQ', \n'INVPFG', \n'INVPLN', \n'INVPME', \n'INVPMK', \n'INVPOS', \n'INVPPD', \n'INVPPE', \n'INVPPH', \n'INVPPW', \n'INVPRF', \n'INVPRW', \n'INVPST', \n'INVRPB', \n'INVRSN', \n'INVSCD', \n'INVSCE', \n'INVSCP', \n'INVSEA', \n'INVSET', \n'INVSFM', \n'INVSHD', \n'INVSKG', \n'INVSKU', \n'INVSKUDS', \n'INVSLG', \n'INVSMG', \n'INVSPC', \n'INVSPL', \n'INVSPLDS', \n'INVSSK', \n'INVSTD', \n'INVSTDDS', \n'INVSTK', \n'INVSTX', \n'INVSUD', \n'INVSUH', \n'INVSUM', \n'INVTIK', \n'INVTRN', \n'INVTRNCA', \n'INVTRNCM', \n'INVTRNDW', \n'INVTRNER', \n'INVTRNES', \n'INVTRNET', \n'INVTRNHD', \n'INVTRNMC', \n'INVTRNPI', \n'INVTRNRP', \n'INVTRNSA', \n'INVTRNSE', \n'INVTRNSF', \n'INVTRNSL', \n'INVTRNST', \n'INVTRNSY', \n'INVTRNVT', \n'INVUMR', \n'INVUNP', \n'INVUPC', \n'INVUPCDS', \n'INVUPR', \n'INVVAD', \n'INVVAH', \n'INVVAT', \n'INVVBL', \n'INVVEN', \n'INVVENDS', \n'INVWFC', \n'INVWSP', \n'INVXCA', \n'INVXSK', \n'INVZAJ', \n'INVZON', \n'POMDSQ', \n'POMDTL', \n'POMHDR', \n'POMXTK', \n'POMCAN', \n'POMHST', \n'POSTAT'\n)\n    and     t.table_schem in ('MM760LIB')"
+						"query": "select        t.table_schem, t.table_name\nFROM       sysibm.SQLTABLES t \nwhere       t.table_name in (\n'EDAASNI', \n'INVADI', \n'INVALC', \n'INVATD', \n'INVATR', \n'INVAUD', \n'INVAVG', \n'INVBAL', \n'INVBALQ1', \n'INVBALQ2', \n'INVBLX', \n'INVCAJ', \n'INVCAL', \n'INVCALDS', \n'INVCBF', \n'INVCBL', \n'INVCBX', \n'INVCCD', \n'INVCCH', \n'INVCCS', \n'INVCDL', \n'INVCDT', \n'INVCHS', \n'INVCHS1', \n'INVCHS2', \n'INVCHS3', \n'INVCMD', \n'INVCMH', \n'INVCMM', \n'INVCPP', \n'INVCPR', \n'INVCQE', \n'INVCQM', \n'INVCYS', \n'INVCZN', \n'INVCZS', \n'INVDAT', \n'INVDATIKB', \n'INVDFT', \n'INVDLT', \n'INVDPT', \n'INVDPTDS', \n'INVDSC', \n'INVDSCDS', \n'INVDSK', \n'INVDSS', \n'INVEBF', \n'INVEDT', \n'INVEFC', \n'INVEHC', \n'INVEHD', \n'INVEHH', \n'INVEHS', \n'INVEHW', \n'INVEMD', \n'INVEMH', \n'INVEMM', \n'INVENX', \n'INVEPD', \n'INVEPH', \n'INVEPR', \n'INVEQE', \n'INVEQM', \n'INVEST', \n'INVETP', \n'INVEUP', \n'INVEVA', \n'INVEVC', \n'INVEVD', \n'INVEVH', \n'INVEWD', \n'INVEWS', \n'INVEXC', \n'INVFIN', \n'INVFINDS', \n'INVGFM', \n'INVGHD', \n'INVGLI', \n'INVGPC', \n'INVGPD', \n'INVGPM', \n'INVGPO', \n'INVGPS', \n'INVGPT', \n'INVGPTED1', \n'INVGPTED2', \n'INVGRH', \n'INVGRS', \n'INVGSF', \n'INVGSL', \n'INVHAJ', \n'INVHLD', \n'INVHLDDS', \n'INVHLH', \n'INVHLHDS', \n'INVHMG', \n'INVHST', \n'INVHST1', \n'INVHST2', \n'INVHST3', \n'INVHSW', \n'INVIFG', \n'INVINT', \n'INVJOB', \n'INVLBL', \n'INVLTX', \n'INVMBD', \n'INVMBH', \n'INVMDL', \n'INVMFG', \n'INVMOD', \n'INVMSA', \n'INVMSADS', \n'INVMST', \n'INVMSTDS', \n'INVMSW', \n'INVMTA', \n'INVMTADS', \n'INVMVA', \n'INVOAD', \n'INVOADDS', \n'INVOAT', \n'INVOATDS', \n'INVOHF', \n'INVOICE_LINKING_TABLE', \n'INVOPN', \n'INVOPNDS', \n'INVORD', \n'INVPDQ', \n'INVPFG', \n'INVPLN', \n'INVPME', \n'INVPMK', \n'INVPOS', \n'INVPPD', \n'INVPPE', \n'INVPPH', \n'INVPPW', \n'INVPRF', \n'INVPRW', \n'INVPST', \n'INVRPB', \n'INVRSN', \n'INVSCD', \n'INVSCE', \n'INVSCP', \n'INVSEA', \n'INVSET', \n'INVSFM', \n'INVSHD', \n'INVSKG', \n'INVSKU', \n'INVSKUDS', \n'INVSLG', \n'INVSMG', \n'INVSPC', \n'INVSPL', \n'INVSPLDS', \n'INVSSK', \n'INVSTD', \n'INVSTDDS', \n'INVSTK', \n'INVSTX', \n'INVSUD', \n'INVSUH', \n'INVSUM', \n'INVTIK', \n'INVTRN', \n'INVTRNCA', \n'INVTRNCM', \n'INVTRNDW', \n'INVTRNER', \n'INVTRNES', \n'INVTRNET', \n'INVTRNHD', \n'INVTRNMC', \n'INVTRNPI', \n'INVTRNRP', \n'INVTRNSA', \n'INVTRNSE', \n'INVTRNSF', \n'INVTRNSL', \n'INVTRNST', \n'INVTRNSY', \n'INVTRNVT', \n'INVUMR', \n'INVUNP', \n'INVUPC', \n'INVUPCDS', \n'INVUPR', \n'INVVAD', \n'INVVAH', \n'INVVAT', \n'INVVBL', \n'INVVEN', \n'INVVENDS', \n'INVWFC', \n'INVWSP', \n'INVXCA', \n'INVXSK', \n'INVZAJ', \n'INVZON', \n'POMDSQ', \n'POMDTL', \n'POMHDR', \n'POMXTK', \n'POMCAN', \n'POMHST', \n'MSTFLD'\n)\n    and     t.table_schem in ('MM760LIB')"
 					},
 					"dataset": {
 						"referenceName": "Db2KV",
@@ -447,14 +397,7 @@
 				"type": "Copy",
 				"state": "Inactive",
 				"onInactiveMarkAs": "Skipped",
-				"dependsOn": [
-					{
-						"activity": "getPipelineParameters",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
