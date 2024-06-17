@@ -1,5 +1,5 @@
 {
-	"name": "getMMS2",
+	"name": "getMMS_PO",
 	"properties": {
 		"description": "Bronze Data Ingestion MMS\n\nDataset to Linked Service mapping:\n\nWarkmarkMI: GenericAzureSqlDatabaseMI\n\nSalesforceKV: GenericSalesforceKV \n\n(Change to correct generic linked service based on type requirements)\n\nDLBronzeParquetKV: GenericAzureDataLakeStorageGen2KV",
 		"activities": [
@@ -190,7 +190,7 @@
 								},
 								"cases": [
 									{
-										"value": "Incremental",
+										"value": "Full",
 										"activities": [
 											{
 												"name": "Copy MMS to ADL",
