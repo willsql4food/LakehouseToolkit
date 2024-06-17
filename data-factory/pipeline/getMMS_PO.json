@@ -217,7 +217,7 @@
 													"source": {
 														"type": "Db2Source",
 														"query": {
-															"value": "@{if(equals(item().SourceQuery, null), concat('SELECT * FROM ', item().SourceObjectName), item().SourceQuery)}\n",
+															"value": "@{if(equals(item().SourceQuery, null), concat('SELECT * FROM ', item().SourceObjectName, ' with UR'), item().SourceQuery)}\n",
 															"type": "Expression"
 														}
 													},
