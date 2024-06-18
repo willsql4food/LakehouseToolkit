@@ -27,7 +27,7 @@
 					}
 				},
 				"secretName": {
-					"value": "@linkedService().lsSecretName",
+					"value": "@{linkedService().lsSecretName}",
 					"type": "Expression"
 				}
 			}
