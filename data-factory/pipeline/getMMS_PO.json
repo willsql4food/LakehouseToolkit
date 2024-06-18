@@ -1,7 +1,7 @@
 {
 	"name": "getMMS_PO",
 	"properties": {
-		"description": "Bronze Data Ingestion MMS\n\nDataset to Linked Service mapping:\n\nWarkmarkMI: GenericAzureSqlDatabaseMI\n\nSalesforceKV: GenericSalesforceKV \n\n(Change to correct generic linked service based on type requirements)\n\nDLBronzeParquetKV: GenericAzureDataLakeStorageGen2KV",
+		"description": "Bronze Data Ingestion MMS\n\nDataset to Linked Service mapping:\n\nWarkmarkMI: GenericAzureSqlDatabaseMI\n\nDb2KV: GenericDB2\n\nDLBronzeParquetKVFile: GenericAzureDataLakeStorageGen2KV",
 		"activities": [
 			{
 				"name": "Set varWatermarkTimestamp",
