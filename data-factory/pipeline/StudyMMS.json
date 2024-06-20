@@ -472,6 +472,40 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "getTime",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": "select current timestamp, current timezone from sysibm.sysdummy1"
+					},
+					"dataset": {
+						"referenceName": "Db2KV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
 			}
 		],
 		"parameters": {
