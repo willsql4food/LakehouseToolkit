@@ -1,0 +1,337 @@
+{
+	"name": "getMMS_PO",
+	"properties": {
+		"description": "Bronze Data Ingestion MMS\n\nDataset to Linked Service mapping:\n\nWarkmarkMI: GenericAzureSqlDatabaseMI\n\nDb2KV: GenericDB2\n\nDLBronzeParquetKVFile: GenericAzureDataLakeStorageGen2KV",
+		"activities": [
+			{
+				"name": "Set varWatermarkTimestamp",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "varWatermarkTimestamp",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get Watermark List",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "dbo.GetWatermark",
+						"storedProcedureParameters": {
+							"BatchName": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.prmLCBatchName",
+									"type": "Expression"
+								}
+							},
+							"SourceServiceType": {
+								"type": "String",
+								"value": {
+									"value": "@variables('varSourceServiceType')",
+									"type": "Expression"
+								}
+							},
+							"SinkServiceType": {
+								"type": "String",
+								"value": {
+									"value": "@variables('varSinkServiceType')",
+									"type": "Expression"
+								}
+							},
+							"Environment": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().globalParameters.gpEnvironment",
+									"type": "Expression"
+								}
+							},
+							"RollingDays": {
+								"type": "Decimal",
+								"value": "0.0"
+							},
+							"WatermarkTimestamp": {
+								"type": "Datetime",
+								"value": "1901-01-01"
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach Object",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Watermark List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set varWatermarkTimestamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Watermark List').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "If Watermark Override Is True",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Copy By Batch Type",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(pipeline().parameters.prmWatermarkOverride, true)",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Update Watermark",
+										"type": "Script",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"linkedServiceName": {
+											"referenceName": "GenericAzureSqlDatabaseMI",
+											"type": "LinkedServiceReference",
+											"parameters": {
+												"lsServerName": {
+													"value": "@pipeline().globalParameters.gpWMSQL",
+													"type": "Expression"
+												},
+												"lsDatabaseName": {
+													"value": "@pipeline().globalParameters.gpWMDatabase",
+													"type": "Expression"
+												}
+											}
+										},
+										"typeProperties": {
+											"scripts": [
+												{
+													"type": "Query",
+													"text": {
+														"value": "@concat('UPDATE dbo.Watermark SET SourceWatermarkFieldValue = ''', formatDateTime(variables('varWatermarkTimestamp'), 'yyyy-MM-dd HH:mm:ss'), ''' WHERE Id = ', string(item().WatermarkId))\n",
+														"type": "Expression"
+													}
+												}
+											],
+											"scriptBlockExecutionTimeout": "02:00:00"
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "Copy By Batch Type",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().BatchType",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "Full",
+										"activities": [
+											{
+												"name": "Copy MMS to ADL",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [
+													{
+														"name": "Source",
+														"value": "@{item().SourceObjectName}"
+													},
+													{
+														"name": "Destination",
+														"value": "@{item().SinkdsFileSystem}/@{concat(item().SinkdsDirectory, '/', item().SourceName, '/', item().SinkObjectName, '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'yyyy'),formatDateTime(variables('varWatermarkTimestamp'), 'yyyy')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'MM'),formatDateTime(variables('varWatermarkTimestamp'), 'MM')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'dd'),formatDateTime(variables('varWatermarkTimestamp'), 'dd')))}/@{concat(item().SinkdsFileName, '.parquet')}"
+													}
+												],
+												"typeProperties": {
+													"source": {
+														"type": "Db2Source",
+														"query": {
+															"value": "@{if(equals(item().SourceQuery, null), concat('SELECT * FROM ', item().SourceObjectName, ' with UR'), item().SourceQuery)}\n",
+															"type": "Expression"
+														}
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "Db2KV",
+														"type": "DatasetReference",
+														"parameters": {
+															"dsKVBaseURL": {
+																"value": "@item().SourcedsKVBaseURL",
+																"type": "Expression"
+															},
+															"dsSecretName": {
+																"value": "@item().SourcedsSecretName",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DLBronzeParquetKVFile",
+														"type": "DatasetReference",
+														"parameters": {
+															"dsURL": {
+																"value": "@item().SinkdsURL",
+																"type": "Expression"
+															},
+															"dsSecretName": {
+																"value": "@item().SinkdsSecretName",
+																"type": "Expression"
+															},
+															"dsFileSystem": {
+																"value": "@item().SinkdsFileSystem",
+																"type": "Expression"
+															},
+															"dsDirectory": {
+																"value": "@concat(item().SinkdsDirectory, '/', item().SourceName, '/', item().SinkObjectName, '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'yyyy'),formatDateTime(variables('varWatermarkTimestamp'), 'yyyy')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'MM'),formatDateTime(variables('varWatermarkTimestamp'), 'MM')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'dd'),formatDateTime(variables('varWatermarkTimestamp'), 'dd')))",
+																"type": "Expression"
+															},
+															"dsFileName": {
+																"value": "@concat(item().SinkdsFileName, '.parquet')",
+																"type": "Expression"
+															},
+															"dsKVBaseURL": {
+																"value": "@item().SinkdsKVBaseURL",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"prmLCBatchName": {
+				"type": "string",
+				"defaultValue": "MMS_PROD PO to DLBronzeParquet entdatalakehouse"
+			},
+			"prmWatermarkOverride": {
+				"type": "bool",
+				"defaultValue": false
+			},
+			"prmOverrideStartDate": {
+				"type": "string"
+			},
+			"prmOverrideEndDate": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"varWatermarkTimestamp": {
+				"type": "String"
+			},
+			"varSourceServiceType": {
+				"type": "String",
+				"defaultValue": "Db2KV"
+			},
+			"varSinkServiceType": {
+				"type": "String",
+				"defaultValue": "DLBronzeParquetKV"
+			}
+		},
+		"folder": {
+			"name": "Data Lake"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-04-19T21:05:44Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

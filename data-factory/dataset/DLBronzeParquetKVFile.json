@@ -1,7 +1,7 @@
 {
-	"name": "DLBronzeParquetKV",
+	"name": "DLBronzeParquetKVFile",
 	"properties": {
-		"description": "Datalake accessed via Key Vault\nBronze layer \nFolder level",
+		"description": "Datalake accessed via Key Vault\nBronze layer \nSpecific parquet file",
 		"linkedServiceName": {
 			"referenceName": "GenericAzureDataLakeStorageGen2KV",
 			"type": "LinkedServiceReference",
@@ -33,6 +33,9 @@
 			"dsDirectory": {
 				"type": "string"
 			},
+			"dsFileName": {
+				"type": "string"
+			},
 			"dsKVBaseURL": {
 				"type": "string"
 			}
@@ -42,6 +45,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().dsFileName",
+					"type": "Expression"
+				},
 				"folderPath": {
 					"value": "@dataset().dsDirectory",
 					"type": "Expression"

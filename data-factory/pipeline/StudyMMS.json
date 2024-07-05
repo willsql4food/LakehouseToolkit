@@ -1,0 +1,527 @@
+{
+	"name": "StudyMMS",
+	"properties": {
+		"activities": [
+			{
+				"name": "getColumnList",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": {
+							"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, s.SCHEMA_TEXT\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, t.REMARKS\n, t.TYPE_CAT\n, t.TYPE_SCHEM\n, t.TYPE_NAME as table_type_name\n, t.SELF_REFERENCING_COL_NAME\n, t.REF_GENERATION\n, t.DBNAME\n, t.TABLE_TEXT\n, c.COLUMN_NAME\n, c.DATA_TYPE\n, c.TYPE_NAME as column_type_name\n, c.COLUMN_SIZE\n, c.BUFFER_LENGTH\n, c.DECIMAL_DIGITS\n, c.NUM_PREC_RADIX\n, c.NULLABLE\n, c.REMARKS as column_remarks\n, c.COLUMN_DEF\n, c.SQL_DATA_TYPE\n, c.SQL_DATETIME_SUB\n, c.CHAR_OCTET_LENGTH\n, c.ORDINAL_POSITION\n, c.IS_NULLABLE\n, c.JDBC_DATA_TYPE\n, c.SCOPE_CATALOG\n, c.SCOPE_SCHEMA\n, c.SCOPE_TABLE\n, c.SOURCE_DATA_TYPE\n, c.PSEUDO_COLUMN\n, c.COLUMN_TEXT\n, c.SYSTEM_COLUMN_NAME\n, c.I_DATA_TYPE\n, c.HIDDEN\n, c.HAS_DEFAULT\n, c.SOURCE_TYPE_NAME\n, c.SOURCE_SQL_DATA_TYPE\n, c.SOURCE_JDBC_DATA_TYPE\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLSCHEMAS s on s.TABLE_CAT = t.TABLE_CAT and s.TABLE_SCHEM = t.TABLE_SCHEM\njoin sysibm.SQLcolumns c on c.TABLE_CAT = t.TABLE_CAT and c.TABLE_SCHEM = t.TABLE_SCHEM and c.TABLE_NAME = t.TABLE_NAME\nwhere (t.table_name in ('POMHDR' ,\n'POMCAN',\n'POMHST',\n'POSTAT',\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')\nor t.table_name like 'INV%' and t.table_name not like '%DUPE%')\nand s.TABLE_SCHEM IN ('MM760LIB', 'MMLIBARCH', 'QGPL', 'STKUPD')\n\n/* \n-- Collect these:\n+ MM760LIB\tMMS 7.6.0 Database Library\n+ MMLIBARCH\tMM760LIB Archive Library\n+ QGPL\t    General Purpose Library\n+ STKUPD\t  Library for Stock Ledger Level Clearing\n\n-- Ignore these:\n- POMRST910\tnull\n- MM760DVL\tMMS 7.6.0 Development Database Files\n- MM760QAL\tMMS 7.6.0 QA Database Files\n */",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Db2KV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DLBronzeParquetKVFile",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsURL": "https://staab09289802.dfs.core.windows.net",
+							"dsSecretName": "key-staab09289802",
+							"dsFileSystem": "datalake",
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit",
+								"type": "Expression"
+							},
+							"dsFileName": "TableDefinitions.parquet",
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "LoopTables",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "getTableList",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('getTableList').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "SampleRows",
+							"type": "Copy",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "Db2Source",
+									"query": {
+										"value": "select * from @{item().table_schem}.@{item().table_name} limit 1000",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Db2KV",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@pipeline().parameters.prmSecretName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DLBronzeParquetKVFile",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsURL": "https://staab09289802.dfs.core.windows.net",
+										"dsSecretName": "key-staab09289802",
+										"dsFileSystem": "datalake",
+										"dsDirectory": {
+											"value": "@pipeline().parameters.prmPath",
+											"type": "Expression"
+										},
+										"dsFileName": {
+											"value": "@{item().table_schem}.@{item().table_name}.parquet",
+											"type": "Expression"
+										},
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "CountRows",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "Db2Source",
+									"query": {
+										"value": "select '@{item().table_schem}' table_schema, '@{item().table_name}' table_name, count(*) num_rows, '@{utcNow()}' measure_time from @{item().table_schem}.@{item().table_name}",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Db2KV",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@pipeline().parameters.prmSecretName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DLBronzeParquetKVFile",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsURL": "https://staab09289802.dfs.core.windows.net",
+										"dsSecretName": "key-staab09289802",
+										"dsFileSystem": "datalake",
+										"dsDirectory": {
+											"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+											"type": "Expression"
+										},
+										"dsFileName": {
+											"value": "@{item().table_schem}.@{item().table_name}.@{formatDateTime(utcNow(), 'YYYY-mm-dd')}.parquet",
+											"type": "Expression"
+										},
+										"dsKVBaseURL": {
+											"value": "@pipeline().parameters.prmKVBaseURL",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "getTableList",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": "select        t.table_schem, t.table_name\nFROM       sysibm.SQLTABLES t \nwhere       t.table_name in (\n'EDAASNI', \n'INVADI', \n'INVALC', \n'INVATD', \n'INVATR', \n'INVAUD', \n'INVAVG', \n'INVBAL', \n'INVBALQ1', \n'INVBALQ2', \n'INVBLX', \n'INVCAJ', \n'INVCAL', \n'INVCALDS', \n'INVCBF', \n'INVCBL', \n'INVCBX', \n'INVCCD', \n'INVCCH', \n'INVCCS', \n'INVCDL', \n'INVCDT', \n'INVCHS', \n'INVCHS1', \n'INVCHS2', \n'INVCHS3', \n'INVCMD', \n'INVCMH', \n'INVCMM', \n'INVCPP', \n'INVCPR', \n'INVCQE', \n'INVCQM', \n'INVCYS', \n'INVCZN', \n'INVCZS', \n'INVDAT', \n'INVDATIKB', \n'INVDFT', \n'INVDLT', \n'INVDPT', \n'INVDPTDS', \n'INVDSC', \n'INVDSCDS', \n'INVDSK', \n'INVDSS', \n'INVEBF', \n'INVEDT', \n'INVEFC', \n'INVEHC', \n'INVEHD', \n'INVEHH', \n'INVEHS', \n'INVEHW', \n'INVEMD', \n'INVEMH', \n'INVEMM', \n'INVENX', \n'INVEPD', \n'INVEPH', \n'INVEPR', \n'INVEQE', \n'INVEQM', \n'INVEST', \n'INVETP', \n'INVEUP', \n'INVEVA', \n'INVEVC', \n'INVEVD', \n'INVEVH', \n'INVEWD', \n'INVEWS', \n'INVEXC', \n'INVFIN', \n'INVFINDS', \n'INVGFM', \n'INVGHD', \n'INVGLI', \n'INVGPC', \n'INVGPD', \n'INVGPM', \n'INVGPO', \n'INVGPS', \n'INVGPT', \n'INVGPTED1', \n'INVGPTED2', \n'INVGRH', \n'INVGRS', \n'INVGSF', \n'INVGSL', \n'INVHAJ', \n'INVHLD', \n'INVHLDDS', \n'INVHLH', \n'INVHLHDS', \n'INVHMG', \n'INVHST', \n'INVHST1', \n'INVHST2', \n'INVHST3', \n'INVHSW', \n'INVIFG', \n'INVINT', \n'INVJOB', \n'INVLBL', \n'INVLTX', \n'INVMBD', \n'INVMBH', \n'INVMDL', \n'INVMFG', \n'INVMOD', \n'INVMSA', \n'INVMSADS', \n'INVMST', \n'INVMSTDS', \n'INVMSW', \n'INVMTA', \n'INVMTADS', \n'INVMVA', \n'INVOAD', \n'INVOADDS', \n'INVOAT', \n'INVOATDS', \n'INVOHF', \n'INVOICE_LINKING_TABLE', \n'INVOPN', \n'INVOPNDS', \n'INVORD', \n'INVPDQ', \n'INVPFG', \n'INVPLN', \n'INVPME', \n'INVPMK', \n'INVPOS', \n'INVPPD', \n'INVPPE', \n'INVPPH', \n'INVPPW', \n'INVPRF', \n'INVPRW', \n'INVPST', \n'INVRPB', \n'INVRSN', \n'INVSCD', \n'INVSCE', \n'INVSCP', \n'INVSEA', \n'INVSET', \n'INVSFM', \n'INVSHD', \n'INVSKG', \n'INVSKU', \n'INVSKUDS', \n'INVSLG', \n'INVSMG', \n'INVSPC', \n'INVSPL', \n'INVSPLDS', \n'INVSSK', \n'INVSTD', \n'INVSTDDS', \n'INVSTK', \n'INVSTX', \n'INVSUD', \n'INVSUH', \n'INVSUM', \n'INVTIK', \n'INVTRN', \n'INVTRNCA', \n'INVTRNCM', \n'INVTRNDW', \n'INVTRNER', \n'INVTRNES', \n'INVTRNET', \n'INVTRNHD', \n'INVTRNMC', \n'INVTRNPI', \n'INVTRNRP', \n'INVTRNSA', \n'INVTRNSE', \n'INVTRNSF', \n'INVTRNSL', \n'INVTRNST', \n'INVTRNSY', \n'INVTRNVT', \n'INVUMR', \n'INVUNP', \n'INVUPC', \n'INVUPCDS', \n'INVUPR', \n'INVVAD', \n'INVVAH', \n'INVVAT', \n'INVVBL', \n'INVVEN', \n'INVVENDS', \n'INVWFC', \n'INVWSP', \n'INVXCA', \n'INVXSK', \n'INVZAJ', \n'INVZON', \n'POMDSQ', \n'POMDTL', \n'POMHDR', \n'POMXTK', \n'POMCAN', \n'POMHST', \n'MSTFLD'\n)\n    and     t.table_schem in ('MM760LIB')"
+					},
+					"dataset": {
+						"referenceName": "Db2KV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "MergeRowCounts",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "LoopTables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"wildcardFolderPath": {
+								"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+								"type": "Expression"
+							},
+							"wildcardFileName": "*.parquet",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DLBronzeParquetKV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsURL": "https://staab09289802.dfs.core.windows.net",
+							"dsSecretName": "key-staab09289802",
+							"dsFileSystem": "datalake",
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+								"type": "Expression"
+							},
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DLBronzeParquetKVFile",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsURL": "https://staab09289802.dfs.core.windows.net",
+							"dsSecretName": "key-staab09289802",
+							"dsFileSystem": "datalake",
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit",
+								"type": "Expression"
+							},
+							"dsFileName": {
+								"value": "@{formatDateTime(utcNow(), 'yyyyMMdd-HHmm')}_row_counts.parquet",
+								"type": "Expression"
+							},
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "getTimestamps",
+				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": {
+							"value": "select 'S10F8F6P' AS TABLE_CAT, 'AHLIB' AS TABLE_SCHEM, 'POMHDR' AS TABLE_NAME, 'PURCHASE ORDER HEADER FILE' AS TABLE_TEXT, 'POEDAT' AS COLUMN_NAME, 'Entry Date' AS COLUMN_TEXT\n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT) AS MAX_DATE, '@{utcNow()}' AS MEASURE_TIME\nfrom AHLIB.POMHDR \nunion select 'S10F8F6P', 'AHLIB', 'POMHDR', 'PURCHASE ORDER HEADER FILE',     'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom AHLIB.POMHDR \nunion select 'S10F8F6P', 'MM760DVL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MM760DVL.POMHDR \nunion select 'S10F8F6P', 'MM760DVL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MM760DVL.POMHDR \nunion select 'S10F8F6P', 'MM760LIB', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MM760LIB.POMHDR \nunion select 'S10F8F6P', 'MM760LIB', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MM760LIB.POMHDR \nunion select 'S10F8F6P', 'MM760QAL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MM760QAL.POMHDR \nunion select 'S10F8F6P', 'MM760QAL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MM760QAL.POMHDR \nunion select 'S10F8F6P', 'MMLIBARCH', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MMLIBARCH.POMHDR \nunion select 'S10F8F6P', 'MMLIBARCH', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MMLIBARCH.POMHDR \nunion select 'S10F8F6P', 'POMRST910', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom POMRST910.POMHDR \nunion select 'S10F8F6P', 'POMRST910', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom POMRST910.POMHDR \nunion select 'S10F8F6P', 'MM760LIB', 'POMXTK', 'PO Reason Code trackingfile', 'TKDATE', 'Tracking Date' \n, MIN(TKDATE) as MIN_DATE, MAX(TKDATE), '@{utcNow()}'\nfrom MM760LIB.POMXTK \n",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Db2KV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DLBronzeParquetKVFile",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsURL": "https://staab09289802.dfs.core.windows.net",
+							"dsSecretName": "key-staab09289802",
+							"dsFileSystem": "datalake",
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit",
+								"type": "Expression"
+							},
+							"dsFileName": {
+								"value": "@{formatDateTime(utcNow(), 'yyyyMMdd-HHmm')}_date_ranges.parquet",
+								"type": "Expression"
+							},
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "getTime",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": "select current timestamp, current timezone from sysibm.sysdummy1"
+					},
+					"dataset": {
+						"referenceName": "Db2KV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"parameters": {
+			"prmKVBaseURL": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"prmSecretName": {
+				"type": "string",
+				"defaultValue": "MMS-PROD"
+			},
+			"prmPath": {
+				"type": "string",
+				"defaultValue": "bronze/MMS_PROD"
+			}
+		},
+		"annotations": []
+	}
+}

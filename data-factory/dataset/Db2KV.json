@@ -1,0 +1,34 @@
+{
+	"name": "Db2KV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GenericDB2",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsKVBaseURL": {
+					"value": "@dataset().dsKVBaseURL",
+					"type": "Expression"
+				},
+				"lsSecretName": {
+					"value": "@dataset().dsSecretName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"dsKVBaseURL": {
+				"type": "string"
+			},
+			"dsSecretName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Db2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "",
+			"table": ""
+		}
+	}
+}
