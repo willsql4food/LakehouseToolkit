@@ -1,6 +1,5 @@
 {
 	"name": "Sftp1",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
 		"type": "Sftp",
@@ -8,15 +7,24 @@
 			"host": "sftp-dev.flooranddecor.com",
 			"port": 22,
 			"skipHostKeyValidation": false,
-			"hostKeyFingerPrint": "ssh-ed25519 32 65:f2:99:cb:36:05:ab:a0:06:1c:45:c3:6c:58:a5:92",
+			"hostKeyFingerprint": "ssh-ed25519 32 65:f2:99:cb:36:05:ab:a0:06:1c:45:c3:6c:58:a5:92",
 			"authenticationType": "Basic",
 			"userName": "foundation_dw ",
-			"allowKeyboardInteractiveAuth": true,
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI4ZTMzYjEzOC1lYjBkLTQ2Y2QtOTA1OS0wNTIwODM3ZGRlOTkiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "foundation-sftp-pwd"
+			},
+			"hostKeyFingerPrint": "ssh-ed25519 32 65:f2:99:cb:36:05:ab:a0:06:1c:45:c3:6c:58:a5:92",
+			"allowKeyboardInteractiveAuth": true
 		},
 		"connectVia": {
 			"referenceName": "shirt-ACB",
 			"type": "IntegrationRuntimeReference"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
