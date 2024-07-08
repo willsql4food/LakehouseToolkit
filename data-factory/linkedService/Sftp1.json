@@ -7,10 +7,11 @@
 		"typeProperties": {
 			"host": "sftp-dev.flooranddecor.com",
 			"port": 22,
-			"skipHostKeyValidation": true,
+			"skipHostKeyValidation": false,
+			"hostKeyFingerprint": "ssh-ed25519 32 65:f2:99:cb:36:05:ab:a0:06:1c:45:c3:6c:58:a5:92",
 			"authenticationType": "Basic",
 			"userName": "foundation_dw ",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJiY2ZlODBkYS1lYzQ5LTRhZDctOTM2OS04MmVmOTJlNjIzNzYiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJhMzU2YWJmOC1mMjE4LTRkOTItOTM5Yy01MDA4MzM5NzNkN2IiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
 			"referenceName": "shirt-ACB",
