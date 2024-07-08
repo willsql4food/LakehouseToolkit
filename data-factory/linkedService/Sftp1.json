@@ -17,8 +17,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"secretName": "foundation-sftp-pwd"
-			},
-			"allowKeyboardInteractiveAuth": true
+			}
 		},
 		"connectVia": {
 			"referenceName": "shirt-ACB",
