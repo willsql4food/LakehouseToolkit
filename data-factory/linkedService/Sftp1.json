@@ -18,7 +18,6 @@
 				},
 				"secretName": "foundation-sftp-pwd"
 			},
-			"hostKeyFingerPrint": "ssh-ed25519 32 65:f2:99:cb:36:05:ab:a0:06:1c:45:c3:6c:58:a5:92",
 			"allowKeyboardInteractiveAuth": true
 		},
 		"connectVia": {
