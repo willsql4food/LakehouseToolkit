@@ -10,6 +10,7 @@
 			"skipHostKeyValidation": false,
 			"hostKeyFingerprint": "ssh-ed25519 32 65:f2:99:cb:36:05:ab:a0:06:1c:45:c3:6c:58:a5:92",
 			"authenticationType": "Basic",
+			"allowKeyboardInteractiveAuth": true,
 			"userName": "foundation_dw ",
 			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI5MTZkNTJhYS01YThiLTRkMjgtOWVkZi1jYTMwYTQ0YjU5ZjQiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
