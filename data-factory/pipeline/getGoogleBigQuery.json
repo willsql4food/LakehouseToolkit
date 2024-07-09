@@ -174,13 +174,16 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "select   '@{pipeline().parameters.StorageRegion}' as StorageRegion, t.table_catalog as TableCatalog, t.table_schema as TableSchema, t.table_name as TableName\nFROM  `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.TABLES t\n",
+							"value": "select   '@{pipeline().parameters.StorageRegion}' as StorageRegion, t.table_catalog as TableCatalog, t.table_schema as TableSchema, t.table_name as TableName\nFROM  `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.TABLES t\nwhere t.table_type = 'BASE TABLE'\n",
 							"type": "Expression"
 						}
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"preCopyScript": "delete from [stage].[gbqObject]",
+						"preCopyScript": {
+							"value": "delete from [stage].[gbqObject] where StorageRegion = '@{pipeline().parameters.StorageRegion}'",
+							"type": "Expression"
+						},
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
 						"disableMetricsCollection": false
