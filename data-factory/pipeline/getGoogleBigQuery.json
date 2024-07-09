@@ -174,7 +174,7 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.TABLES t\n",
+							"value": "select   '@{pipeline().parameters.StorageRegion}' as StorageRegion, t.table_catalog as TableCatalog, t.table_schema as TableSchema, t.table_name as TableName\nFROM  `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.TABLES t\n",
 							"type": "Expression"
 						}
 					},
@@ -310,7 +310,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where StorageRegion = '@{pipeline().parameters.StorageRegion}''",
+							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where StorageRegion = '@{pipeline().parameters.StorageRegion}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
