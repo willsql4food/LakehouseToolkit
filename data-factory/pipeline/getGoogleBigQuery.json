@@ -5,6 +5,8 @@
 			{
 				"name": "Loop Batches",
 				"type": "ForEach",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqLoadBatches",
@@ -139,7 +141,7 @@
 									{
 										"type": "Query",
 										"text": {
-											"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n",
+											"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   StorageRegion = '@{item().StorageRegion}'\n    and TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n",
 											"type": "Expression"
 										}
 									}
@@ -174,7 +176,7 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "select   '@{pipeline().parameters.StorageRegion}' as StorageRegion, t.table_catalog as TableCatalog, t.table_schema as TableSchema, t.table_name as TableName\nFROM  `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.TABLES t\nwhere t.table_type = 'BASE TABLE'\n",
+							"value": "select   '@{pipeline().parameters.StorageRegion}' as StorageRegion, t.table_catalog as TableCatalog, t.table_schema as TableSchema, t.table_name as TableName\nFROM  `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.TABLES t\nwhere t.table_schema = '@{pipeline().parameters.TableSchema}' and t.table_type = 'BASE TABLE'\n",
 							"type": "Expression"
 						}
 					},
@@ -267,6 +269,19 @@
 									"value": "@pipeline().parameters.BatchRowLimit",
 									"type": "Expression"
 								}
+							},
+							"StorageRegion": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.StorageRegion",
+									"type": "Expression"
+								}
+							},
+							"TableSchema": {
+								"value": {
+									"value": "@pipeline().parameters.TableSchema",
+									"type": "Expression"
+								}
 							}
 						},
 						"queryTimeout": "02:00:00",
@@ -313,7 +328,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where StorageRegion = '@{pipeline().parameters.StorageRegion}'",
+							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where StorageRegion = '@{pipeline().parameters.StorageRegion}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -367,7 +382,7 @@
 					"sink": {
 						"type": "AzureSqlSink",
 						"preCopyScript": {
-							"value": "delete from [stage].[gbqObjectDetail] where StorageRegion = '@{pipeline().parameters.StorageRegion}'",
+							"value": "delete from [stage].[gbqObjectDetail] where StorageRegion = '@{pipeline().parameters.StorageRegion}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
 							"type": "Expression"
 						},
 						"writeBehavior": "insert",
@@ -472,7 +487,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{pipeline().parameters.StorageRegion}' as StorageRegion for json path)",
+							"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', Parameters = (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{pipeline().parameters.StorageRegion}' as StorageRegion, '@{pipeline().parameters.TableSchema}' as TableSchema for json path)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -566,7 +581,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "with cte as (\n    select      gbqCondition = convert(nvarchar(max), concat('table_catalog = ''', TableCatalog, ''' and table_schema = ''', TableSchema, ''' and table_name = ''', TableName, '''')),\n                sqlCondition = convert(nvarchar(max), concat('StorageRegion = ''', StorageRegion, ''' and TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from        dbo.gbqObjectToLoad\n    group by    StorageRegion, TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select ''@{pipeline().parameters.StorageRegion}'' as StorageRegion, table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\n        +   'from `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
+							"value": "with cte as (\n    select      gbqCondition = convert(nvarchar(max), concat('table_catalog = ''', TableCatalog, ''' and table_schema = ''', TableSchema, ''' and table_name = ''', TableName, '''')),\n                sqlCondition = convert(nvarchar(max), concat('StorageRegion = ''', StorageRegion, ''' and TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from        dbo.gbqObjectToLoad\n    where       StorageRegion = ''@{pipeline().parameters.StorageRegion}'' and TableSchema = ''@{pipeline().parameters.TableSchema}''\n    group by    StorageRegion, TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select StorageRegion = ''@{pipeline().parameters.StorageRegion}'', TableCatalog = table_catalog, TableSchema = table_schema, TableName = table_name, ColumnName = column_name, ColumnId = coalesce(ordinal_position, -1), DataType = data_type from `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -671,6 +686,10 @@
 			"StorageRegion": {
 				"type": "string",
 				"defaultValue": "region-us"
+			},
+			"TableSchema": {
+				"type": "string",
+				"defaultValue": "analytics_250303278"
 			}
 		},
 		"variables": {
