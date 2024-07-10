@@ -360,13 +360,16 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
+							"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' StorageRegion, ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
 							"type": "Expression"
 						}
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"preCopyScript": "delete from [stage].[gbqObjectDetail]",
+						"preCopyScript": {
+							"value": "delete from [stage].[gbqObjectDetail] where StorageRegion = '@{pipeline().parameters.StorageRegion}'",
+							"type": "Expression"
+						},
 						"writeBehavior": "insert",
 						"sqlWriterUseTableLock": false,
 						"disableMetricsCollection": false
@@ -563,7 +566,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "with cte as (\n    select      gbqCondition = convert(nvarchar(max), concat('table_catalog = ''', TableCatalog, '''', ' and table_schema = ''', TableSchema, '''', ' and table_name = ''', TableName, '''')),\n                sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, '''', ' and TableSchema = ''', TableSchema, '''', ' and TableName = ''', TableName, '''')) \n    from        dbo.gbqObjectToLoad\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\n        +   'from `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
+							"value": "with cte as (\n    select      gbqCondition = convert(nvarchar(max), concat('table_catalog = ''', TableCatalog, ''' and table_schema = ''', TableSchema, ''' and table_name = ''', TableName, '''')),\n                sqlCondition = convert(nvarchar(max), concat('StorageRegion = ''', StorageRegion, ''' and TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from        dbo.gbqObjectToLoad\n    group by    StorageRegion, TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select ''@{pipeline().parameters.StorageRegion}'' as StorageRegion, table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\n        +   'from `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -610,7 +613,7 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
+							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as StorageRegion, ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
 							"type": "Expression"
 						}
 					},
