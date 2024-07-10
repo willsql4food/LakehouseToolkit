@@ -340,8 +340,6 @@
 				"name": "Get_gbqObjectDetail",
 				"description": "Execute query and store results in stage table in Load Control.",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_RowCountQueries",
@@ -592,8 +590,6 @@
 				"name": "Get_gbqColumn",
 				"description": "Get the column definitions of each object to load",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_ColumnQuery",
