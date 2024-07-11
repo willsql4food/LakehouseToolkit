@@ -86,14 +86,18 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "DLBronzeParquetKV",
+									"referenceName": "DLBronzeParquetKVFile",
 									"type": "DatasetReference",
 									"parameters": {
 										"dsURL": "https://staab09289802.dfs.core.windows.net",
 										"dsSecretName": "key-staab09289802",
 										"dsFileSystem": "datalake",
 										"dsDirectory": {
-											"value": "bronze/GoogleAnalytics/@{item().FilePath}",
+											"value": "bronze/Google/@{item().FilePath}",
+											"type": "Expression"
+										},
+										"dsFileName": {
+											"value": "@{item().FileName}",
 											"type": "Expression"
 										},
 										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
