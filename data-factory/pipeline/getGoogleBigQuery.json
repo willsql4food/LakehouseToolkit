@@ -178,14 +178,14 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "select   '@{pipeline().parameters.StorageRegion}' as StorageRegion, t.table_catalog as TableCatalog, t.table_schema as TableSchema, t.table_name as TableName\nFROM  `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.TABLES t\nwhere t.table_schema = '@{pipeline().parameters.TableSchema}' and t.table_type = 'BASE TABLE'\n",
+							"value": "select   t.table_catalog as TableCatalog, t.table_schema as TableSchema, t.table_name as TableName, partition_id, total_rows, last_modified_time\nFROM  @{pipeline().parameters.TableCatalog}.@{pipeline().parameters.TableSchema}.INFORMATION_SCHEMA.PARTITIONS\n",
 							"type": "Expression"
 						}
 					},
 					"sink": {
 						"type": "AzureSqlSink",
 						"preCopyScript": {
-							"value": "delete from [stage].[gbqObject] where StorageRegion = '@{pipeline().parameters.StorageRegion}'",
+							"value": "delete from [stage].[gbqObject] where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
 							"type": "Expression"
 						},
 						"writeBehavior": "insert",
@@ -272,10 +272,10 @@
 									"type": "Expression"
 								}
 							},
-							"StorageRegion": {
+							"TableCatalog": {
 								"type": "String",
 								"value": {
-									"value": "@pipeline().parameters.StorageRegion",
+									"value": "@pipeline().parameters.TableCatalog",
 									"type": "Expression"
 								}
 							},
@@ -330,7 +330,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where StorageRegion = '@{pipeline().parameters.StorageRegion}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
+							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -377,14 +377,14 @@
 					"source": {
 						"type": "GoogleBigQuerySource",
 						"query": {
-							"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' StorageRegion, ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
+							"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
 							"type": "Expression"
 						}
 					},
 					"sink": {
 						"type": "AzureSqlSink",
 						"preCopyScript": {
-							"value": "delete from [stage].[gbqObjectDetail] where StorageRegion = '@{pipeline().parameters.StorageRegion}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
+							"value": "delete from [stage].[gbqObjectDetail] where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
 							"type": "Expression"
 						},
 						"writeBehavior": "insert",
@@ -476,6 +476,8 @@
 				"name": "LogJobStart",
 				"description": "Record the Pipeline start in LoadControl and capture the Id of the row for use in auditing.",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -489,7 +491,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', Parameters = (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{pipeline().parameters.StorageRegion}' as StorageRegion, '@{pipeline().parameters.TableSchema}' as TableSchema for json path)",
+							"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', Parameters = (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{pipeline().parameters.TableCatalog}' as TableCatalog, '@{pipeline().parameters.TableSchema}' as TableSchema for json path)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -583,7 +585,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_catalog = ''', TableCatalog, ''' and table_schema = ''', TableSchema, ''' and table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('StorageRegion = ''', StorageRegion, ''' and TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where StorageRegion = '@{pipeline().parameters.StorageRegion}' and TableSchema = '@{pipeline().parameters.TableSchema}'\n    group by    StorageRegion, TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select ''@{pipeline().parameters.StorageRegion}'' as StorageRegion, table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType from `@{pipeline().parameters.StorageRegion}`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
+							"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType from @{pipeline().parameters.TableCatalog}.@{pipeline().parameters.TableSchema}.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -678,6 +680,23 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "varTimeFiddle",
+					"value": {
+						"value": "@addHours(pipeline().TriggerTime, -48)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -685,13 +704,13 @@
 				"type": "int",
 				"defaultValue": 1000000
 			},
-			"StorageRegion": {
-				"type": "string",
-				"defaultValue": "region-us"
-			},
 			"TableSchema": {
 				"type": "string",
 				"defaultValue": "analytics_250303278"
+			},
+			"TableCatalog": {
+				"type": "string",
+				"defaultValue": "fnd-cloud-project"
 			}
 		},
 		"variables": {
@@ -702,6 +721,10 @@
 			"varLCSQLDatabase": {
 				"type": "String",
 				"defaultValue": "LoadControl"
+			},
+			"varTimeFiddle": {
+				"type": "String",
+				"defaultValue": "1901-01-01"
 			}
 		},
 		"annotations": []
