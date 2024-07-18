@@ -231,6 +231,8 @@
 				"name": "Get_gbqLoadBatches",
 				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqObjectDetail",
@@ -357,8 +359,6 @@
 				"name": "Get_gbqObjectDetail",
 				"description": "Execute query and store results in stage table in Load Control.",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_RowCountQueries",
@@ -587,7 +587,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType from @{pipeline().parameters.TableCatalog}.@{pipeline().parameters.TableSchema}.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
+							"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType, cast(case when is_partitioning_column = ''YES'' then 1 else 0 end as boolean) as IsPartitioningColumn from @{pipeline().parameters.TableCatalog}.@{pipeline().parameters.TableSchema}.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -614,8 +614,6 @@
 				"name": "Get_gbqColumn",
 				"description": "Get the column definitions of each object to load",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_ColumnQuery",
@@ -701,7 +699,7 @@
 			},
 			"DataAgeLimitHours": {
 				"type": "int",
-				"defaultValue": 0
+				"defaultValue": 24
 			}
 		},
 		"variables": {
