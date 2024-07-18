@@ -5,6 +5,8 @@
 			{
 				"name": "Loop Batches",
 				"type": "ForEach",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqLoadBatches",
@@ -231,8 +233,6 @@
 				"name": "Get_gbqLoadBatches",
 				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
 				"type": "Lookup",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqObjectDetail",
@@ -691,7 +691,7 @@
 			},
 			"TableSchema": {
 				"type": "string",
-				"defaultValue": "analytics_250303278"
+				"defaultValue": "analytics_250303278/google_ads_575_595_8051"
 			},
 			"TableCatalog": {
 				"type": "string",
