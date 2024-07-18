@@ -478,8 +478,6 @@
 				"name": "LogJobStart",
 				"description": "Record the Pipeline start in LoadControl and capture the Id of the row for use in auditing.",
 				"type": "Lookup",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
