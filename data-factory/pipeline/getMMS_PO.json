@@ -301,7 +301,7 @@
 		"parameters": {
 			"prmLCBatchName": {
 				"type": "string",
-				"defaultValue": "MMS_PROD PO to DLBronzeParquet entdatalakehouse"
+				"defaultValue": "MMS_QA PO to DLBronzeParquet entdatalakehouse"
 			},
 			"prmWatermarkOverride": {
 				"type": "bool",
