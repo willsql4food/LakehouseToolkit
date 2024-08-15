@@ -324,7 +324,7 @@
 			},
 			"varSinkServiceType": {
 				"type": "String",
-				"defaultValue": "DLBronzeParquetKV"
+				"defaultValue": "DLBronzeParquetKVFile"
 			}
 		},
 		"folder": {
