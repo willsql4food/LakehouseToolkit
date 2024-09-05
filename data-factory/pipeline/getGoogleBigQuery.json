@@ -176,7 +176,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "GoogleBigQuerySource",
+						"type": "GoogleBigQueryV2Source",
 						"query": {
 							"value": "select   table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, partition_id as PartitionId, total_rows as TotalRows, last_modified_time as LastModifiedTime\nFROM  @{pipeline().parameters.TableCatalog}.@{pipeline().parameters.TableSchema}.INFORMATION_SCHEMA.PARTITIONS @{if(greater(pipeline().parameters.DataAgeLimitHours, 0), concat('where last_modified_time > timestamp(parse_datetime(''%Y-%m-%dT%H:%M:%E*SZ'', ''', addHours(pipeline().TriggerTime, mul(-1, pipeline().parameters.DataAgeLimitHours)), '''))'), '')}\n",
 							"type": "Expression"
@@ -204,8 +204,12 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "GoogleBigQueryFND",
-						"type": "DatasetReference"
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+							"dsSecretName": "gbq-fnd-cloud-project"
+						}
 					}
 				],
 				"outputs": [
