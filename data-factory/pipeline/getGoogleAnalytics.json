@@ -180,7 +180,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "GoogleBigQuerySource",
+						"type": "GoogleBigQueryV2Source",
 						"query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
 					},
 					"sink": {
@@ -202,8 +202,12 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "GoogleBigQueryFND",
-						"type": "DatasetReference"
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+							"dsSecretName": "gbq-fnd-cloud-project"
+						}
 					}
 				],
 				"outputs": [
