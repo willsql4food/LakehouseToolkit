@@ -53,7 +53,7 @@
 							],
 							"typeProperties": {
 								"source": {
-									"type": "GoogleBigQuerySource",
+									"type": "GoogleBigQueryV2Source",
 									"query": {
 										"value": "@item().SelectCmd",
 										"type": "Expression"
@@ -80,13 +80,17 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "GoogleBigQueryFND",
-									"type": "DatasetReference"
+									"referenceName": "GoogleBigQueryDirect",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+										"dsSecretName": "gbq-fnd-cloud-project"
+									}
 								}
 							],
 							"outputs": [
 								{
-									"referenceName": "DLBronzeParquetKV",
+									"referenceName": "DLBronzeParquetKVFile",
 									"type": "DatasetReference",
 									"parameters": {
 										"dsURL": "https://staab09289802.dfs.core.windows.net",
@@ -94,6 +98,10 @@
 										"dsFileSystem": "datalake",
 										"dsDirectory": {
 											"value": "bronze/GoogleAnalytics/@{item().FilePath}",
+											"type": "Expression"
+										},
+										"dsFileName": {
+											"value": "@{item().FileName}",
 											"type": "Expression"
 										},
 										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
@@ -221,8 +229,6 @@
 				"name": "Get_gbqLoadBatches",
 				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
 				"type": "Lookup",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqObjectDetail",
