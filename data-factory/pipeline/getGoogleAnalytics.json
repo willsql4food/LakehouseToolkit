@@ -221,6 +221,8 @@
 				"name": "Get_gbqLoadBatches",
 				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqObjectDetail",
@@ -349,7 +351,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "GoogleBigQuerySource",
+						"type": "GoogleBigQueryV2Source",
 						"query": {
 							"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
 							"type": "Expression"
@@ -374,8 +376,12 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "GoogleBigQueryFND",
-						"type": "DatasetReference"
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+							"dsSecretName": "gbq-fnd-cloud-project"
+						}
 					}
 				],
 				"outputs": [
@@ -596,7 +602,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "GoogleBigQuerySource",
+						"type": "GoogleBigQueryV2Source",
 						"query": {
 							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
 							"type": "Expression"
@@ -624,8 +630,12 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "GoogleBigQueryFND",
-						"type": "DatasetReference"
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+							"dsSecretName": "gbq-fnd-cloud-project"
+						}
 					}
 				],
 				"outputs": [
