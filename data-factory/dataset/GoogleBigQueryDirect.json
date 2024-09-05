@@ -1,0 +1,36 @@
+{
+	"name": "GoogleBigQueryDirect",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GoogleBigQueryDirect",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsBaseURL": {
+					"value": "@dataset().dsBaseURL",
+					"type": "Expression"
+				},
+				"lsSecretName": {
+					"value": "@dataset().dsSecretName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"dsBaseURL": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"dsSecretName": {
+				"type": "string",
+				"defaultValue": "gbq-fnd-cloud-project"
+			}
+		},
+		"annotations": [],
+		"type": "GoogleBigQueryV2Object",
+		"schema": [],
+		"typeProperties": {
+			"dataset": "runtime",
+			"table": "dynamic"
+		}
+	}
+}
