@@ -53,7 +53,7 @@
 							],
 							"typeProperties": {
 								"source": {
-									"type": "GoogleBigQuerySource",
+									"type": "GoogleBigQueryV2Source",
 									"query": {
 										"value": "@item().SelectCmd",
 										"type": "Expression"
@@ -80,8 +80,12 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "GoogleBigQueryFND",
-									"type": "DatasetReference"
+									"referenceName": "GoogleBigQueryDirect",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+										"dsSecretName": "gbq-fnd-cloud-project"
+									}
 								}
 							],
 							"outputs": [
@@ -381,7 +385,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "GoogleBigQuerySource",
+						"type": "GoogleBigQueryV2Source",
 						"query": {
 							"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
 							"type": "Expression"
@@ -409,8 +413,12 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "GoogleBigQueryFND",
-						"type": "DatasetReference"
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+							"dsSecretName": "gbq-fnd-cloud-project"
+						}
 					}
 				],
 				"outputs": [
@@ -634,7 +642,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "GoogleBigQuerySource",
+						"type": "GoogleBigQueryV2Source",
 						"query": {
 							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as StorageRegion, ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
 							"type": "Expression"
@@ -662,8 +670,12 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "GoogleBigQueryFND",
-						"type": "DatasetReference"
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+							"dsSecretName": "gbq-fnd-cloud-project"
+						}
 					}
 				],
 				"outputs": [
