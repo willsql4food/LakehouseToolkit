@@ -168,6 +168,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "Get Pipeline Parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -445,7 +451,7 @@
 				"type": "Script",
 				"dependsOn": [
 					{
-						"activity": "Loop Batches",
+						"activity": "IfDataWasLoaded",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -696,6 +702,119 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "IfDataWasLoaded",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Loop Batches",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(activity('Get_RowCountQueries').output.value[0].TableList, null))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "ProcessSilver",
+							"type": "DatabricksNotebook",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Repos/ENTDATALAKEHOUSE/databricks-entdatalakehouse/BRONZE-SILVER/GA_Delta_Incremental_Load_Silver",
+								"baseParameters": {
+									"TableList": {
+										"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].TableList, 'nothing,to,do,at,this,time')\n",
+										"type": "Expression"
+									},
+									"StorageAccount": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsStorageAccount",
+										"type": "Expression"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzDatabricksJobCluster",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"lsWorkspaceUrl": "https://adb-7286372339506263.3.azuredatabricks.net",
+									"lsWorkspaceResourceId": "/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Get Pipeline Parameters",
+				"description": "Use GetWatermark to get environment specific parameter values (key vault, storage account, etc.)",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "dbo.GetWatermark",
+						"storedProcedureParameters": {
+							"BatchName": {
+								"type": "String",
+								"value": "Google Analytics to datalakehouse"
+							},
+							"SourceServiceType": {
+								"type": "String",
+								"value": "Pipeline_getGoogleAnalytics"
+							},
+							"SinkServiceType": {
+								"type": "String",
+								"value": "Pipeline_getGoogleAnalytics"
+							},
+							"Environment": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().globalParameters.gpEnvironment",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": true
+				}
 			}
 		],
 		"parameters": {
