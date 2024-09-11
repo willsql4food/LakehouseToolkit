@@ -16,7 +16,7 @@
 			},
 			"BronzeIngestionKvUrl": {
 				"type": "string",
-				"value": "https://kv-sbx-bronzeingestion.vault.azure.net/"
+				"value": "https://akv-ab092898.vault.azure.net/"
 			}
 		}
 	},
