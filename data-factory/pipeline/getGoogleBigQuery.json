@@ -186,12 +186,6 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
-					},
-					{
-						"activity": "Get Pipeline Parameters",
-						"dependencyConditions": [
-							"Succeeded"
-						]
 					}
 				],
 				"policy": {
@@ -528,7 +522,14 @@
 				"name": "LogJobStart",
 				"description": "Record the Pipeline start in LoadControl and capture the Id of the row for use in auditing.",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Get Pipeline Parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -541,7 +542,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', Parameters = (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{pipeline().parameters.TableCatalog}' as TableCatalog, '@{pipeline().parameters.TableSchema}' as TableSchema for json path)",
+							"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', Parameters = (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' as TableCatalog, '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}' as TableSchema for json path)",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -552,11 +553,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"dsServerName": {
-								"value": "@variables('varLCSQLServer')",
+								"value": "@pipeline().globalParameters.gpWMSQL",
 								"type": "Expression"
 							},
 							"dsDatabaseName": {
-								"value": "@variables('varLCSQLDatabase')",
+								"value": "@pipeline().globalParameters.gpWMDatabase",
 								"type": "Expression"
 							}
 						}
