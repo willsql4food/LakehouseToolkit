@@ -13,6 +13,10 @@
 			"gpWMDatabase": {
 				"type": "string",
 				"value": "LoadControl"
+			},
+			"BronzeIngestionKvUrl": {
+				"type": "string",
+				"value": "https://kv-sbx-bronzeingestion.vault.azure.net/"
 			}
 		}
 	},
