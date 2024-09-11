@@ -5,6 +5,8 @@
 			{
 				"name": "Loop Batches",
 				"type": "ForEach",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqLoadBatches",
@@ -263,8 +265,6 @@
 				"name": "Get_gbqLoadBatches",
 				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
 				"type": "Lookup",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_gbqObjectDetail",
@@ -391,8 +391,6 @@
 				"name": "Get_gbqObjectDetail",
 				"description": "Execute query and store results in stage table in Load Control.",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_RowCountQueries",
@@ -663,8 +661,6 @@
 				"name": "Get_gbqColumn",
 				"description": "Get the column definitions of each object to load",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_ColumnQuery",
@@ -747,6 +743,8 @@
 			{
 				"name": "IfDataWasLoaded",
 				"type": "IfCondition",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Loop Batches",
