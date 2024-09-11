@@ -83,8 +83,14 @@
 									"referenceName": "GoogleBigQueryDirect",
 									"type": "DatasetReference",
 									"parameters": {
-										"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
-										"dsSecretName": "gbq-fnd-cloud-project"
+										"dsBaseURL": {
+											"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -93,18 +99,30 @@
 									"referenceName": "DLBronzeParquetKVFile",
 									"type": "DatasetReference",
 									"parameters": {
-										"dsURL": "https://staab09289802.dfs.core.windows.net",
-										"dsSecretName": "key-staab09289802",
-										"dsFileSystem": "datalake",
+										"dsURL": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsURL",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsSecretName",
+											"type": "Expression"
+										},
+										"dsFileSystem": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsFileSystem",
+											"type": "Expression"
+										},
 										"dsDirectory": {
-											"value": "bronze/Google/@{item().FilePath}",
+											"value": "@{activity('Get Pipeline Parameters').output.firstRow.SinkdsDirectory}/@{item().FilePath}",
 											"type": "Expression"
 										},
 										"dsFileName": {
 											"value": "@{item().FileName}",
 											"type": "Expression"
 										},
-										"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
+										"dsKVBaseURL": {
+											"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+											"type": "Expression"
+										}
 									}
 								}
 							]
@@ -133,11 +151,11 @@
 								"type": "LinkedServiceReference",
 								"parameters": {
 									"lsServerName": {
-										"value": "@variables('varLCSQLServer')",
+										"value": "@pipeline().globalParameters.gpWMSQL",
 										"type": "Expression"
 									},
 									"lsDatabaseName": {
-										"value": "@variables('varLCSQLDatabase')",
+										"value": "@pipeline().globalParameters.gpWMDatabase",
 										"type": "Expression"
 									}
 								}
@@ -188,14 +206,14 @@
 					"source": {
 						"type": "GoogleBigQueryV2Source",
 						"query": {
-							"value": "select   table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, partition_id as PartitionId, total_rows as TotalRows, last_modified_time as LastModifiedTime\nFROM  @{pipeline().parameters.TableCatalog}.@{pipeline().parameters.TableSchema}.INFORMATION_SCHEMA.PARTITIONS @{if(greater(pipeline().parameters.DataAgeLimitHours, 0), concat('where last_modified_time > timestamp(parse_datetime(''%Y-%m-%dT%H:%M:%E*SZ'', ''', addHours(pipeline().TriggerTime, mul(-1, pipeline().parameters.DataAgeLimitHours)), '''))'), '')}\n",
+							"value": "select   table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, partition_id as PartitionId, total_rows as TotalRows, last_modified_time as LastModifiedTime\nFROM  @{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}.@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}.INFORMATION_SCHEMA.PARTITIONS @{if(greater(pipeline().parameters.DataAgeLimitHours, 0), concat('where last_modified_time > timestamp(parse_datetime(''%Y-%m-%dT%H:%M:%E*SZ'', ''', addHours(pipeline().TriggerTime, mul(-1, pipeline().parameters.DataAgeLimitHours)), '''))'), '')}\n",
 							"type": "Expression"
 						}
 					},
 					"sink": {
 						"type": "AzureSqlSink",
 						"preCopyScript": {
-							"value": "delete from [stage].[gbqObject] where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
+							"value": "delete from [stage].[gbqObject] where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
 							"type": "Expression"
 						},
 						"writeBehavior": "insert",
@@ -217,8 +235,14 @@
 						"referenceName": "GoogleBigQueryDirect",
 						"type": "DatasetReference",
 						"parameters": {
-							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
-							"dsSecretName": "gbq-fnd-cloud-project"
+							"dsBaseURL": {
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -228,11 +252,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"dsServerName": {
-								"value": "@variables('varLCSQLServer')",
+								"value": "@pipeline().globalParameters.gpWMSQL",
 								"type": "Expression"
 							},
 							"dsDatabaseName": {
-								"value": "@variables('varLCSQLDatabase')",
+								"value": "@pipeline().globalParameters.gpWMDatabase",
 								"type": "Expression"
 							},
 							"dsSchema": "stage",
@@ -291,13 +315,13 @@
 							"TableCatalog": {
 								"type": "String",
 								"value": {
-									"value": "@pipeline().parameters.TableCatalog",
+									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog",
 									"type": "Expression"
 								}
 							},
 							"TableSchema": {
 								"value": {
-									"value": "@pipeline().parameters.TableSchema",
+									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema",
 									"type": "Expression"
 								}
 							}
@@ -310,11 +334,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"dsServerName": {
-								"value": "@variables('varLCSQLServer')",
+								"value": "@pipeline().globalParameters.gpWMSQL",
 								"type": "Expression"
 							},
 							"dsDatabaseName": {
-								"value": "@variables('varLCSQLDatabase')",
+								"value": "@pipeline().globalParameters.gpWMDatabase",
 								"type": "Expression"
 							}
 						}
@@ -346,7 +370,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
+							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -357,11 +381,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"dsServerName": {
-								"value": "@variables('varLCSQLServer')",
+								"value": "@pipeline().globalParameters.gpWMSQL",
 								"type": "Expression"
 							},
 							"dsDatabaseName": {
-								"value": "@variables('varLCSQLDatabase')",
+								"value": "@pipeline().globalParameters.gpWMDatabase",
 								"type": "Expression"
 							}
 						}
@@ -373,6 +397,8 @@
 				"name": "Get_gbqObjectDetail",
 				"description": "Execute query and store results in stage table in Load Control.",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_RowCountQueries",
@@ -400,7 +426,7 @@
 					"sink": {
 						"type": "AzureSqlSink",
 						"preCopyScript": {
-							"value": "delete from [stage].[gbqObjectDetail] where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'",
+							"value": "delete from [stage].[gbqObjectDetail] where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
 							"type": "Expression"
 						},
 						"writeBehavior": "insert",
@@ -422,8 +448,14 @@
 						"referenceName": "GoogleBigQueryDirect",
 						"type": "DatasetReference",
 						"parameters": {
-							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
-							"dsSecretName": "gbq-fnd-cloud-project"
+							"dsBaseURL": {
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -433,11 +465,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"dsServerName": {
-								"value": "@variables('varLCSQLServer')",
+								"value": "@pipeline().globalParameters.gpWMSQL",
 								"type": "Expression"
 							},
 							"dsDatabaseName": {
-								"value": "@variables('varLCSQLDatabase')",
+								"value": "@pipeline().globalParameters.gpWMDatabase",
 								"type": "Expression"
 							},
 							"dsSchema": "stage",
@@ -470,11 +502,11 @@
 					"type": "LinkedServiceReference",
 					"parameters": {
 						"lsServerName": {
-							"value": "@variables('varLCSQLServer')",
+							"value": "@pipeline().globalParameters.gpWMSQL",
 							"type": "Expression"
 						},
 						"lsDatabaseName": {
-							"value": "@variables('varLCSQLDatabase')",
+							"value": "@pipeline().globalParameters.gpWMDatabase",
 							"type": "Expression"
 						}
 					}
@@ -557,11 +589,11 @@
 					"type": "LinkedServiceReference",
 					"parameters": {
 						"lsServerName": {
-							"value": "@variables('varLCSQLServer')",
+							"value": "@pipeline().globalParameters.gpWMSQL",
 							"type": "Expression"
 						},
 						"lsDatabaseName": {
-							"value": "@variables('varLCSQLDatabase')",
+							"value": "@pipeline().globalParameters.gpWMDatabase",
 							"type": "Expression"
 						}
 					}
@@ -603,7 +635,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where TableCatalog = '@{pipeline().parameters.TableCatalog}' and TableSchema = '@{pipeline().parameters.TableSchema}'\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType, cast(case when is_partitioning_column = ''YES'' then 1 else 0 end as boolean) as IsPartitioningColumn from @{pipeline().parameters.TableCatalog}.@{pipeline().parameters.TableSchema}.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
+							"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType, cast(case when is_partitioning_column = ''YES'' then 1 else 0 end as boolean) as IsPartitioningColumn from @{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}.@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -614,11 +646,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"dsServerName": {
-								"value": "@variables('varLCSQLServer')",
+								"value": "@pipeline().globalParameters.gpWMSQL",
 								"type": "Expression"
 							},
 							"dsDatabaseName": {
-								"value": "@variables('varLCSQLDatabase')",
+								"value": "@pipeline().globalParameters.gpWMDatabase",
 								"type": "Expression"
 							}
 						}
@@ -630,6 +662,8 @@
 				"name": "Get_gbqColumn",
 				"description": "Get the column definitions of each object to load",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Skipped",
 				"dependsOn": [
 					{
 						"activity": "Get_ColumnQuery",
@@ -679,8 +713,14 @@
 						"referenceName": "GoogleBigQueryDirect",
 						"type": "DatasetReference",
 						"parameters": {
-							"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
-							"dsSecretName": "gbq-fnd-cloud-project"
+							"dsBaseURL": {
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -690,11 +730,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"dsServerName": {
-								"value": "@variables('varLCSQLServer')",
+								"value": "@pipeline().globalParameters.gpWMSQL",
 								"type": "Expression"
 							},
 							"dsDatabaseName": {
-								"value": "@variables('varLCSQLDatabase')",
+								"value": "@pipeline().globalParameters.gpWMDatabase",
 								"type": "Expression"
 							},
 							"dsSchema": "dbo",
@@ -734,7 +774,10 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"notebookPath": "/Repos/ENTDATALAKEHOUSE/databricks-entdatalakehouse/BRONZE-SILVER/GA_Delta_Incremental_Load_Silver",
+								"notebookPath": {
+									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksNotebookPath",
+									"type": "Expression"
+								},
 								"baseParameters": {
 									"TableList": {
 										"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].TableList, 'nothing,to,do,at,this,time')\n",
@@ -750,8 +793,14 @@
 								"referenceName": "AzDatabricksJobCluster",
 								"type": "LinkedServiceReference",
 								"parameters": {
-									"lsWorkspaceUrl": "https://adb-7286372339506263.3.azuredatabricks.net",
-									"lsWorkspaceResourceId": "/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898"
+									"lsWorkspaceUrl": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksWorkspaceUrl",
+										"type": "Expression"
+									},
+									"lsWorkspaceResourceId": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksWorkspaceId",
+										"type": "Expression"
+									}
 								}
 							}
 						}
@@ -822,27 +871,9 @@
 				"type": "int",
 				"defaultValue": 1000000
 			},
-			"TableSchema": {
-				"type": "string",
-				"defaultValue": "analytics_250303278/google_ads_575_595_8051"
-			},
-			"TableCatalog": {
-				"type": "string",
-				"defaultValue": "fnd-cloud-project"
-			},
 			"DataAgeLimitHours": {
 				"type": "int",
 				"defaultValue": 24
-			}
-		},
-		"variables": {
-			"varLCSQLServer": {
-				"type": "String",
-				"defaultValue": "sql-ab092898.database.windows.net"
-			},
-			"varLCSQLDatabase": {
-				"type": "String",
-				"defaultValue": "LoadControl"
 			}
 		},
 		"annotations": []
