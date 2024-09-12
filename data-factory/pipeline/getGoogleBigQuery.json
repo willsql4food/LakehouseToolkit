@@ -826,15 +826,24 @@
 						"storedProcedureParameters": {
 							"BatchName": {
 								"type": "String",
-								"value": "Google Analytics to datalakehouse"
+								"value": {
+									"value": "@pipeline().parameters.BatchName",
+									"type": "Expression"
+								}
 							},
 							"SourceServiceType": {
 								"type": "String",
-								"value": "Pipeline_getGoogleAnalytics"
+								"value": {
+									"value": "@pipeline().parameters.SourceServiceType",
+									"type": "Expression"
+								}
 							},
 							"SinkServiceType": {
 								"type": "String",
-								"value": "Pipeline_getGoogleAnalytics"
+								"value": {
+									"value": "@pipeline().parameters.SinkServiceType",
+									"type": "Expression"
+								}
 							},
 							"Environment": {
 								"type": "String",
@@ -873,6 +882,18 @@
 			"DataAgeLimitHours": {
 				"type": "int",
 				"defaultValue": 24
+			},
+			"BatchName": {
+				"type": "string",
+				"defaultValue": "Google Analytics to datalakehouse"
+			},
+			"SourceServiceType": {
+				"type": "string",
+				"defaultValue": "Pipeline_getGoogleAnalytics"
+			},
+			"SinkServiceType": {
+				"type": "string",
+				"defaultValue": "Pipeline_getGoogleAnalytics"
 			}
 		},
 		"annotations": []
