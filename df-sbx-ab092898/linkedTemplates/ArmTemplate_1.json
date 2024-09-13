@@ -7,6 +7,23 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "df-sbx-ab092898"
 		},
+		"OnpremSqlDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
+			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
+		},
+		"OnpremSqlDb_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().userName}"
+		},
+		"sfdc_properties_typeProperties_environmentUrl": {
+			"type": "string",
+			"defaultValue": "https://login.salesforce.com"
+		},
+		"sfdc_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "@{linkedService().userName}"
+		},
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 			"type": "string",
 			"defaultValue": "stage"
@@ -26,16 +43,175 @@
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
 			"type": "string",
 			"defaultValue": "PersonFlexible"
-		},
-		"trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit": {
-			"type": "int",
-			"defaultValue": 1000000
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQuery')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "GoogleBigQuery",
+				"typeProperties": {
+					"project": "fnd-cloud-project",
+					"requestGoogleDriveScope": false,
+					"authenticationType": "ServiceAuthentication",
+					"email": "ga4-access@fnd-cloud-project.iam.gserviceaccount.com",
+					"keyFilePath": "C:\\source\\keys\\fnd-cloud-project-b2a8d27db4f3.json",
+					"trustedCertPath": "",
+					"useSystemTrustStore": false
+				},
+				"connectVia": {
+					"referenceName": "shirt-ACB",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryDirect')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"lsBaseURL": {
+						"type": "string",
+						"defaultValue": "https://akv-ab092898.vault.azure.net/"
+					},
+					"lsSecretName": {
+						"type": "string",
+						"defaultValue": "gbq-fnd-cloud-project"
+					}
+				},
+				"annotations": [],
+				"type": "GoogleBigQueryV2",
+				"typeProperties": {
+					"projectId": "fnd-cloud-project",
+					"authenticationType": "ServiceAuthentication",
+					"keyFileContent": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "GenericAzureKeyVaultMI",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"lsBaseURL": {
+									"value": "@linkedService().lsBaseURL",
+									"type": "Expression"
+								}
+							}
+						},
+						"secretName": {
+							"value": "@linkedService().lsSecretName",
+							"type": "Expression"
+						}
+					}
+				},
+				"connectVia": {
+					"referenceName": "suckLess",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OnpremSqlDb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"serverFqdn": {
+						"type": "string",
+						"defaultValue": "localhost\\ACB"
+					},
+					"dbName": {
+						"type": "string",
+						"defaultValue": "master"
+					},
+					"userName": {
+						"type": "string",
+						"defaultValue": "ab092898@flooranddecor.com"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('OnpremSqlDb_connectionString')]",
+					"userName": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "WinAuthPwd"
+					}
+				},
+				"connectVia": {
+					"referenceName": "shirt-ACB",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sfdc')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"userName": {
+						"type": "string",
+						"defaultValue": "fred"
+					},
+					"sfdcPwdSecret": {
+						"type": "string",
+						"defaultValue": "sfdcPwd"
+					},
+					"sfdcTokenSecret": {
+						"type": "string",
+						"defaultValue": "sfdcToken"
+					},
+					"sfdcApiVersion": {
+						"type": "string",
+						"defaultValue": "52.0"
+					}
+				},
+				"annotations": [],
+				"type": "Salesforce",
+				"typeProperties": {
+					"environmentUrl": "[parameters('sfdc_properties_typeProperties_environmentUrl')]",
+					"username": "[parameters('sfdc_properties_typeProperties_username')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().sfdcPwdSecret",
+							"type": "Expression"
+						}
+					},
+					"securityToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().sfdcTokenSecret",
+							"type": "Expression"
+						}
+					},
+					"apiVersion": "@{linkedService().sfdcApiVersion}"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/SchemaDriftTest')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -340,6 +516,68 @@
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"description": "Datalake accessed via Key Vault\nBronze layer \nFolder level",
+				"linkedServiceName": {
+					"referenceName": "GenericAzureDataLakeStorageGen2KV",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsURL": {
+							"value": "@dataset().dsURL",
+							"type": "Expression"
+						},
+						"lsSecretName": {
+							"value": "@dataset().dsSecretName",
+							"type": "Expression"
+						},
+						"lsKVBaseURL": {
+							"value": "@dataset().dsKVBaseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"dsURL": {
+						"type": "string"
+					},
+					"dsSecretName": {
+						"type": "string"
+					},
+					"dsFileSystem": {
+						"type": "string"
+					},
+					"dsDirectory": {
+						"type": "string"
+					},
+					"dsKVBaseURL": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().dsDirectory",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().dsFileSystem",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DLBronzeParquetKVFile')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Datalake accessed via Key Vault\nBronze layer \nSpecific parquet file",
 				"linkedServiceName": {
 					"referenceName": "GenericAzureDataLakeStorageGen2KV",
 					"type": "LinkedServiceReference",
@@ -403,42 +641,82 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryFND')]",
+			"name": "[concat(parameters('factoryName'), '/Db2KV')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "GoogleBigQuery",
-					"type": "LinkedServiceReference"
+					"referenceName": "GenericDB2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsKVBaseURL": {
+							"value": "@dataset().dsKVBaseURL",
+							"type": "Expression"
+						},
+						"lsSecretName": {
+							"value": "@dataset().dsSecretName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"dsKVBaseURL": {
+						"type": "string"
+					},
+					"dsSecretName": {
+						"type": "string"
+					}
 				},
 				"annotations": [],
-				"type": "GoogleBigQueryObject",
+				"type": "Db2Table",
 				"schema": [],
 				"typeProperties": {
-					"dataset": "dw_mirror",
-					"table": "messages"
+					"schema": "",
+					"table": ""
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryMirror')]",
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryDirect')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "GoogleBigQueryMirror",
-					"type": "LinkedServiceReference"
+					"referenceName": "GoogleBigQueryDirect",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@dataset().dsBaseURL",
+							"type": "Expression"
+						},
+						"lsSecretName": {
+							"value": "@dataset().dsSecretName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"dsBaseURL": {
+						"type": "string",
+						"defaultValue": "https://akv-ab092898.vault.azure.net/"
+					},
+					"dsSecretName": {
+						"type": "string",
+						"defaultValue": "gbq-fnd-cloud-project"
+					}
 				},
 				"annotations": [],
-				"type": "GoogleBigQueryObject",
+				"type": "GoogleBigQueryV2Object",
 				"schema": [],
 				"typeProperties": {
-					"dataset": "dw_mirror",
-					"table": "messages"
+					"dataset": "runtime",
+					"table": "dynamic"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/GoogleBigQueryDirect')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/OpSqlTable')]",
@@ -500,7 +778,9 @@
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/OnpremSqlDb')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/DL to OnPremSql')]",
@@ -579,6 +859,543 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/StudyMMS')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "getColumnList",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "Db2Source",
+								"query": {
+									"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, s.SCHEMA_TEXT\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, t.REMARKS\n, t.TYPE_CAT\n, t.TYPE_SCHEM\n, t.TYPE_NAME as table_type_name\n, t.SELF_REFERENCING_COL_NAME\n, t.REF_GENERATION\n, t.DBNAME\n, t.TABLE_TEXT\n, c.COLUMN_NAME\n, c.DATA_TYPE\n, c.TYPE_NAME as column_type_name\n, c.COLUMN_SIZE\n, c.BUFFER_LENGTH\n, c.DECIMAL_DIGITS\n, c.NUM_PREC_RADIX\n, c.NULLABLE\n, c.REMARKS as column_remarks\n, c.COLUMN_DEF\n, c.SQL_DATA_TYPE\n, c.SQL_DATETIME_SUB\n, c.CHAR_OCTET_LENGTH\n, c.ORDINAL_POSITION\n, c.IS_NULLABLE\n, c.JDBC_DATA_TYPE\n, c.SCOPE_CATALOG\n, c.SCOPE_SCHEMA\n, c.SCOPE_TABLE\n, c.SOURCE_DATA_TYPE\n, c.PSEUDO_COLUMN\n, c.COLUMN_TEXT\n, c.SYSTEM_COLUMN_NAME\n, c.I_DATA_TYPE\n, c.HIDDEN\n, c.HAS_DEFAULT\n, c.SOURCE_TYPE_NAME\n, c.SOURCE_SQL_DATA_TYPE\n, c.SOURCE_JDBC_DATA_TYPE\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLSCHEMAS s on s.TABLE_CAT = t.TABLE_CAT and s.TABLE_SCHEM = t.TABLE_SCHEM\njoin sysibm.SQLcolumns c on c.TABLE_CAT = t.TABLE_CAT and c.TABLE_SCHEM = t.TABLE_SCHEM and c.TABLE_NAME = t.TABLE_NAME\nwhere (t.table_name in ('POMHDR' ,\n'POMCAN',\n'POMHST',\n'POSTAT',\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')\nor t.table_name like 'INV%' and t.table_name not like '%DUPE%')\nand s.TABLE_SCHEM IN ('MM760LIB', 'MMLIBARCH', 'QGPL', 'STKUPD')\n\n/* \n-- Collect these:\n+ MM760LIB\tMMS 7.6.0 Database Library\n+ MMLIBARCH\tMM760LIB Archive Library\n+ QGPL\t    General Purpose Library\n+ STKUPD\t  Library for Stock Ledger Level Clearing\n\n-- Ignore these:\n- POMRST910\tnull\n- MM760DVL\tMMS 7.6.0 Development Database Files\n- MM760QAL\tMMS 7.6.0 QA Database Files\n */",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Db2KV",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@pipeline().parameters.prmSecretName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DLBronzeParquetKVFile",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsURL": "https://staab09289802.dfs.core.windows.net",
+									"dsSecretName": "key-staab09289802",
+									"dsFileSystem": "datalake",
+									"dsDirectory": {
+										"value": "@{pipeline().parameters.prmPath}/Audit",
+										"type": "Expression"
+									},
+									"dsFileName": "TableDefinitions.parquet",
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "LoopTables",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "getTableList",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('getTableList').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "SampleRows",
+									"type": "Copy",
+									"state": "Inactive",
+									"onInactiveMarkAs": "Succeeded",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "Db2Source",
+											"query": {
+												"value": "select * from @{item().table_schem}.@{item().table_name} limit 1000",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "Db2KV",
+											"type": "DatasetReference",
+											"parameters": {
+												"dsKVBaseURL": {
+													"value": "@pipeline().parameters.prmKVBaseURL",
+													"type": "Expression"
+												},
+												"dsSecretName": {
+													"value": "@pipeline().parameters.prmSecretName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DLBronzeParquetKVFile",
+											"type": "DatasetReference",
+											"parameters": {
+												"dsURL": "https://staab09289802.dfs.core.windows.net",
+												"dsSecretName": "key-staab09289802",
+												"dsFileSystem": "datalake",
+												"dsDirectory": {
+													"value": "@pipeline().parameters.prmPath",
+													"type": "Expression"
+												},
+												"dsFileName": {
+													"value": "@{item().table_schem}.@{item().table_name}.parquet",
+													"type": "Expression"
+												},
+												"dsKVBaseURL": {
+													"value": "@pipeline().parameters.prmKVBaseURL",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "CountRows",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "Db2Source",
+											"query": {
+												"value": "select '@{item().table_schem}' table_schema, '@{item().table_name}' table_name, count(*) num_rows, '@{utcNow()}' measure_time from @{item().table_schem}.@{item().table_name}",
+												"type": "Expression"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "Db2KV",
+											"type": "DatasetReference",
+											"parameters": {
+												"dsKVBaseURL": {
+													"value": "@pipeline().parameters.prmKVBaseURL",
+													"type": "Expression"
+												},
+												"dsSecretName": {
+													"value": "@pipeline().parameters.prmSecretName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DLBronzeParquetKVFile",
+											"type": "DatasetReference",
+											"parameters": {
+												"dsURL": "https://staab09289802.dfs.core.windows.net",
+												"dsSecretName": "key-staab09289802",
+												"dsFileSystem": "datalake",
+												"dsDirectory": {
+													"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+													"type": "Expression"
+												},
+												"dsFileName": {
+													"value": "@{item().table_schem}.@{item().table_name}.@{formatDateTime(utcNow(), 'YYYY-mm-dd')}.parquet",
+													"type": "Expression"
+												},
+												"dsKVBaseURL": {
+													"value": "@pipeline().parameters.prmKVBaseURL",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "getTableList",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "Db2Source",
+								"query": "select        t.table_schem, t.table_name\nFROM       sysibm.SQLTABLES t \nwhere       t.table_name in (\n'EDAASNI', \n'INVADI', \n'INVALC', \n'INVATD', \n'INVATR', \n'INVAUD', \n'INVAVG', \n'INVBAL', \n'INVBALQ1', \n'INVBALQ2', \n'INVBLX', \n'INVCAJ', \n'INVCAL', \n'INVCALDS', \n'INVCBF', \n'INVCBL', \n'INVCBX', \n'INVCCD', \n'INVCCH', \n'INVCCS', \n'INVCDL', \n'INVCDT', \n'INVCHS', \n'INVCHS1', \n'INVCHS2', \n'INVCHS3', \n'INVCMD', \n'INVCMH', \n'INVCMM', \n'INVCPP', \n'INVCPR', \n'INVCQE', \n'INVCQM', \n'INVCYS', \n'INVCZN', \n'INVCZS', \n'INVDAT', \n'INVDATIKB', \n'INVDFT', \n'INVDLT', \n'INVDPT', \n'INVDPTDS', \n'INVDSC', \n'INVDSCDS', \n'INVDSK', \n'INVDSS', \n'INVEBF', \n'INVEDT', \n'INVEFC', \n'INVEHC', \n'INVEHD', \n'INVEHH', \n'INVEHS', \n'INVEHW', \n'INVEMD', \n'INVEMH', \n'INVEMM', \n'INVENX', \n'INVEPD', \n'INVEPH', \n'INVEPR', \n'INVEQE', \n'INVEQM', \n'INVEST', \n'INVETP', \n'INVEUP', \n'INVEVA', \n'INVEVC', \n'INVEVD', \n'INVEVH', \n'INVEWD', \n'INVEWS', \n'INVEXC', \n'INVFIN', \n'INVFINDS', \n'INVGFM', \n'INVGHD', \n'INVGLI', \n'INVGPC', \n'INVGPD', \n'INVGPM', \n'INVGPO', \n'INVGPS', \n'INVGPT', \n'INVGPTED1', \n'INVGPTED2', \n'INVGRH', \n'INVGRS', \n'INVGSF', \n'INVGSL', \n'INVHAJ', \n'INVHLD', \n'INVHLDDS', \n'INVHLH', \n'INVHLHDS', \n'INVHMG', \n'INVHST', \n'INVHST1', \n'INVHST2', \n'INVHST3', \n'INVHSW', \n'INVIFG', \n'INVINT', \n'INVJOB', \n'INVLBL', \n'INVLTX', \n'INVMBD', \n'INVMBH', \n'INVMDL', \n'INVMFG', \n'INVMOD', \n'INVMSA', \n'INVMSADS', \n'INVMST', \n'INVMSTDS', \n'INVMSW', \n'INVMTA', \n'INVMTADS', \n'INVMVA', \n'INVOAD', \n'INVOADDS', \n'INVOAT', \n'INVOATDS', \n'INVOHF', \n'INVOICE_LINKING_TABLE', \n'INVOPN', \n'INVOPNDS', \n'INVORD', \n'INVPDQ', \n'INVPFG', \n'INVPLN', \n'INVPME', \n'INVPMK', \n'INVPOS', \n'INVPPD', \n'INVPPE', \n'INVPPH', \n'INVPPW', \n'INVPRF', \n'INVPRW', \n'INVPST', \n'INVRPB', \n'INVRSN', \n'INVSCD', \n'INVSCE', \n'INVSCP', \n'INVSEA', \n'INVSET', \n'INVSFM', \n'INVSHD', \n'INVSKG', \n'INVSKU', \n'INVSKUDS', \n'INVSLG', \n'INVSMG', \n'INVSPC', \n'INVSPL', \n'INVSPLDS', \n'INVSSK', \n'INVSTD', \n'INVSTDDS', \n'INVSTK', \n'INVSTX', \n'INVSUD', \n'INVSUH', \n'INVSUM', \n'INVTIK', \n'INVTRN', \n'INVTRNCA', \n'INVTRNCM', \n'INVTRNDW', \n'INVTRNER', \n'INVTRNES', \n'INVTRNET', \n'INVTRNHD', \n'INVTRNMC', \n'INVTRNPI', \n'INVTRNRP', \n'INVTRNSA', \n'INVTRNSE', \n'INVTRNSF', \n'INVTRNSL', \n'INVTRNST', \n'INVTRNSY', \n'INVTRNVT', \n'INVUMR', \n'INVUNP', \n'INVUPC', \n'INVUPCDS', \n'INVUPR', \n'INVVAD', \n'INVVAH', \n'INVVAT', \n'INVVBL', \n'INVVEN', \n'INVVENDS', \n'INVWFC', \n'INVWSP', \n'INVXCA', \n'INVXSK', \n'INVZAJ', \n'INVZON', \n'POMDSQ', \n'POMDTL', \n'POMHDR', \n'POMXTK', \n'POMCAN', \n'POMHST', \n'MSTFLD'\n)\n    and     t.table_schem in ('MM760LIB')"
+							},
+							"dataset": {
+								"referenceName": "Db2KV",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@pipeline().parameters.prmSecretName",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "MergeRowCounts",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "LoopTables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ParquetSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": false,
+									"wildcardFolderPath": {
+										"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+										"type": "Expression"
+									},
+									"wildcardFileName": "*.parquet",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "ParquetReadSettings"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings",
+									"copyBehavior": "MergeFiles"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DLBronzeParquetKV",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsURL": "https://staab09289802.dfs.core.windows.net",
+									"dsSecretName": "key-staab09289802",
+									"dsFileSystem": "datalake",
+									"dsDirectory": {
+										"value": "@{pipeline().parameters.prmPath}/Audit/Raw",
+										"type": "Expression"
+									},
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DLBronzeParquetKVFile",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsURL": "https://staab09289802.dfs.core.windows.net",
+									"dsSecretName": "key-staab09289802",
+									"dsFileSystem": "datalake",
+									"dsDirectory": {
+										"value": "@{pipeline().parameters.prmPath}/Audit",
+										"type": "Expression"
+									},
+									"dsFileName": {
+										"value": "@{formatDateTime(utcNow(), 'yyyyMMdd-HHmm')}_row_counts.parquet",
+										"type": "Expression"
+									},
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "getTimestamps",
+						"type": "Copy",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Skipped",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "Db2Source",
+								"query": {
+									"value": "select 'S10F8F6P' AS TABLE_CAT, 'AHLIB' AS TABLE_SCHEM, 'POMHDR' AS TABLE_NAME, 'PURCHASE ORDER HEADER FILE' AS TABLE_TEXT, 'POEDAT' AS COLUMN_NAME, 'Entry Date' AS COLUMN_TEXT\n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT) AS MAX_DATE, '@{utcNow()}' AS MEASURE_TIME\nfrom AHLIB.POMHDR \nunion select 'S10F8F6P', 'AHLIB', 'POMHDR', 'PURCHASE ORDER HEADER FILE',     'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom AHLIB.POMHDR \nunion select 'S10F8F6P', 'MM760DVL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MM760DVL.POMHDR \nunion select 'S10F8F6P', 'MM760DVL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MM760DVL.POMHDR \nunion select 'S10F8F6P', 'MM760LIB', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MM760LIB.POMHDR \nunion select 'S10F8F6P', 'MM760LIB', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MM760LIB.POMHDR \nunion select 'S10F8F6P', 'MM760QAL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MM760QAL.POMHDR \nunion select 'S10F8F6P', 'MM760QAL', 'POMHDR', 'PURCHASE ORDER HEADER FILE',  'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MM760QAL.POMHDR \nunion select 'S10F8F6P', 'MMLIBARCH', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom MMLIBARCH.POMHDR \nunion select 'S10F8F6P', 'MMLIBARCH', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom MMLIBARCH.POMHDR \nunion select 'S10F8F6P', 'POMRST910', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POEDAT', 'Entry Date' \n, MIN(POEDAT) as MIN_DATE, MAX(POEDAT), '@{utcNow()}'\nfrom POMRST910.POMHDR \nunion select 'S10F8F6P', 'POMRST910', 'POMHDR', 'PURCHASE ORDER HEADER FILE', 'POLCHG', 'Last Change Date'\n, MIN(POLCHG) as MIN_DATE, MAX(POLCHG), '@{utcNow()}'\nfrom POMRST910.POMHDR \nunion select 'S10F8F6P', 'MM760LIB', 'POMXTK', 'PO Reason Code trackingfile', 'TKDATE', 'Tracking Date' \n, MIN(TKDATE) as MIN_DATE, MAX(TKDATE), '@{utcNow()}'\nfrom MM760LIB.POMXTK \n",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Db2KV",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@pipeline().parameters.prmSecretName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DLBronzeParquetKVFile",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsURL": "https://staab09289802.dfs.core.windows.net",
+									"dsSecretName": "key-staab09289802",
+									"dsFileSystem": "datalake",
+									"dsDirectory": {
+										"value": "@{pipeline().parameters.prmPath}/Audit",
+										"type": "Expression"
+									},
+									"dsFileName": {
+										"value": "@{formatDateTime(utcNow(), 'yyyyMMdd-HHmm')}_date_ranges.parquet",
+										"type": "Expression"
+									},
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "getTime",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "Db2Source",
+								"query": "select current timestamp, current timezone from sysibm.sysdummy1"
+							},
+							"dataset": {
+								"referenceName": "Db2KV",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@pipeline().parameters.prmSecretName",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"prmKVBaseURL": {
+						"type": "string",
+						"defaultValue": "https://akv-ab092898.vault.azure.net/"
+					},
+					"prmSecretName": {
+						"type": "string",
+						"defaultValue": "MMS-PROD"
+					},
+					"prmPath": {
+						"type": "string",
+						"defaultValue": "bronze/MMS_PROD"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Db2KV')]",
+				"[concat(variables('factoryId'), '/datasets/DLBronzeParquetKVFile')]",
+				"[concat(variables('factoryId'), '/datasets/DLBronzeParquetKV')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/getGoogleAnalytics')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -587,8 +1404,6 @@
 					{
 						"name": "Loop Batches",
 						"type": "ForEach",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Skipped",
 						"dependsOn": [
 							{
 								"activity": "Get_gbqLoadBatches",
@@ -637,7 +1452,7 @@
 									],
 									"typeProperties": {
 										"source": {
-											"type": "GoogleBigQuerySource",
+											"type": "GoogleBigQueryV2Source",
 											"query": {
 												"value": "@item().SelectCmd",
 												"type": "Expression"
@@ -664,14 +1479,17 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "GoogleBigQueryFND",
+											"referenceName": "GoogleBigQueryDirect",
 											"type": "DatasetReference",
-											"parameters": {}
+											"parameters": {
+												"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+												"dsSecretName": "gbq-fnd-cloud-project"
+											}
 										}
 									],
 									"outputs": [
 										{
-											"referenceName": "DLBronzeParquetKV",
+											"referenceName": "DLBronzeParquetKVFile",
 											"type": "DatasetReference",
 											"parameters": {
 												"dsURL": "https://staab09289802.dfs.core.windows.net",
@@ -682,7 +1500,7 @@
 													"type": "Expression"
 												},
 												"dsFileName": {
-													"value": "@item().FileName",
+													"value": "@{item().FileName}",
 													"type": "Expression"
 												},
 												"dsKVBaseURL": "https://akv-ab092898.vault.azure.net/"
@@ -761,7 +1579,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "GoogleBigQuerySource",
+								"type": "GoogleBigQueryV2Source",
 								"query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
 							},
 							"sink": {
@@ -783,9 +1601,12 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "GoogleBigQueryFND",
+								"referenceName": "GoogleBigQueryDirect",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+									"dsSecretName": "gbq-fnd-cloud-project"
+								}
 							}
 						],
 						"outputs": [
@@ -939,7 +1760,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "GoogleBigQuerySource",
+								"type": "GoogleBigQueryV2Source",
 								"query": {
 									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
 									"type": "Expression"
@@ -964,9 +1785,12 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "GoogleBigQueryFND",
+								"referenceName": "GoogleBigQueryDirect",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+									"dsSecretName": "gbq-fnd-cloud-project"
+								}
 							}
 						],
 						"outputs": [
@@ -1144,7 +1968,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "with cte as (\r\n    select      concat('table_catalog = ''', TableCatalog, '''', ' and table_schema = ''', TableSchema, '''', ' and table_name = ''', TableName, '''') gbqCondition,\r\n                concat('TableCatalog = ''', TableCatalog, '''', ' and TableSchema = ''', TableSchema, '''', ' and TableName = ''', TableName, '''') sqlCondition\r\n    from        dbo.gbqObjectToLoad\r\n    group by    TableCatalog, TableSchema, TableName\r\n)\r\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\r\n        +   'from `region-us`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\r\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\r\nfrom        cte",
+								"sqlReaderQuery": "with cte as (\r\n    select      gbqCondition = convert(nvarchar(max), concat('table_catalog = ''', TableCatalog, '''', ' and table_schema = ''', TableSchema, '''', ' and table_name = ''', TableName, '''')),\r\n                sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, '''', ' and TableSchema = ''', TableSchema, '''', ' and TableName = ''', TableName, '''')) \r\n    from        dbo.gbqObjectToLoad\r\n    group by    TableCatalog, TableSchema, TableName\r\n)\r\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as  ColumnName, ordinal_position as  ColumnId, data_type as DataType '\r\n        +   'from `region-us`.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\r\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\r\nfrom        cte",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -1187,7 +2011,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "GoogleBigQuerySource",
+								"type": "GoogleBigQueryV2Source",
 								"query": {
 									"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
 									"type": "Expression"
@@ -1215,9 +2039,12 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "GoogleBigQueryFND",
+								"referenceName": "GoogleBigQueryDirect",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"dsBaseURL": "https://akv-ab092898.vault.azure.net/",
+									"dsSecretName": "gbq-fnd-cloud-project"
+								}
 							}
 						],
 						"outputs": [
@@ -1262,12 +2089,12 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/GoogleBigQueryFND')]",
-				"[concat(variables('factoryId'), '/datasets/DLBronzeParquetKV')]"
+				"[concat(variables('factoryId'), '/datasets/GoogleBigQueryDirect')]",
+				"[concat(variables('factoryId'), '/datasets/DLBronzeParquetKVFile')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/getGoogleAnalytics_onPrem_LoadControl')]",
+			"name": "[concat(parameters('factoryName'), '/getGoogleBigQuery')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1323,7 +2150,7 @@
 									],
 									"typeProperties": {
 										"source": {
-											"type": "GoogleBigQuerySource",
+											"type": "GoogleBigQueryV2Source",
 											"query": {
 												"value": "@item().SelectCmd",
 												"type": "Expression"
@@ -1350,23 +2177,47 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "GoogleBigQueryFND",
+											"referenceName": "GoogleBigQueryDirect",
 											"type": "DatasetReference",
-											"parameters": {}
+											"parameters": {
+												"dsBaseURL": {
+													"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+													"type": "Expression"
+												},
+												"dsSecretName": {
+													"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+													"type": "Expression"
+												}
+											}
 										}
 									],
 									"outputs": [
 										{
-											"referenceName": "AzPq",
+											"referenceName": "DLBronzeParquetKVFile",
 											"type": "DatasetReference",
 											"parameters": {
-												"dsFilesystem": "datalake",
-												"dsPath": {
-													"value": "bronze/GoogleAnalytics/@{item().FilePath}",
+												"dsURL": {
+													"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsURL",
 													"type": "Expression"
 												},
-												"dsFilename": {
-													"value": "@item().FileName",
+												"dsSecretName": {
+													"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsSecretName",
+													"type": "Expression"
+												},
+												"dsFileSystem": {
+													"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsFileSystem",
+													"type": "Expression"
+												},
+												"dsDirectory": {
+													"value": "@{activity('Get Pipeline Parameters').output.firstRow.SinkdsDirectory}/@{item().FilePath}",
+													"type": "Expression"
+												},
+												"dsFileName": {
+													"value": "@{item().FileName}",
+													"type": "Expression"
+												},
+												"dsKVBaseURL": {
+													"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
 													"type": "Expression"
 												}
 											}
@@ -1393,12 +2244,17 @@
 									},
 									"userProperties": [],
 									"linkedServiceName": {
-										"referenceName": "OnpremSqlDb",
+										"referenceName": "GenericAzureSqlDatabaseMI",
 										"type": "LinkedServiceReference",
 										"parameters": {
-											"serverFqdn": "localhost\\ACB",
-											"dbName": "LoadControl",
-											"userName": "ab092898@flooranddecor.com"
+											"lsServerName": {
+												"value": "@pipeline().globalParameters.gpWMSQL",
+												"type": "Expression"
+											},
+											"lsDatabaseName": {
+												"value": "@pipeline().globalParameters.gpWMDatabase",
+												"type": "Expression"
+											}
 										}
 									},
 									"typeProperties": {
@@ -1439,14 +2295,21 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "GoogleBigQuerySource",
-								"query": "select   t.table_catalog as TableCatalog, \n            t.table_schema as TableSchema, \n            t.table_name as TableName\nFROM  `region-us`.INFORMATION_SCHEMA.TABLES t\n"
+								"type": "GoogleBigQueryV2Source",
+								"query": {
+									"value": "select   table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, partition_id as PartitionId, total_rows as TotalRows, last_modified_time as LastModifiedTime\nFROM  @{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}.@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}.INFORMATION_SCHEMA.PARTITIONS @{if(greater(pipeline().parameters.DataAgeLimitHours, 0), concat('where last_modified_time > timestamp(parse_datetime(''%Y-%m-%dT%H:%M:%E*SZ'', ''', addHours(pipeline().TriggerTime, mul(-1, pipeline().parameters.DataAgeLimitHours)), '''))'), '')}\n",
+									"type": "Expression"
+								}
 							},
 							"sink": {
-								"type": "SqlServerSink",
-								"preCopyScript": "truncate table stage.gbqObject",
+								"type": "AzureSqlSink",
+								"preCopyScript": {
+									"value": "delete from [stage].[gbqObject] where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
+									"type": "Expression"
+								},
 								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
 							},
 							"enableStaging": false,
 							"translator": {
@@ -1460,21 +2323,35 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "GoogleBigQueryFND",
+								"referenceName": "GoogleBigQueryDirect",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"dsBaseURL": {
+										"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+										"type": "Expression"
+									}
+								}
 							}
 						],
 						"outputs": [
 							{
-								"referenceName": "OpSqlTable",
+								"referenceName": "LoadControlTable",
 								"type": "DatasetReference",
 								"parameters": {
-									"schemaName": "stage",
-									"tableName": "gbqObject",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									},
+									"dsSchema": "stage",
+									"dsTable": "gbqObject"
 								}
 							}
 						]
@@ -1486,6 +2363,12 @@
 						"dependsOn": [
 							{
 								"activity": "Get_gbqObjectDetail",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Get_gbqColumn",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1501,11 +2384,8 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderStoredProcedureName": {
-									"value": "dbo.uspGetGbqLoadBatches",
-									"type": "Expression"
-								},
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "dbo.uspGetGbqLoadBatches",
 								"storedProcedureParameters": {
 									"PipelineExecutionId": {
 										"type": "Int32",
@@ -1520,20 +2400,36 @@
 											"value": "@pipeline().parameters.BatchRowLimit",
 											"type": "Expression"
 										}
+									},
+									"TableCatalog": {
+										"type": "String",
+										"value": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog",
+											"type": "Expression"
+										}
+									},
+									"TableSchema": {
+										"value": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema",
+											"type": "Expression"
+										}
 									}
 								},
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "OpSqlTable",
+								"referenceName": "WatermarkMI",
 								"type": "DatasetReference",
 								"parameters": {
-									"schemaName": "na",
-									"tableName": "na",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									}
 								}
 							},
 							"firstRowOnly": false
@@ -1561,20 +2457,26 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": " select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd",
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "select  count(*) numBatches\n    ,   string_agg(convert(nvarchar(max), CountCmd), ' union all ') CountCmd\n    ,   string_agg(convert(nvarchar(max), TableName), ',') TableList \nfrom    dbo.gbqObjectToLoadCmd \nwhere TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
+									"type": "Expression"
+								},
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "OpSqlTable",
+								"referenceName": "WatermarkMI",
 								"type": "DatasetReference",
 								"parameters": {
-									"schemaName": "na",
-									"tableName": "na",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									}
 								}
 							},
 							"firstRowOnly": false
@@ -1602,17 +2504,21 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "GoogleBigQuerySource",
+								"type": "GoogleBigQueryV2Source",
 								"query": {
 									"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
 									"type": "Expression"
 								}
 							},
 							"sink": {
-								"type": "SqlServerSink",
-								"preCopyScript": "truncate table stage.gbqObjectDetail",
+								"type": "AzureSqlSink",
+								"preCopyScript": {
+									"value": "delete from [stage].[gbqObjectDetail] where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
+									"type": "Expression"
+								},
 								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
 							},
 							"enableStaging": false,
 							"translator": {
@@ -1626,21 +2532,35 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "GoogleBigQueryFND",
+								"referenceName": "GoogleBigQueryDirect",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"dsBaseURL": {
+										"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+										"type": "Expression"
+									}
+								}
 							}
 						],
 						"outputs": [
 							{
-								"referenceName": "OpSqlTable",
+								"referenceName": "LoadControlTable",
 								"type": "DatasetReference",
 								"parameters": {
-									"schemaName": "stage",
-									"tableName": "gbqObjectDetail",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									},
+									"dsSchema": "stage",
+									"dsTable": "gbqObjectDetail"
 								}
 							}
 						]
@@ -1650,7 +2570,7 @@
 						"type": "Script",
 						"dependsOn": [
 							{
-								"activity": "Loop Batches",
+								"activity": "IfDataWasLoaded",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1665,12 +2585,17 @@
 						},
 						"userProperties": [],
 						"linkedServiceName": {
-							"referenceName": "OnpremSqlDb",
+							"referenceName": "GenericAzureSqlDatabaseMI",
 							"type": "LinkedServiceReference",
 							"parameters": {
-								"serverFqdn": "localhost\\ACB",
-								"dbName": "LoadControl",
-								"userName": "ab092898@flooranddecor.com"
+								"lsServerName": {
+									"value": "@pipeline().globalParameters.gpWMSQL",
+									"type": "Expression"
+								},
+								"lsDatabaseName": {
+									"value": "@pipeline().globalParameters.gpWMDatabase",
+									"type": "Expression"
+								}
 							}
 						},
 						"typeProperties": {
@@ -1690,7 +2615,14 @@
 						"name": "LogJobStart",
 						"description": "Record the Pipeline start in LoadControl and capture the Id of the row for use in auditing.",
 						"type": "Lookup",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Get Pipeline Parameters",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -1701,23 +2633,26 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "SqlServerSource",
+								"type": "AzureSqlSource",
 								"sqlReaderQuery": {
-									"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress'",
+									"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', Parameters = (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' as TableCatalog, '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}' as TableSchema for json path)",
 									"type": "Expression"
 								},
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "OpSqlTable",
+								"referenceName": "WatermarkMI",
 								"type": "DatasetReference",
 								"parameters": {
-									"schemaName": "na",
-									"tableName": "na",
-									"sqlFqdn": "localhost\\ACB",
-									"dbName": "LoadControl",
-									"userName": "AB092898@flooranddecor.com"
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									}
 								}
 							},
 							"firstRowOnly": false
@@ -1744,12 +2679,17 @@
 						},
 						"userProperties": [],
 						"linkedServiceName": {
-							"referenceName": "OnpremSqlDb",
+							"referenceName": "GenericAzureSqlDatabaseMI",
 							"type": "LinkedServiceReference",
 							"parameters": {
-								"serverFqdn": "localhost\\ACB",
-								"dbName": "LoadControl",
-								"userName": "ab092898@flooranddecor.com"
+								"lsServerName": {
+									"value": "@pipeline().globalParameters.gpWMSQL",
+									"type": "Expression"
+								},
+								"lsDatabaseName": {
+									"value": "@pipeline().globalParameters.gpWMDatabase",
+									"type": "Expression"
+								}
 							}
 						},
 						"typeProperties": {
@@ -1764,6 +2704,269 @@
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
 						}
+					},
+					{
+						"name": "Get_ColumnQuery",
+						"description": "Builds a query to run against Google to find the column definition for each Google object not yet loaded.",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Get_gbqObject",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType, cast(case when is_partitioning_column = ''YES'' then 1 else 0 end as boolean) as IsPartitioningColumn from @{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}.@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "WatermarkMI",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Get_gbqColumn",
+						"description": "Get the column definitions of each object to load",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Get_ColumnQuery",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "GoogleBigQueryV2Source",
+								"query": {
+									"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as StorageRegion, ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": {
+									"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].sqlDeleteCmd, 'select ''Nothing to remove'' as AdfMessage')\n",
+									"type": "Expression"
+								},
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "GoogleBigQueryDirect",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsBaseURL": {
+										"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "LoadControlTable",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									},
+									"dsSchema": "dbo",
+									"dsTable": "gbqColumn"
+								}
+							}
+						]
+					},
+					{
+						"name": "IfDataWasLoaded",
+						"type": "IfCondition",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Loop Batches",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@not(equals(activity('Get_RowCountQueries').output.value[0].TableList, null))",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "ProcessSilver",
+									"type": "DatabricksNotebook",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebookPath": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksNotebookPath",
+											"type": "Expression"
+										},
+										"baseParameters": {
+											"TableList": {
+												"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].TableList, 'nothing,to,do,at,this,time')\n",
+												"type": "Expression"
+											},
+											"StorageAccount": {
+												"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsStorageAccount",
+												"type": "Expression"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "AzDatabricksJobCluster",
+										"type": "LinkedServiceReference",
+										"parameters": {
+											"lsWorkspaceUrl": {
+												"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksWorkspaceUrl",
+												"type": "Expression"
+											},
+											"lsWorkspaceResourceId": {
+												"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksWorkspaceId",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Get Pipeline Parameters",
+						"description": "Use GetWatermark to get environment specific parameter values (key vault, storage account, etc.)",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "dbo.GetWatermark",
+								"storedProcedureParameters": {
+									"BatchName": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.BatchName",
+											"type": "Expression"
+										}
+									},
+									"SourceServiceType": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.SourceServiceType",
+											"type": "Expression"
+										}
+									},
+									"SinkServiceType": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.SinkServiceType",
+											"type": "Expression"
+										}
+									},
+									"Environment": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().globalParameters.gpEnvironment",
+											"type": "Expression"
+										}
+									}
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "WatermarkMI",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": true
+						}
 					}
 				],
 				"policy": {
@@ -1773,13 +2976,374 @@
 					"BatchRowLimit": {
 						"type": "int",
 						"defaultValue": 1000000
+					},
+					"DataAgeLimitHours": {
+						"type": "int",
+						"defaultValue": 24
+					},
+					"BatchName": {
+						"type": "string",
+						"defaultValue": "Google Analytics to datalakehouse"
+					},
+					"SourceServiceType": {
+						"type": "string",
+						"defaultValue": "Pipeline_getGoogleAnalytics"
+					},
+					"SinkServiceType": {
+						"type": "string",
+						"defaultValue": "Pipeline_getGoogleAnalytics"
 					}
 				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/GoogleBigQueryFND')]",
-				"[concat(variables('factoryId'), '/datasets/OpSqlTable')]"
+				"[concat(variables('factoryId'), '/datasets/GoogleBigQueryDirect')]",
+				"[concat(variables('factoryId'), '/datasets/DLBronzeParquetKVFile')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/getMMS_PO')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Bronze Data Ingestion MMS\n\nDataset to Linked Service mapping:\n\nWarkmarkMI: GenericAzureSqlDatabaseMI\n\nDb2KV: GenericDB2\n\nDLBronzeParquetKVFile: GenericAzureDataLakeStorageGen2KV",
+				"activities": [
+					{
+						"name": "Set varWatermarkTimestamp",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "varWatermarkTimestamp",
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Get Watermark List",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "dbo.GetWatermark",
+								"storedProcedureParameters": {
+									"BatchName": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.prmLCBatchName",
+											"type": "Expression"
+										}
+									},
+									"SourceServiceType": {
+										"type": "String",
+										"value": {
+											"value": "@variables('varSourceServiceType')",
+											"type": "Expression"
+										}
+									},
+									"SinkServiceType": {
+										"type": "String",
+										"value": {
+											"value": "@variables('varSinkServiceType')",
+											"type": "Expression"
+										}
+									},
+									"Environment": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().globalParameters.gpEnvironment",
+											"type": "Expression"
+										}
+									},
+									"RollingDays": {
+										"type": "Decimal",
+										"value": "0.0"
+									},
+									"WatermarkTimestamp": {
+										"type": "Datetime",
+										"value": "1901-01-01"
+									}
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "WatermarkMI",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"dsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach Object",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Watermark List",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Set varWatermarkTimestamp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Watermark List').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "If Watermark Override Is True",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Copy By Batch Type",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(pipeline().parameters.prmWatermarkOverride, true)",
+											"type": "Expression"
+										},
+										"ifFalseActivities": [
+											{
+												"name": "Update Watermark",
+												"type": "Script",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"linkedServiceName": {
+													"referenceName": "GenericAzureSqlDatabaseMI",
+													"type": "LinkedServiceReference",
+													"parameters": {
+														"lsServerName": {
+															"value": "@pipeline().globalParameters.gpWMSQL",
+															"type": "Expression"
+														},
+														"lsDatabaseName": {
+															"value": "@pipeline().globalParameters.gpWMDatabase",
+															"type": "Expression"
+														}
+													}
+												},
+												"typeProperties": {
+													"scripts": [
+														{
+															"type": "Query",
+															"text": {
+																"value": "@concat('UPDATE dbo.Watermark SET SourceWatermarkFieldValue = ''', formatDateTime(variables('varWatermarkTimestamp'), 'yyyy-MM-dd HH:mm:ss'), ''' WHERE Id = ', string(item().WatermarkId))\n",
+																"type": "Expression"
+															}
+														}
+													],
+													"scriptBlockExecutionTimeout": "02:00:00"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "Copy By Batch Type",
+									"type": "Switch",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"on": {
+											"value": "@item().BatchType",
+											"type": "Expression"
+										},
+										"cases": [
+											{
+												"value": "Full",
+												"activities": [
+													{
+														"name": "Copy MMS to ADL",
+														"type": "Copy",
+														"dependsOn": [],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [
+															{
+																"name": "Source",
+																"value": "@{item().SourceObjectName}"
+															},
+															{
+																"name": "Destination",
+																"value": "@{item().SinkdsFileSystem}/@{concat(item().SinkdsDirectory, '/', item().SourceName, '/', item().SinkObjectName, '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'yyyy'),formatDateTime(variables('varWatermarkTimestamp'), 'yyyy')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'MM'),formatDateTime(variables('varWatermarkTimestamp'), 'MM')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'dd'),formatDateTime(variables('varWatermarkTimestamp'), 'dd')))}/@{concat(item().SinkdsFileName, '.parquet')}"
+															}
+														],
+														"typeProperties": {
+															"source": {
+																"type": "Db2Source",
+																"query": {
+																	"value": "@{if(equals(item().SourceQuery, null), concat('SELECT * FROM ', item().SourceObjectName, ' with UR'), item().SourceQuery)}\n",
+																	"type": "Expression"
+																}
+															},
+															"sink": {
+																"type": "ParquetSink",
+																"storeSettings": {
+																	"type": "AzureBlobFSWriteSettings"
+																},
+																"formatSettings": {
+																	"type": "ParquetWriteSettings"
+																}
+															},
+															"enableStaging": false,
+															"translator": {
+																"type": "TabularTranslator",
+																"typeConversion": true,
+																"typeConversionSettings": {
+																	"allowDataTruncation": true,
+																	"treatBooleanAsNumber": false
+																}
+															}
+														},
+														"inputs": [
+															{
+																"referenceName": "Db2KV",
+																"type": "DatasetReference",
+																"parameters": {
+																	"dsKVBaseURL": {
+																		"value": "@item().SourcedsKVBaseURL",
+																		"type": "Expression"
+																	},
+																	"dsSecretName": {
+																		"value": "@item().SourcedsSecretName",
+																		"type": "Expression"
+																	}
+																}
+															}
+														],
+														"outputs": [
+															{
+																"referenceName": "DLBronzeParquetKVFile",
+																"type": "DatasetReference",
+																"parameters": {
+																	"dsURL": {
+																		"value": "@item().SinkdsURL",
+																		"type": "Expression"
+																	},
+																	"dsSecretName": {
+																		"value": "@item().SinkdsSecretName",
+																		"type": "Expression"
+																	},
+																	"dsFileSystem": {
+																		"value": "@item().SinkdsFileSystem",
+																		"type": "Expression"
+																	},
+																	"dsDirectory": {
+																		"value": "@concat(item().SinkdsDirectory, '/', item().SourceName, '/', item().SinkObjectName, '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'yyyy'),formatDateTime(variables('varWatermarkTimestamp'), 'yyyy')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'MM'),formatDateTime(variables('varWatermarkTimestamp'), 'MM')), '/', if(equals(pipeline().parameters.prmWatermarkOverride,true), formatDateTime(pipeline().parameters.prmOverrideEndDate, 'dd'),formatDateTime(variables('varWatermarkTimestamp'), 'dd')))",
+																		"type": "Expression"
+																	},
+																	"dsFileName": {
+																		"value": "@concat(item().SinkdsFileName, '.parquet')",
+																		"type": "Expression"
+																	},
+																	"dsKVBaseURL": {
+																		"value": "@item().SinkdsKVBaseURL",
+																		"type": "Expression"
+																	}
+																}
+															}
+														]
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"prmLCBatchName": {
+						"type": "string",
+						"defaultValue": "MMS_QA PO to DLBronzeParquet entdatalakehouse"
+					},
+					"prmWatermarkOverride": {
+						"type": "bool",
+						"defaultValue": false
+					},
+					"prmOverrideStartDate": {
+						"type": "string"
+					},
+					"prmOverrideEndDate": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"varWatermarkTimestamp": {
+						"type": "String"
+					},
+					"varSourceServiceType": {
+						"type": "String",
+						"defaultValue": "Db2KV"
+					},
+					"varSinkServiceType": {
+						"type": "String",
+						"defaultValue": "DLBronzeParquetKVFile"
+					}
+				},
+				"folder": {
+					"name": "Data Lake"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-04-19T21:05:44Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Db2KV')]",
+				"[concat(variables('factoryId'), '/datasets/DLBronzeParquetKVFile')]"
 			]
 		},
 		{
@@ -1920,38 +3484,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/SchemaDriftTest')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/trg-1430-utc')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "getGoogleAnalytics_onPrem_LoadControl",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"BatchRowLimit": "[parameters('trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit')]"
-						}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2024-01-27T14:30:00Z",
-						"timeZone": "UTC"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/getGoogleAnalytics_onPrem_LoadControl')]"
 			]
 		}
 	]

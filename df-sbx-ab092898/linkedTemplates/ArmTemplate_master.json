@@ -21,14 +21,6 @@
 			"metadata": "Secure string for 'connectionString' of 'GenericAzureSqlDatabaseMI'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
 		},
-		"GoogleBigQueryOA2_clientSecret": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clientSecret' of 'GoogleBigQueryOA2'"
-		},
-		"GoogleBigQueryOA2_refreshToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'refreshToken' of 'GoogleBigQueryOA2'"
-		},
 		"OnpremSqlDb_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
@@ -50,9 +42,17 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().lsBaseURL}"
 		},
-		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
+		"GenericDB2_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
-			"defaultValue": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
+			"defaultValue": "@{linkedService().lsSecretName}"
+		},
+		"GenericSFTP_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsHost}"
+		},
+		"GenericSFTP_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsUserName}"
 		},
 		"OnpremSqlDb_properties_typeProperties_userName": {
 			"type": "string",
@@ -90,10 +90,6 @@
 			"type": "string",
 			"defaultValue": "PersonFlexible"
 		},
-		"trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit": {
-			"type": "int",
-			"defaultValue": 1000000
-		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -110,7 +106,7 @@
 		{
 			"name": "df-sbx-ab092898_ArmTemplate_0",
 			"type": "Microsoft.Resources/deployments",
-			"apiVersion": "2018-02-01",
+			"apiVersion": "2024-03-01",
 			"properties": {
 				"mode": "incremental",
 				"templateLink": {
@@ -130,15 +126,6 @@
 					"GenericAzureSqlDatabaseMI_connectionString": {
 						"value": "[parameters('GenericAzureSqlDatabaseMI_connectionString')]"
 					},
-					"GoogleBigQueryOA2_clientSecret": {
-						"value": "[parameters('GoogleBigQueryOA2_clientSecret')]"
-					},
-					"GoogleBigQueryOA2_refreshToken": {
-						"value": "[parameters('GoogleBigQueryOA2_refreshToken')]"
-					},
-					"OnpremSqlDb_connectionString": {
-						"value": "[parameters('OnpremSqlDb_connectionString')]"
-					},
 					"AzDLStorage_properties_typeProperties_url": {
 						"value": "[parameters('AzDLStorage_properties_typeProperties_url')]"
 					},
@@ -148,23 +135,20 @@
 					"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
 						"value": "[parameters('GenericAzureKeyVaultMI_properties_typeProperties_baseUrl')]"
 					},
-					"GoogleBigQueryOA2_properties_typeProperties_clientId": {
-						"value": "[parameters('GoogleBigQueryOA2_properties_typeProperties_clientId')]"
-					},
 					"RestApi_properties_typeProperties_url": {
 						"value": "[parameters('RestApi_properties_typeProperties_url')]"
 					},
 					"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
 						"value": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]"
 					},
-					"OnpremSqlDb_properties_typeProperties_userName": {
-						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
+					"GenericDB2_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('GenericDB2_properties_typeProperties_connectionString_secretName')]"
 					},
-					"sfdc_properties_typeProperties_environmentUrl": {
-						"value": "[parameters('sfdc_properties_typeProperties_environmentUrl')]"
+					"GenericSFTP_properties_typeProperties_host": {
+						"value": "[parameters('GenericSFTP_properties_typeProperties_host')]"
 					},
-					"sfdc_properties_typeProperties_username": {
-						"value": "[parameters('sfdc_properties_typeProperties_username')]"
+					"GenericSFTP_properties_typeProperties_userName": {
+						"value": "[parameters('GenericSFTP_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -173,7 +157,7 @@
 		{
 			"name": "df-sbx-ab092898_ArmTemplate_1",
 			"type": "Microsoft.Resources/deployments",
-			"apiVersion": "2018-02-01",
+			"apiVersion": "2024-03-01",
 			"properties": {
 				"mode": "incremental",
 				"templateLink": {
@@ -183,6 +167,18 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"OnpremSqlDb_connectionString": {
+						"value": "[parameters('OnpremSqlDb_connectionString')]"
+					},
+					"OnpremSqlDb_properties_typeProperties_userName": {
+						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
+					},
+					"sfdc_properties_typeProperties_environmentUrl": {
+						"value": "[parameters('sfdc_properties_typeProperties_environmentUrl')]"
+					},
+					"sfdc_properties_typeProperties_username": {
+						"value": "[parameters('sfdc_properties_typeProperties_username')]"
 					},
 					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]"
@@ -198,9 +194,6 @@
 					},
 					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
 						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible')]"
-					},
-					"trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit": {
-						"value": "[parameters('trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit')]"
 					}
 				}
 			},

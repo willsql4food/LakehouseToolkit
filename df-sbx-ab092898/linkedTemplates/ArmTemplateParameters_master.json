@@ -14,12 +14,6 @@
 		"GenericAzureSqlDatabaseMI_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
 		},
-		"GoogleBigQueryOA2_clientSecret": {
-			"value": ""
-		},
-		"GoogleBigQueryOA2_refreshToken": {
-			"value": ""
-		},
 		"OnpremSqlDb_connectionString": {
 			"value": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
 		},
@@ -35,8 +29,14 @@
 		"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
 			"value": "@{linkedService().lsBaseURL}"
 		},
-		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
-			"value": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
+		"GenericDB2_properties_typeProperties_connectionString_secretName": {
+			"value": "@{linkedService().lsSecretName}"
+		},
+		"GenericSFTP_properties_typeProperties_host": {
+			"value": "@{linkedService().lsHost}"
+		},
+		"GenericSFTP_properties_typeProperties_userName": {
+			"value": "@{linkedService().lsUserName}"
 		},
 		"OnpremSqlDb_properties_typeProperties_userName": {
 			"value": "@{linkedService().userName}"
@@ -64,9 +64,6 @@
 		},
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
 			"value": "PersonFlexible"
-		},
-		"trg-1430-utc_properties_getGoogleAnalytics_onPrem_LoadControl_parameters_BatchRowLimit": {
-			"value": 1000000
 		},
 		"containerUri": {
 			"value": ""

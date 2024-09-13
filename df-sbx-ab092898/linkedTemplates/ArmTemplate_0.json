@@ -21,19 +21,6 @@
 			"metadata": "Secure string for 'connectionString' of 'GenericAzureSqlDatabaseMI'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
 		},
-		"GoogleBigQueryOA2_clientSecret": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clientSecret' of 'GoogleBigQueryOA2'"
-		},
-		"GoogleBigQueryOA2_refreshToken": {
-			"type": "secureString",
-			"metadata": "Secure string for 'refreshToken' of 'GoogleBigQueryOA2'"
-		},
-		"OnpremSqlDb_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
-			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
-		},
 		"AzDLStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://sadevdatalakehouse.dfs.core.windows.net/"
@@ -46,10 +33,6 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().lsBaseURL}"
 		},
-		"GoogleBigQueryOA2_properties_typeProperties_clientId": {
-			"type": "string",
-			"defaultValue": "293150009999-qsl2afen6dgoqpq980l0pdoac3k37l6g.apps.googleusercontent.com"
-		},
 		"RestApi_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().baseUrl}"
@@ -58,17 +41,17 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().lsURL}"
 		},
-		"OnpremSqlDb_properties_typeProperties_userName": {
+		"GenericDB2_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
-			"defaultValue": "@{linkedService().userName}"
+			"defaultValue": "@{linkedService().lsSecretName}"
 		},
-		"sfdc_properties_typeProperties_environmentUrl": {
+		"GenericSFTP_properties_typeProperties_host": {
 			"type": "string",
-			"defaultValue": "https://login.salesforce.com"
+			"defaultValue": "@{linkedService().lsHost}"
 		},
-		"sfdc_properties_typeProperties_username": {
+		"GenericSFTP_properties_typeProperties_userName": {
 			"type": "string",
-			"defaultValue": "@{linkedService().userName}"
+			"defaultValue": "@{linkedService().lsUserName}"
 		}
 	},
 	"variables": {
@@ -88,6 +71,39 @@
 						"type": "SecureString",
 						"value": "[parameters('AzDLStorage_accountKey')]"
 					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzDatabricksJobCluster')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"lsWorkspaceUrl": {
+						"type": "string",
+						"defaultValue": "https://adb-7286372339506263.3.azuredatabricks.net"
+					},
+					"lsWorkspaceResourceId": {
+						"type": "string",
+						"defaultValue": "/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898"
+					}
+				},
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "@linkedService().lsWorkspaceUrl",
+					"authentication": "MSI",
+					"workspaceResourceId": "@linkedService().lsWorkspaceResourceId",
+					"newClusterNodeType": "Standard_DS4_v2",
+					"newClusterNumOfWorker": "1:4",
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "14.3.x-scala2.12",
+					"clusterOption": "Autoscaling",
+					"newClusterInitScripts": []
 				}
 			},
 			"dependsOn": []
@@ -168,30 +184,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryOA2')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "GoogleBigQuery",
-				"typeProperties": {
-					"project": "corded-fact-410917",
-					"requestGoogleDriveScope": false,
-					"authenticationType": "UserAuthentication",
-					"clientId": "[parameters('GoogleBigQueryOA2_properties_typeProperties_clientId')]",
-					"clientSecret": {
-						"type": "SecureString",
-						"value": "[parameters('GoogleBigQueryOA2_clientSecret')]"
-					},
-					"refreshToken": {
-						"type": "SecureString",
-						"value": "[parameters('GoogleBigQueryOA2_refreshToken')]"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/RestApi')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -213,12 +205,22 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/self-hosted-integration-runtime')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"name": "[concat(parameters('factoryName'), '/trg-1430-utc')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {}
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-01-27T14:30:00Z",
+						"timeZone": "UTC"
+					}
+				}
 			},
 			"dependsOn": []
 		},
@@ -230,6 +232,27 @@
 				"type": "SelfHosted",
 				"description": "Self-hosted integration runtime operating on Carter Burleigh's laptop",
 				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/suckLess')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "East US 2",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 10,
+							"cleanup": false,
+							"customProperties": []
+						}
+					}
+				}
 			},
 			"dependsOn": []
 		},
@@ -1352,6 +1375,30 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzDeltalake')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricksDeltaLake",
+				"typeProperties": {
+					"domain": "https://adb-7286372339506263.3.azuredatabricks.net",
+					"clusterId": "0304-190420-v9fjlpxf",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "dbxAccessToken"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/GenericAzureDataLakeStorageGen2KV')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1395,86 +1442,39 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQuery')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "GoogleBigQuery",
-				"typeProperties": {
-					"project": "fnd-cloud-project",
-					"requestGoogleDriveScope": false,
-					"authenticationType": "ServiceAuthentication",
-					"email": "ga4-access@fnd-cloud-project.iam.gserviceaccount.com",
-					"keyFilePath": "C:\\source\\keys\\fnd-cloud-project-b2a8d27db4f3.json",
-					"trustedCertPath": "",
-					"useSystemTrustStore": false
-				},
-				"connectVia": {
-					"referenceName": "shirt-ACB",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryMirror')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "GoogleBigQuery",
-				"typeProperties": {
-					"project": "corded-fact-410917",
-					"requestGoogleDriveScope": false,
-					"authenticationType": "ServiceAuthentication",
-					"email": "web-service@corded-fact-410917.iam.gserviceaccount.com",
-					"keyFilePath": "C:\\source\\keys\\corded-fact-410917-9141377c6eab.json",
-					"trustedCertPath": "",
-					"useSystemTrustStore": false
-				},
-				"connectVia": {
-					"referenceName": "shirt-ACB",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/OnpremSqlDb')]",
+			"name": "[concat(parameters('factoryName'), '/GenericDB2')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"parameters": {
-					"serverFqdn": {
+					"lsKVBaseURL": {
 						"type": "string",
-						"defaultValue": "localhost\\ACB"
+						"defaultValue": "https://akv-ab092898.vault.azure.net/"
 					},
-					"dbName": {
+					"lsSecretName": {
 						"type": "string",
-						"defaultValue": "master"
-					},
-					"userName": {
-						"type": "string",
-						"defaultValue": "ab092898@flooranddecor.com"
+						"defaultValue": "qa-conn-string-mms"
 					}
 				},
 				"annotations": [],
-				"type": "SqlServer",
+				"type": "Db2",
 				"typeProperties": {
-					"connectionString": "[parameters('OnpremSqlDb_connectionString')]",
-					"userName": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]",
-					"password": {
+					"connectionString": {
 						"type": "AzureKeyVaultSecret",
 						"store": {
-							"referenceName": "AzKeyVault",
-							"type": "LinkedServiceReference"
+							"referenceName": "GenericAzureKeyVaultMI",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"lsBaseURL": {
+									"value": "@linkedService().lsKVBaseURL",
+									"type": "Expression"
+								}
+							}
 						},
-						"secretName": "WinAuthPwd"
+						"secretName": {
+							"value": "[parameters('GenericDB2_properties_typeProperties_connectionString_secretName')]",
+							"type": "Expression"
+						}
 					}
 				},
 				"connectVia": {
@@ -1484,64 +1484,66 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
+				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/sfdc')]",
+			"name": "[concat(parameters('factoryName'), '/GenericSFTP')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"parameters": {
-					"userName": {
+					"lsHost": {
 						"type": "string",
-						"defaultValue": "fred"
+						"defaultValue": "10.247.96.8"
 					},
-					"sfdcPwdSecret": {
+					"lsUserName": {
 						"type": "string",
-						"defaultValue": "sfdcPwd"
+						"defaultValue": "foundation_dw "
 					},
-					"sfdcTokenSecret": {
+					"lsKVBaseURL": {
 						"type": "string",
-						"defaultValue": "sfdcToken"
+						"defaultValue": "https://akv-ab092898.vault.azure.net/"
 					},
-					"sfdcApiVersion": {
+					"lsSecretName": {
 						"type": "string",
-						"defaultValue": "52.0"
+						"defaultValue": "foundation-sftp-pwd"
 					}
 				},
 				"annotations": [],
-				"type": "Salesforce",
+				"type": "Sftp",
 				"typeProperties": {
-					"environmentUrl": "[parameters('sfdc_properties_typeProperties_environmentUrl')]",
-					"username": "[parameters('sfdc_properties_typeProperties_username')]",
+					"host": "[parameters('GenericSFTP_properties_typeProperties_host')]",
+					"port": 22,
+					"skipHostKeyValidation": true,
+					"authenticationType": "Basic",
+					"userName": "[parameters('GenericSFTP_properties_typeProperties_userName')]",
 					"password": {
 						"type": "AzureKeyVaultSecret",
 						"store": {
-							"referenceName": "AzKeyVault",
-							"type": "LinkedServiceReference"
+							"referenceName": "GenericAzureKeyVaultMI",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"lsBaseURL": {
+									"value": "@linkedService().lsKVBaseURL",
+									"type": "Expression"
+								}
+							}
 						},
 						"secretName": {
-							"value": "@linkedService().sfdcPwdSecret",
+							"value": "@linkedService().lsSecretName",
 							"type": "Expression"
 						}
-					},
-					"securityToken": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "AzKeyVault",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": {
-							"value": "@linkedService().sfdcTokenSecret",
-							"type": "Expression"
-						}
-					},
-					"apiVersion": "@{linkedService().sfdcApiVersion}"
+					}
+				},
+				"connectVia": {
+					"referenceName": "shirt-ACB",
+					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
+				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
 			]
 		}
 	]
