@@ -3,17 +3,7 @@
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Stopped",
-		"pipelines": [
-			{
-				"pipelineReference": {
-					"referenceName": "getGoogleAnalytics_onPrem_LoadControl",
-					"type": "PipelineReference"
-				},
-				"parameters": {
-					"BatchRowLimit": 1000000
-				}
-			}
-		],
+		"pipelines": [],
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {

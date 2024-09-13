@@ -1,0 +1,42 @@
+{
+	"name": "GoogleBigQueryDirect",
+	"properties": {
+		"parameters": {
+			"lsBaseURL": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"lsSecretName": {
+				"type": "string",
+				"defaultValue": "gbq-fnd-cloud-project"
+			}
+		},
+		"annotations": [],
+		"type": "GoogleBigQueryV2",
+		"typeProperties": {
+			"projectId": "fnd-cloud-project",
+			"authenticationType": "ServiceAuthentication",
+			"keyFileContent": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsBaseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().lsSecretName",
+					"type": "Expression"
+				}
+			}
+		},
+		"connectVia": {
+			"referenceName": "suckLess",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
