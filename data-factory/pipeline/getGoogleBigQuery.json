@@ -362,7 +362,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select count(*) numBatches, string_agg(CountCmd, ' union all ') CountCmd from dbo.gbqObjectToLoadCmd where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
+							"value": "select  count(*) numBatches\n    ,   string_agg(convert(nvarchar(max), CountCmd), ' union all ') CountCmd\n    ,   string_agg(convert(nvarchar(max), TableName), ',') TableList \nfrom    dbo.gbqObjectToLoadCmd \nwhere TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
