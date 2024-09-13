@@ -33,6 +33,10 @@
 					"type": "Expression"
 				}
 			}
+		},
+		"connectVia": {
+			"referenceName": "suckLess",
+			"type": "IntegrationRuntimeReference"
 		}
 	}
 }
