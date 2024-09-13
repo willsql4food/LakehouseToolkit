@@ -312,6 +312,7 @@
 								}
 							},
 							"TableSchema": {
+								"type": "String",
 								"value": {
 									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema",
 									"type": "Expression"
