@@ -742,8 +742,6 @@
 			{
 				"name": "IfDataWasLoaded",
 				"type": "IfCondition",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Loop Batches",
