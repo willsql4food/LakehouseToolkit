@@ -782,6 +782,10 @@
 									"StorageAccount": {
 										"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsStorageAccount",
 										"type": "Expression"
+									},
+									"environment": {
+										"value": "@pipeline().globalParameters.gpEnvironment",
+										"type": "Expression"
 									}
 								}
 							},
