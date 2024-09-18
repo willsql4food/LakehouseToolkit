@@ -269,12 +269,6 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
-					},
-					{
-						"activity": "Get_gbqColumn",
-						"dependencyConditions": [
-							"Succeeded"
-						]
 					}
 				],
 				"policy": {
@@ -345,7 +339,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Get_gbqObject",
+						"activity": "Get_gbqColumn",
 						"dependencyConditions": [
 							"Succeeded"
 						]
