@@ -78,20 +78,20 @@ Once the changes have been tested in __dev__ they are ready for merge to __prod_
     }%%
 
 gitGraph
-    commit id:"DEV Branch" type: Highlight
+    commit id:"DEV Branch" type: HIGHLIGHT
     branch ft4 order: 4
-    commit id:"ft_AddStore" type: highlight
+    commit id:"ft_AddStore" type: HIGHLIGHT
     commit id:"Build"
 
     checkout main
     merge ft4  tag: "RC 1.0"
 
     branch qa order: 2
-    commit id: "QA Branch" type: Highlight
+    commit id: "QA Branch" type: HIGHLIGHT
 
     checkout main
     branch ft5 order: 5
-    commit id:"ft_PLR_enhance" type: highlight
+    commit id:"ft_PLR_enhance" type: HIGHLIGHT
     commit id:"MoreData"
 
     checkout qa
@@ -117,20 +117,20 @@ gitGraph
     commit id: "Test 1.1"
 
     branch prod order: 1
-    commit id:"PROD Branch" tag: "v 1.1" type: Highlight
+    commit id:"PROD Branch" tag: "v 1.1" type: HIGHLIGHT
     commit id:"Field"
 
     checkout main
     commit id: " "
     branch ft6 order: 6
-    commit id:"ft_POS_Enhance" type: highlight
+    commit id:"ft_POS_Enhance" type: HIGHLIGHT
 
     checkout qa
     merge main
     commit id:"Test POS"
 
     branch bg1 order: 5
-    commit id:"BUG_POS_Count" type: highlight
+    commit id:"BUG_POS_Count" type: HIGHLIGHT
     commit id:"Fix POS"
 
     checkout main
