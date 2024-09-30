@@ -165,7 +165,7 @@
 									{
 										"type": "Query",
 										"text": {
-											"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n",
+											"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n    @{if(equals(item().PartitionId, null), '', concat(' and PartitionId = ', item().PartitionId))}\n",
 											"type": "Expression"
 										}
 									}
@@ -269,12 +269,6 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
-					},
-					{
-						"activity": "Get_gbqColumn",
-						"dependencyConditions": [
-							"Succeeded"
-						]
 					}
 				],
 				"policy": {
@@ -312,6 +306,7 @@
 								}
 							},
 							"TableSchema": {
+								"type": "String",
 								"value": {
 									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema",
 									"type": "Expression"
@@ -344,7 +339,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Get_gbqObject",
+						"activity": "Get_gbqColumn",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -741,8 +736,6 @@
 			{
 				"name": "IfDataWasLoaded",
 				"type": "IfCondition",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Loop Batches",
@@ -782,6 +775,10 @@
 									},
 									"StorageAccount": {
 										"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsStorageAccount",
+										"type": "Expression"
+									},
+									"environment": {
+										"value": "@pipeline().globalParameters.gpEnvironment",
 										"type": "Expression"
 									}
 								}
