@@ -5,7 +5,14 @@
 			{
 				"name": "getTableDefinitions",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "getTablePKs",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -515,6 +522,82 @@
 					},
 					"firstRowOnly": false
 				}
+			},
+			{
+				"name": "getTablePKs",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "Db2Source",
+						"query": {
+							"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, c.COLUMN_NAME\n, pk.KEY_SEQ\n, pk.PK_NAME\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLSCHEMAS s on s.TABLE_CAT = t.TABLE_CAT and s.TABLE_SCHEM = t.TABLE_SCHEM\nleft join sysibm.SQLPrimaryKeys pk on pk.TABLE_CAT = pk.TABLE_CAT and pk.TABLE_SCHEM = t.TABLE_SCHEM and pk.TABLE_NAME = t.TABLE_NAME\nleft join sysibm.SQLcolumns c on c.TABLE_CAT = pk.TABLE_CAT and c.TABLE_SCHEM = pk.TABLE_SCHEM and c.TABLE_NAME = pk.TABLE_NAME and c.COLUMN_NAME = pk.COLUMN_NAME\nwhere s.TABLE_SCHEM IN ('MM760LIB', 'MMLIBARCH', 'QGPL', 'STKUPD')\n",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Db2KV",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@pipeline().parameters.prmSecretName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DLBronzeParquetKVFile",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsURL": "https://staab09289802.dfs.core.windows.net",
+							"dsSecretName": "key-staab09289802",
+							"dsFileSystem": "datalake",
+							"dsDirectory": {
+								"value": "@{pipeline().parameters.prmPath}/Audit",
+								"type": "Expression"
+							},
+							"dsFileName": "TablePrimaryKeys.parquet",
+							"dsKVBaseURL": {
+								"value": "@pipeline().parameters.prmKVBaseURL",
+								"type": "Expression"
+							}
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
