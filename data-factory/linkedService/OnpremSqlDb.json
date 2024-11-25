@@ -4,11 +4,11 @@
 		"parameters": {
 			"serverFqdn": {
 				"type": "string",
-				"defaultValue": "localhost\\ACB"
+				"defaultValue": "localhost"
 			},
 			"dbName": {
 				"type": "string",
-				"defaultValue": "master"
+				"defaultValue": "squid"
 			},
 			"userName": {
 				"type": "string",
