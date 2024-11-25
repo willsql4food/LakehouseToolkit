@@ -1,10 +1,11 @@
 {
 	"name": "OnpremSqlDb",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"parameters": {
 			"serverFqdn": {
 				"type": "string",
-				"defaultValue": "localhost"
+				"defaultValue": "localhost\\ACB"
 			},
 			"dbName": {
 				"type": "string",
@@ -18,21 +19,13 @@
 		"annotations": [],
 		"type": "SqlServer",
 		"typeProperties": {
-			"connectionString": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}",
+			"connectionString": "integrated security=True;data source=@{linkedService().serverFqdn};initial catalog=@{linkedService().dbName}",
 			"userName": "@{linkedService().userName}",
-			"password": {
-				"type": "AzureKeyVaultSecret",
-				"store": {
-					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference"
-				},
-				"secretName": "WinAuthPwd"
-			}
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIxZGEwMjFmMS02MWE1LTRjNDYtYjY5ZC1lZDQyNWUwZGM4NDQiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
 			"referenceName": "shirt-ACB",
 			"type": "IntegrationRuntimeReference"
 		}
-	},
-	"type": "Microsoft.DataFactory/factories/linkedservices"
+	}
 }
