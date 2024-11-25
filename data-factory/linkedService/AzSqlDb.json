@@ -1,6 +1,5 @@
 {
 	"name": "AzSqlDb",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"parameters": {
 			"serverName": {
@@ -9,7 +8,7 @@
 			},
 			"dbName": {
 				"type": "string",
-				"defaultValue": "txn"
+				"defaultValue": "LoadControl"
 			}
 		},
 		"annotations": [],
@@ -17,5 +16,6 @@
 		"typeProperties": {
 			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
