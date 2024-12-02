@@ -17,6 +17,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -25,10 +29,13 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"sqlFqdn": {
-								"value": "@pipeline().parameters.ServerFqdnPref",
+								"value": "@pipeline().parameters.ServerFqdnAzure",
 								"type": "Expression"
 							},
-							"dbName": "LoadControl"
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameAzure",
+								"type": "Expression"
+							}
 						}
 					}
 				}
@@ -48,7 +55,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "select name from sys.tables",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -57,10 +67,13 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"sqlFqdn": {
-								"value": "@pipeline().parameters.ServerFqdnAlt",
+								"value": "@pipeline().parameters.ServerFqdnOnPrem",
 								"type": "Expression"
 							},
-							"dbName": "LoadControl",
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameOnPrem",
+								"type": "Expression"
+							},
 							"userName": "AB092898@flooranddecor.com"
 						}
 					}
@@ -75,6 +88,18 @@
 			"ServerFqdnOnPrem": {
 				"type": "string",
 				"defaultValue": "OnPremises"
+			},
+			"ConnTestQuery": {
+				"type": "string",
+				"defaultValue": "select [name] from sys.tables"
+			},
+			"DbNameAzure": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"DbNameOnPrem": {
+				"type": "string",
+				"defaultValue": "LoadControl"
 			}
 		},
 		"annotations": []
