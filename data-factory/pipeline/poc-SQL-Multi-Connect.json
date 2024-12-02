@@ -5,7 +5,14 @@
 			{
 				"name": "TryConnAzure",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -164,7 +171,7 @@
 								"type": "Expression"
 							},
 							"dsFilename": {
-								"value": "@pipeline().parameters.FileName",
+								"value": "@variables('FileName')",
 								"type": "Expression"
 							}
 						}
@@ -250,7 +257,7 @@
 								"type": "Expression"
 							},
 							"dsFilename": {
-								"value": "@pipeline().parameters.FileName",
+								"value": "@variables('FileName')",
 								"type": "Expression"
 							}
 						}
@@ -272,6 +279,23 @@
 				"typeProperties": {
 					"message": "Unable to connect to either source",
 					"errorCode": "9999"
+				}
+			},
+			{
+				"name": "Set FileName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FileName",
+					"value": {
+						"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd.HH.mm.ss'))",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -298,7 +322,7 @@
 			},
 			"DataQuery": {
 				"type": "string",
-				"defaultValue": "select @@servername SourceServer, schema_name(schema_id), [name] TableName from sys.tables"
+				"defaultValue": "select @@servername SourceServer, schema_name(schema_id) SchemaName, name TableName from sys.tables"
 			},
 			"FileSystem": {
 				"type": "string",
@@ -308,9 +332,14 @@
 				"type": "string",
 				"defaultValue": "poc/SQL-Multi-Connect"
 			},
-			"FileName": {
+			"FileNameStub": {
 				"type": "string",
-				"defaultValue": "sys.tables.parquet"
+				"defaultValue": "sys.tables.{date}.parquet"
+			}
+		},
+		"variables": {
+			"FileName": {
+				"type": "String"
 			}
 		},
 		"annotations": []
