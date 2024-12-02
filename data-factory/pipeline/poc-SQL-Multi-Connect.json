@@ -293,7 +293,7 @@
 				"typeProperties": {
 					"variableName": "FileName",
 					"value": {
-						"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd.HH.mm.ss'))",
+						"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd-HH.mm.ss'))",
 						"type": "Expression"
 					}
 				}
