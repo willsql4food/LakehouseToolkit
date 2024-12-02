@@ -239,7 +239,21 @@
 				"outputs": [
 					{
 						"referenceName": "AzPq",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"dsFilesystem": {
+								"value": "@pipeline().parameters.FileSystem",
+								"type": "Expression"
+							},
+							"dsPath": {
+								"value": "@pipeline().parameters.FilePath",
+								"type": "Expression"
+							},
+							"dsFilename": {
+								"value": "@pipeline().parameters.FileName",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			},
