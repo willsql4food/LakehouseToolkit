@@ -43,7 +43,14 @@
 			{
 				"name": "TryConnOnPremises",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "TryConnAzure",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -78,6 +85,180 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "GetDataAzure",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TryConnAzure",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.DataQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnAzure",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameAzure",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzPq",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsFilesystem": {
+								"value": "@pipeline().parameters.FileSystem",
+								"type": "Expression"
+							},
+							"dsPath": {
+								"value": "@pipeline().parameters.FilePath",
+								"type": "Expression"
+							},
+							"dsFilename": {
+								"value": "@pipeline().parameters.FileName",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "GetDataOnPrem",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TryConnOnPremises",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.DataQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "OpSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnOnPrem",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameOnPrem",
+								"type": "Expression"
+							},
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzPq",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "ConnectionsFailed",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "TryConnOnPremises",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "Unable to connect to either source",
+					"errorCode": "9999"
+				}
 			}
 		],
 		"parameters": {
@@ -87,11 +268,11 @@
 			},
 			"ServerFqdnOnPrem": {
 				"type": "string",
-				"defaultValue": "OnPremises"
+				"defaultValue": "localhost\\ACB"
 			},
 			"ConnTestQuery": {
 				"type": "string",
-				"defaultValue": "select [name] from sys.tables"
+				"defaultValue": "select @@servername as [SourceServer]"
 			},
 			"DbNameAzure": {
 				"type": "string",
@@ -100,6 +281,22 @@
 			"DbNameOnPrem": {
 				"type": "string",
 				"defaultValue": "LoadControl"
+			},
+			"DataQuery": {
+				"type": "string",
+				"defaultValue": "select @@servername SourceServer, schema_name(schema_id), [name] TableName from sys.tables"
+			},
+			"FileSystem": {
+				"type": "string",
+				"defaultValue": "datalake"
+			},
+			"FilePath": {
+				"type": "string",
+				"defaultValue": "poc/SQL-Multi-Connect"
+			},
+			"FileName": {
+				"type": "string",
+				"defaultValue": "sys.tables.parquet"
 			}
 		},
 		"annotations": []
