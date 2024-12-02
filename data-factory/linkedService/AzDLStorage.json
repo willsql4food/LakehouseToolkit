@@ -4,7 +4,7 @@
 		"parameters": {
 			"StorageAccount": {
 				"type": "string",
-				"defaultValue": "https://staab092898.dfs.core.windows.net/"
+				"defaultValue": "https://staab09289802.dfs.core.windows.net/"
 			},
 			"saAccountKey": {
 				"type": "string",
