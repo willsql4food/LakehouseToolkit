@@ -27,7 +27,7 @@
 			},
 			"dbName": {
 				"type": "string",
-				"defaultValue": "SevenLetterTees"
+				"defaultValue": "LoadControl"
 			},
 			"userName": {
 				"type": "string",
