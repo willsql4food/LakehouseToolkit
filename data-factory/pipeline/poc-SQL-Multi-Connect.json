@@ -171,7 +171,7 @@
 								"type": "Expression"
 							},
 							"dsFilename": {
-								"value": "@variables('FileName')",
+								"value": "@concat('fromAz.', variables('FileName'))",
 								"type": "Expression"
 							}
 						}
@@ -257,7 +257,7 @@
 								"type": "Expression"
 							},
 							"dsFilename": {
-								"value": "@variables('FileName')",
+								"value": "@concat('fromOP.', variables('FileName'))",
 								"type": "Expression"
 							}
 						}
