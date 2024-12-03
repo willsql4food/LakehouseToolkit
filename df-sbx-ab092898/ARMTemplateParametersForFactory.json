@@ -5,9 +5,6 @@
 		"factoryName": {
 			"value": "df-sbx-ab092898"
 		},
-		"AzDLStorage_accountKey": {
-			"value": ""
-		},
 		"AzSqlDb_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
 		},
@@ -18,7 +15,7 @@
 			"value": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
 		},
 		"AzDLStorage_properties_typeProperties_url": {
-			"value": "https://sadevdatalakehouse.dfs.core.windows.net/"
+			"value": "@{linkedService().StorageAccount}"
 		},
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://akv-ab092898.vault.azure.net/"
@@ -43,12 +40,6 @@
 		},
 		"RestApi_properties_typeProperties_url": {
 			"value": "@{linkedService().baseUrl}"
-		},
-		"sfdc_properties_typeProperties_environmentUrl": {
-			"value": "https://login.salesforce.com"
-		},
-		"sfdc_properties_typeProperties_username": {
-			"value": "@{linkedService().userName}"
 		},
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 			"value": "stage"

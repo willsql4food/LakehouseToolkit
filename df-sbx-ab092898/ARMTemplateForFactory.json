@@ -7,10 +7,6 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "df-sbx-ab092898"
 		},
-		"AzDLStorage_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'AzDLStorage'"
-		},
 		"AzSqlDb_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
@@ -28,7 +24,7 @@
 		},
 		"AzDLStorage_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://sadevdatalakehouse.dfs.core.windows.net/"
+			"defaultValue": "@{linkedService().StorageAccount}"
 		},
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
@@ -61,14 +57,6 @@
 		"RestApi_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().baseUrl}"
-		},
-		"sfdc_properties_typeProperties_environmentUrl": {
-			"type": "string",
-			"defaultValue": "https://login.salesforce.com"
-		},
-		"sfdc_properties_typeProperties_username": {
-			"type": "string",
-			"defaultValue": "@{linkedService().userName}"
 		},
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 			"type": "string",
@@ -482,9 +470,16 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "getColumnList",
+						"name": "getTableDefinitions",
 						"type": "Copy",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "getTablePKs",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -497,7 +492,7 @@
 							"source": {
 								"type": "Db2Source",
 								"query": {
-									"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, s.SCHEMA_TEXT\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, t.REMARKS\n, t.TYPE_CAT\n, t.TYPE_SCHEM\n, t.TYPE_NAME as table_type_name\n, t.SELF_REFERENCING_COL_NAME\n, t.REF_GENERATION\n, t.DBNAME\n, t.TABLE_TEXT\n, c.COLUMN_NAME\n, c.DATA_TYPE\n, c.TYPE_NAME as column_type_name\n, c.COLUMN_SIZE\n, c.BUFFER_LENGTH\n, c.DECIMAL_DIGITS\n, c.NUM_PREC_RADIX\n, c.NULLABLE\n, c.REMARKS as column_remarks\n, c.COLUMN_DEF\n, c.SQL_DATA_TYPE\n, c.SQL_DATETIME_SUB\n, c.CHAR_OCTET_LENGTH\n, c.ORDINAL_POSITION\n, c.IS_NULLABLE\n, c.JDBC_DATA_TYPE\n, c.SCOPE_CATALOG\n, c.SCOPE_SCHEMA\n, c.SCOPE_TABLE\n, c.SOURCE_DATA_TYPE\n, c.PSEUDO_COLUMN\n, c.COLUMN_TEXT\n, c.SYSTEM_COLUMN_NAME\n, c.I_DATA_TYPE\n, c.HIDDEN\n, c.HAS_DEFAULT\n, c.SOURCE_TYPE_NAME\n, c.SOURCE_SQL_DATA_TYPE\n, c.SOURCE_JDBC_DATA_TYPE\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLSCHEMAS s on s.TABLE_CAT = t.TABLE_CAT and s.TABLE_SCHEM = t.TABLE_SCHEM\njoin sysibm.SQLcolumns c on c.TABLE_CAT = t.TABLE_CAT and c.TABLE_SCHEM = t.TABLE_SCHEM and c.TABLE_NAME = t.TABLE_NAME\nwhere (t.table_name in ('POMHDR' ,\n'POMCAN',\n'POMHST',\n'POSTAT',\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')\nor t.table_name like 'INV%' and t.table_name not like '%DUPE%')\nand s.TABLE_SCHEM IN ('MM760LIB', 'MMLIBARCH', 'QGPL', 'STKUPD')\n\n/* \n-- Collect these:\n+ MM760LIB\tMMS 7.6.0 Database Library\n+ MMLIBARCH\tMM760LIB Archive Library\n+ QGPL\t    General Purpose Library\n+ STKUPD\t  Library for Stock Ledger Level Clearing\n\n-- Ignore these:\n- POMRST910\tnull\n- MM760DVL\tMMS 7.6.0 Development Database Files\n- MM760QAL\tMMS 7.6.0 QA Database Files\n */",
+									"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, s.SCHEMA_TEXT\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, t.REMARKS\n, t.TYPE_CAT\n, t.TYPE_SCHEM\n, t.TYPE_NAME as table_type_name\n, t.SELF_REFERENCING_COL_NAME\n, t.REF_GENERATION\n, t.DBNAME\n, t.TABLE_TEXT\n, c.COLUMN_NAME\n, c.DATA_TYPE\n, c.TYPE_NAME as column_type_name\n, c.COLUMN_SIZE\n, c.BUFFER_LENGTH\n, c.DECIMAL_DIGITS\n, c.NUM_PREC_RADIX\n, c.NULLABLE\n, c.REMARKS as column_remarks\n, c.COLUMN_DEF\n, c.SQL_DATA_TYPE\n, c.SQL_DATETIME_SUB\n, c.CHAR_OCTET_LENGTH\n, c.ORDINAL_POSITION\n, c.IS_NULLABLE\n, c.JDBC_DATA_TYPE\n, c.SCOPE_CATALOG\n, c.SCOPE_SCHEMA\n, c.SCOPE_TABLE\n, c.SOURCE_DATA_TYPE\n, c.PSEUDO_COLUMN\n, c.COLUMN_TEXT\n, c.SYSTEM_COLUMN_NAME\n, c.I_DATA_TYPE\n, c.HIDDEN\n, c.HAS_DEFAULT\n, c.SOURCE_TYPE_NAME\n, c.SOURCE_SQL_DATA_TYPE\n, c.SOURCE_JDBC_DATA_TYPE\n, pk.KEY_SEQ\n, pk.PK_NAME\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLSCHEMAS s on s.TABLE_CAT = t.TABLE_CAT and s.TABLE_SCHEM = t.TABLE_SCHEM\njoin sysibm.SQLcolumns c on c.TABLE_CAT = t.TABLE_CAT and c.TABLE_SCHEM = t.TABLE_SCHEM and c.TABLE_NAME = t.TABLE_NAME\nleft join sysibm.SQLPrimaryKeys pk on pk.TABLE_CAT = pk.TABLE_CAT and pk.TABLE_SCHEM = t.TABLE_SCHEM and pk.TABLE_NAME = t.TABLE_NAME and pk.COLUMN_NAME = c.COLUMN_NAME\nwhere s.TABLE_SCHEM IN ('MM760LIB', 'MMLIBARCH', 'QGPL', 'STKUPD')\n/*\n(t.table_name in ('POMHDR' ,\n'POMCAN',\n'POMHST',\n'POSTAT',\n'POMDTL',\n'POMDSQ',\n'POMXTK',\n'EDAASNI')\nor t.table_name like 'INV%' and t.table_name not like '%DUPE%')\n*/\n\n/* \n-- Collect these:\n+ MM760LIB\tMMS 7.6.0 Database Library\n+ MMLIBARCH\tMM760LIB Archive Library\n+ QGPL\t    General Purpose Library\n+ STKUPD\t  Library for Stock Ledger Level Clearing\n\n-- Ignore these:\n- POMRST910\tnull\n- MM760DVL\tMMS 7.6.0 Development Database Files\n- MM760QAL\tMMS 7.6.0 QA Database Files\n */",
 									"type": "Expression"
 								}
 							},
@@ -560,6 +555,8 @@
 					{
 						"name": "LoopTables",
 						"type": "ForEach",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Skipped",
 						"dependsOn": [
 							{
 								"activity": "getTableList",
@@ -876,7 +873,14 @@
 						"type": "Copy",
 						"state": "Inactive",
 						"onInactiveMarkAs": "Skipped",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "getTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -985,6 +989,82 @@
 							},
 							"firstRowOnly": false
 						}
+					},
+					{
+						"name": "getTablePKs",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "Db2Source",
+								"query": {
+									"value": "select \n  t.TABLE_CAT\n, t.TABLE_SCHEM\n, t.TABLE_NAME\n, t.TABLE_TYPE\n, c.COLUMN_NAME\n, pk.KEY_SEQ\n, pk.PK_NAME\n, '@{utcNow()}' as measure_time\nFROM sysibm.SQLTABLES t\njoin sysibm.SQLSCHEMAS s on s.TABLE_CAT = t.TABLE_CAT and s.TABLE_SCHEM = t.TABLE_SCHEM\nleft join sysibm.SQLPrimaryKeys pk on pk.TABLE_CAT = pk.TABLE_CAT and pk.TABLE_SCHEM = t.TABLE_SCHEM and pk.TABLE_NAME = t.TABLE_NAME\nleft join sysibm.SQLcolumns c on c.TABLE_CAT = pk.TABLE_CAT and c.TABLE_SCHEM = pk.TABLE_SCHEM and c.TABLE_NAME = pk.TABLE_NAME and c.COLUMN_NAME = pk.COLUMN_NAME\nwhere s.TABLE_SCHEM IN ('MM760LIB', 'MMLIBARCH', 'QGPL', 'STKUPD')\n",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Db2KV",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									},
+									"dsSecretName": {
+										"value": "@pipeline().parameters.prmSecretName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DLBronzeParquetKVFile",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsURL": "https://staab09289802.dfs.core.windows.net",
+									"dsSecretName": "key-staab09289802",
+									"dsFileSystem": "datalake",
+									"dsDirectory": {
+										"value": "@{pipeline().parameters.prmPath}/Audit",
+										"type": "Expression"
+									},
+									"dsFileName": "TablePrimaryKeys.parquet",
+									"dsKVBaseURL": {
+										"value": "@pipeline().parameters.prmKVBaseURL",
+										"type": "Expression"
+									}
+								}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -1882,7 +1962,7 @@
 											{
 												"type": "Query",
 												"text": {
-													"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = 'datalake/bronze/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n",
+													"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = '@{activity('Get Pipeline Parameters').output.firstRow.SinkdsDirectory}/@{item().FilePath}/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n    @{if(equals(item().PartitionId, null), '', concat(' and PartitionId = ', item().PartitionId))}\n",
 													"type": "Expression"
 												}
 											}
@@ -1986,12 +2066,6 @@
 								"dependencyConditions": [
 									"Succeeded"
 								]
-							},
-							{
-								"activity": "Get_gbqColumn",
-								"dependencyConditions": [
-									"Succeeded"
-								]
 							}
 						],
 						"policy": {
@@ -2029,6 +2103,7 @@
 										}
 									},
 									"TableSchema": {
+										"type": "String",
 										"value": {
 											"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema",
 											"type": "Expression"
@@ -2061,7 +2136,7 @@
 						"type": "Lookup",
 						"dependsOn": [
 							{
-								"activity": "Get_gbqObject",
+								"activity": "Get_gbqColumn",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -2458,8 +2533,6 @@
 					{
 						"name": "IfDataWasLoaded",
 						"type": "IfCondition",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [
 							{
 								"activity": "Loop Batches",
@@ -2499,6 +2572,10 @@
 											},
 											"StorageAccount": {
 												"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsStorageAccount",
+												"type": "Expression"
+											},
+											"environment": {
+												"value": "@pipeline().globalParameters.gpEnvironment",
 												"type": "Expression"
 											}
 										}
@@ -2970,6 +3047,674 @@
 				"[concat(variables('factoryId'), '/linkedServices/GenericAzureSqlDatabaseMI')]",
 				"[concat(variables('factoryId'), '/datasets/Db2KV')]",
 				"[concat(variables('factoryId'), '/datasets/DLBronzeParquetKVFile')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/poc-SQL-Multi-Connect-Switch')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TryConnAzure",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Set FileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "@pipeline().parameters.ConnTestQuery",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzSqlDb",
+								"type": "DatasetReference",
+								"parameters": {
+									"sqlFqdn": {
+										"value": "@pipeline().parameters.ServerFqdnAzure",
+										"type": "Expression"
+									},
+									"dbName": {
+										"value": "@pipeline().parameters.DbNameAzure",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "TryConnOnPremises",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Set FileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "@pipeline().parameters.ConnTestQuery",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "OpSqlDb",
+								"type": "DatasetReference",
+								"parameters": {
+									"sqlFqdn": {
+										"value": "@pipeline().parameters.ServerFqdnOnPrem",
+										"type": "Expression"
+									},
+									"dbName": {
+										"value": "@pipeline().parameters.DbNameOnPrem",
+										"type": "Expression"
+									},
+									"userName": "AB092898@flooranddecor.com"
+								}
+							}
+						}
+					},
+					{
+						"name": "Set FileName",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "FileName",
+							"value": {
+								"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd-HH.mm.ss'))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "GetDataSwitch",
+						"type": "Switch",
+						"dependsOn": [
+							{
+								"activity": "TryConnAzure",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "TryConnOnPremises",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"on": {
+								"value": "@concat(if(contains(activity('TryConnAzure').output, 'SourceServer'), 'Azure', ''), if(contains(activity('TryConnOnPremises').output, 'SourceServer'), 'OnPrem', ''))",
+								"type": "Expression"
+							},
+							"cases": [
+								{
+									"value": "Azure",
+									"activities": [
+										{
+											"name": "ResultAzure",
+											"type": "SetVariable",
+											"dependsOn": [],
+											"policy": {
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"variableName": "pipelineReturnValue",
+												"value": [
+													{
+														"key": "Connection Test Result",
+														"value": {
+															"type": "String",
+															"content": "Only Azure connection"
+														}
+													}
+												],
+												"setSystemVariable": true
+											}
+										}
+									]
+								},
+								{
+									"value": "OnPrem",
+									"activities": [
+										{
+											"name": "ResultOnPrem",
+											"type": "SetVariable",
+											"dependsOn": [],
+											"policy": {
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"variableName": "pipelineReturnValue",
+												"value": [
+													{
+														"key": "Connection Test Result",
+														"value": {
+															"type": "String",
+															"content": "Only OnPrem success"
+														}
+													}
+												],
+												"setSystemVariable": true
+											}
+										}
+									]
+								},
+								{
+									"value": "AzureOnPrem",
+									"activities": [
+										{
+											"name": "ResultBoth",
+											"type": "SetVariable",
+											"dependsOn": [],
+											"policy": {
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"variableName": "pipelineReturnValue",
+												"value": [
+													{
+														"key": "Connection Test Result",
+														"value": {
+															"type": "String",
+															"content": "Both connections success"
+														}
+													}
+												],
+												"setSystemVariable": true
+											}
+										}
+									]
+								}
+							],
+							"defaultActivities": [
+								{
+									"name": "ResultDefault",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "pipelineReturnValue",
+										"value": [
+											{
+												"key": "Connection Test Result",
+												"value": {
+													"type": "String",
+													"content": "All connections failed."
+												}
+											}
+										],
+										"setSystemVariable": true
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"ServerFqdnAzure": {
+						"type": "string",
+						"defaultValue": "sql-ab092898.database.windows.net"
+					},
+					"ServerFqdnOnPrem": {
+						"type": "string",
+						"defaultValue": "localhost\\ACB"
+					},
+					"ConnTestQuery": {
+						"type": "string",
+						"defaultValue": "select @@servername as [SourceServer]"
+					},
+					"DbNameAzure": {
+						"type": "string",
+						"defaultValue": "LoadControl"
+					},
+					"DbNameOnPrem": {
+						"type": "string",
+						"defaultValue": "LoadControl"
+					},
+					"DataQuery": {
+						"type": "string",
+						"defaultValue": "select @@servername SourceServer, schema_name(schema_id) SchemaName, name TableName from sys.tables"
+					},
+					"FileSystem": {
+						"type": "string",
+						"defaultValue": "datalake"
+					},
+					"FilePath": {
+						"type": "string",
+						"defaultValue": "poc/SQL-Multi-Connect"
+					},
+					"FileNameStub": {
+						"type": "string",
+						"defaultValue": "sys.tables.{date}.parquet"
+					},
+					"PreferredTarget": {
+						"type": "string",
+						"defaultValue": "Azure"
+					}
+				},
+				"variables": {
+					"FileName": {
+						"type": "String"
+					},
+					"ConnTestResult": {
+						"type": "Array"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzSqlDb')]",
+				"[concat(variables('factoryId'), '/datasets/OpSqlDb')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/poc-SQL-Multi-Connect')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "TryConnAzure",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Set FileName",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "@pipeline().parameters.ConnTestQuery",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzSqlDb",
+								"type": "DatasetReference",
+								"parameters": {
+									"sqlFqdn": {
+										"value": "@pipeline().parameters.ServerFqdnAzure",
+										"type": "Expression"
+									},
+									"dbName": {
+										"value": "@pipeline().parameters.DbNameAzure",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "TryConnOnPremises",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "TryConnAzure",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "@pipeline().parameters.ConnTestQuery",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "OpSqlDb",
+								"type": "DatasetReference",
+								"parameters": {
+									"sqlFqdn": {
+										"value": "@pipeline().parameters.ServerFqdnOnPrem",
+										"type": "Expression"
+									},
+									"dbName": {
+										"value": "@pipeline().parameters.DbNameOnPrem",
+										"type": "Expression"
+									},
+									"userName": "AB092898@flooranddecor.com"
+								}
+							}
+						}
+					},
+					{
+						"name": "GetDataAzure",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "TryConnAzure",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "@pipeline().parameters.DataQuery",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzSqlDb",
+								"type": "DatasetReference",
+								"parameters": {
+									"sqlFqdn": {
+										"value": "@pipeline().parameters.ServerFqdnAzure",
+										"type": "Expression"
+									},
+									"dbName": {
+										"value": "@pipeline().parameters.DbNameAzure",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzPq",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsFilesystem": {
+										"value": "@pipeline().parameters.FileSystem",
+										"type": "Expression"
+									},
+									"dsPath": {
+										"value": "@pipeline().parameters.FilePath",
+										"type": "Expression"
+									},
+									"dsFilename": {
+										"value": "@concat('fromAz.', variables('FileName'))",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "GetDataOnPrem",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "TryConnOnPremises",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "@pipeline().parameters.DataQuery",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "OpSqlDb",
+								"type": "DatasetReference",
+								"parameters": {
+									"sqlFqdn": {
+										"value": "@pipeline().parameters.ServerFqdnOnPrem",
+										"type": "Expression"
+									},
+									"dbName": {
+										"value": "@pipeline().parameters.DbNameOnPrem",
+										"type": "Expression"
+									},
+									"userName": "AB092898@flooranddecor.com"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzPq",
+								"type": "DatasetReference",
+								"parameters": {
+									"dsFilesystem": {
+										"value": "@pipeline().parameters.FileSystem",
+										"type": "Expression"
+									},
+									"dsPath": {
+										"value": "@pipeline().parameters.FilePath",
+										"type": "Expression"
+									},
+									"dsFilename": {
+										"value": "@concat('fromOP.', variables('FileName'))",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "ConnectionsFailed",
+						"type": "Fail",
+						"dependsOn": [
+							{
+								"activity": "TryConnOnPremises",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"message": "Unable to connect to either source",
+							"errorCode": "9999"
+						}
+					},
+					{
+						"name": "Set FileName",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "FileName",
+							"value": {
+								"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd-HH.mm.ss'))",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"ServerFqdnAzure": {
+						"type": "string",
+						"defaultValue": "sql-ab092898.database.windows.net"
+					},
+					"ServerFqdnOnPrem": {
+						"type": "string",
+						"defaultValue": "localhost\\ACB"
+					},
+					"ConnTestQuery": {
+						"type": "string",
+						"defaultValue": "select @@servername as [SourceServer]"
+					},
+					"DbNameAzure": {
+						"type": "string",
+						"defaultValue": "LoadControl"
+					},
+					"DbNameOnPrem": {
+						"type": "string",
+						"defaultValue": "LoadControl"
+					},
+					"DataQuery": {
+						"type": "string",
+						"defaultValue": "select @@servername SourceServer, schema_name(schema_id) SchemaName, name TableName from sys.tables"
+					},
+					"FileSystem": {
+						"type": "string",
+						"defaultValue": "datalake"
+					},
+					"FilePath": {
+						"type": "string",
+						"defaultValue": "poc/SQL-Multi-Connect"
+					},
+					"FileNameStub": {
+						"type": "string",
+						"defaultValue": "sys.tables.{date}.parquet"
+					}
+				},
+				"variables": {
+					"FileName": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzSqlDb')]",
+				"[concat(variables('factoryId'), '/datasets/OpSqlDb')]",
+				"[concat(variables('factoryId'), '/datasets/AzPq')]"
 			]
 		},
 		{
@@ -4035,8 +4780,24 @@
 					"referenceName": "AzSqlDb",
 					"type": "LinkedServiceReference",
 					"parameters": {
-						"serverName": "sql-ab092898.database.windows.net",
-						"dbName": "txn"
+						"serverName": {
+							"value": "@dataset().sqlFqdn",
+							"type": "Expression"
+						},
+						"dbName": {
+							"value": "@dataset().dbName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"sqlFqdn": {
+						"type": "string",
+						"defaultValue": "sql-ab092898.database.windows.net"
+					},
+					"dbName": {
+						"type": "string",
+						"defaultValue": "txn"
 					}
 				},
 				"annotations": [],
@@ -4371,6 +5132,53 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/OpSqlDb')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "On premise SQL Server for generated queries.",
+				"linkedServiceName": {
+					"referenceName": "OnpremSqlDb",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"serverFqdn": {
+							"value": "@dataset().sqlFqdn",
+							"type": "Expression"
+						},
+						"dbName": {
+							"value": "@dataset().dbName",
+							"type": "Expression"
+						},
+						"userName": {
+							"value": "@dataset().userName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"sqlFqdn": {
+						"type": "string",
+						"defaultValue": "localhost\\ACB"
+					},
+					"dbName": {
+						"type": "string",
+						"defaultValue": "LoadControl"
+					},
+					"userName": {
+						"type": "string",
+						"defaultValue": "AB092898@flooranddecor.com"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/OnpremSqlDb')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/OpSqlTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4475,17 +5283,36 @@
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"parameters": {
+					"StorageAccount": {
+						"type": "string",
+						"defaultValue": "https://staab09289802.dfs.core.windows.net/"
+					},
+					"saAccountKey": {
+						"type": "string",
+						"defaultValue": "key-staab09289802"
+					}
+				},
 				"annotations": [],
 				"type": "AzureBlobFS",
 				"typeProperties": {
 					"url": "[parameters('AzDLStorage_properties_typeProperties_url')]",
 					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('AzDLStorage_accountKey')]"
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().saAccountKey",
+							"type": "Expression"
+						}
 					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzDatabricksJobCluster')]",
@@ -4569,7 +5396,7 @@
 					},
 					"dbName": {
 						"type": "string",
-						"defaultValue": "txn"
+						"defaultValue": "LoadControl"
 					}
 				},
 				"annotations": [],
@@ -4768,31 +5595,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQuery')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "GoogleBigQuery",
-				"typeProperties": {
-					"project": "fnd-cloud-project",
-					"requestGoogleDriveScope": false,
-					"authenticationType": "ServiceAuthentication",
-					"email": "ga4-access@fnd-cloud-project.iam.gserviceaccount.com",
-					"keyFilePath": "C:\\source\\keys\\fnd-cloud-project-b2a8d27db4f3.json",
-					"trustedCertPath": "",
-					"useSystemTrustStore": false
-				},
-				"connectVia": {
-					"referenceName": "shirt-ACB",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryDirect')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -4829,14 +5631,9 @@
 							"type": "Expression"
 						}
 					}
-				},
-				"connectVia": {
-					"referenceName": "suckLess",
-					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/suckLess')]",
 				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
 			]
 		},
@@ -4852,7 +5649,7 @@
 					},
 					"dbName": {
 						"type": "string",
-						"defaultValue": "master"
+						"defaultValue": "LoadControl"
 					},
 					"userName": {
 						"type": "string",
@@ -4870,7 +5667,7 @@
 							"referenceName": "AzKeyVault",
 							"type": "LinkedServiceReference"
 						},
-						"secretName": "WinAuthPwd"
+						"secretName": "sqlAuthPwd-Local-ACB"
 					}
 				},
 				"connectVia": {
@@ -4903,63 +5700,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/sfdc')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"userName": {
-						"type": "string",
-						"defaultValue": "fred"
-					},
-					"sfdcPwdSecret": {
-						"type": "string",
-						"defaultValue": "sfdcPwd"
-					},
-					"sfdcTokenSecret": {
-						"type": "string",
-						"defaultValue": "sfdcToken"
-					},
-					"sfdcApiVersion": {
-						"type": "string",
-						"defaultValue": "52.0"
-					}
-				},
-				"annotations": [],
-				"type": "Salesforce",
-				"typeProperties": {
-					"environmentUrl": "[parameters('sfdc_properties_typeProperties_environmentUrl')]",
-					"username": "[parameters('sfdc_properties_typeProperties_username')]",
-					"password": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "AzKeyVault",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": {
-							"value": "@linkedService().sfdcPwdSecret",
-							"type": "Expression"
-						}
-					},
-					"securityToken": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "AzKeyVault",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": {
-							"value": "@linkedService().sfdcTokenSecret",
-							"type": "Expression"
-						}
-					},
-					"apiVersion": "@{linkedService().sfdcApiVersion}"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
-			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/schRunPipelines')]",
