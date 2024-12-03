@@ -130,7 +130,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"on": {
-						"value": "@concat(if(contains(activity('TryConnAzure').output, 'SourceServer'), 'Azure', ''), if(contains(activity('TryConnOnPremises').output, 'SourceServer'), 'OnPrem', ''))",
+						"value": "@concat(if(contains(string(activity('TryConnAzure').output), 'SourceServer'), 'Azure', 'NoAzure!'), if(contains(string(activity('TryConnOnPremises').output), 'SourceServer'), 'OnPrem', 'NoOnPrem!'))",
 						"type": "Expression"
 					},
 					"cases": [
