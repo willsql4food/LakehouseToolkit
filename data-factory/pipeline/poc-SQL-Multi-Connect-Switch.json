@@ -124,7 +124,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"on": {
-						"value": "@if(contains(variables('AvailableConnections'), pipeline().parameters.PreferredTarget), pipeline().parameters.PreferredTarget, variables('AvailableConnections'))",
+						"value": "@if(contains(variables('AvailableConnections'), pipeline().parameters.PreferredConnection), pipeline().parameters.PreferredConnection, variables('AvailableConnections'))",
 						"type": "Expression"
 					},
 					"cases": [
@@ -280,7 +280,7 @@
 				"type": "string",
 				"defaultValue": "sys.tables.{date}.parquet"
 			},
-			"PreferredTarget": {
+			"PreferredConnection": {
 				"type": "string",
 				"defaultValue": "Azure"
 			}
