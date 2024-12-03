@@ -3168,13 +3168,7 @@
 						"type": "Switch",
 						"dependsOn": [
 							{
-								"activity": "TryConnAzure",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "TryConnOnPremises",
+								"activity": "Available Connections",
 								"dependencyConditions": [
 									"Completed"
 								]
@@ -3183,7 +3177,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"on": {
-								"value": "@concat(if(contains(activity('TryConnAzure').output, 'SourceServer'), 'Azure', ''), if(contains(activity('TryConnOnPremises').output, 'SourceServer'), 'OnPrem', ''))",
+								"value": "@if(contains(variables('AvailableConnections'), pipeline().parameters.PreferredConnection), pipeline().parameters.PreferredConnection, variables('AvailableConnections'))",
 								"type": "Expression"
 							},
 							"cases": [
@@ -3191,7 +3185,7 @@
 									"value": "Azure",
 									"activities": [
 										{
-											"name": "ResultAzure",
+											"name": "Get from Azure",
 											"type": "SetVariable",
 											"dependsOn": [],
 											"policy": {
@@ -3219,7 +3213,7 @@
 									"value": "OnPrem",
 									"activities": [
 										{
-											"name": "ResultOnPrem",
+											"name": "Get from OnPrem",
 											"type": "SetVariable",
 											"dependsOn": [],
 											"policy": {
@@ -3242,39 +3236,11 @@
 											}
 										}
 									]
-								},
-								{
-									"value": "AzureOnPrem",
-									"activities": [
-										{
-											"name": "ResultBoth",
-											"type": "SetVariable",
-											"dependsOn": [],
-											"policy": {
-												"secureOutput": false,
-												"secureInput": false
-											},
-											"userProperties": [],
-											"typeProperties": {
-												"variableName": "pipelineReturnValue",
-												"value": [
-													{
-														"key": "Connection Test Result",
-														"value": {
-															"type": "String",
-															"content": "Both connections success"
-														}
-													}
-												],
-												"setSystemVariable": true
-											}
-										}
-									]
 								}
 							],
 							"defaultActivities": [
 								{
-									"name": "ResultDefault",
+									"name": "No Connection",
 									"type": "SetVariable",
 									"dependsOn": [],
 									"policy": {
@@ -3297,6 +3263,36 @@
 									}
 								}
 							]
+						}
+					},
+					{
+						"name": "Available Connections",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "TryConnAzure",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "TryConnOnPremises",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "AvailableConnections",
+							"value": {
+								"value": "@concat(if(contains(string(activity('TryConnAzure').output), 'SourceServer'), 'Azure', ''), if(contains(string(activity('TryConnOnPremises').output), 'SourceServer'), 'OnPrem', ''))",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -3340,7 +3336,7 @@
 						"type": "string",
 						"defaultValue": "sys.tables.{date}.parquet"
 					},
-					"PreferredTarget": {
+					"PreferredConnection": {
 						"type": "string",
 						"defaultValue": "Azure"
 					}
@@ -3349,8 +3345,8 @@
 					"FileName": {
 						"type": "String"
 					},
-					"ConnTestResult": {
-						"type": "Array"
+					"AvailableConnections": {
+						"type": "String"
 					}
 				},
 				"annotations": []
