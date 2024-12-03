@@ -1,0 +1,330 @@
+{
+	"name": "poc-SQL-Multi-Connect-Switch",
+	"properties": {
+		"activities": [
+			{
+				"name": "TryConnAzure",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnAzure",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameAzure",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "TryConnOnPremises",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnOnPrem",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameOnPrem",
+								"type": "Expression"
+							},
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				}
+			},
+			{
+				"name": "Set FileName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FileName",
+					"value": {
+						"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd-HH.mm.ss'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "AppendAzureSuccess",
+				"type": "AppendVariable",
+				"dependsOn": [
+					{
+						"activity": "TryConnAzure",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ConnTestResult",
+					"value": "{\"Azure\": \"success\"}"
+				}
+			},
+			{
+				"name": "AppendOnPremSuccess",
+				"type": "AppendVariable",
+				"dependsOn": [
+					{
+						"activity": "TryConnOnPremises",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ConnTestResult",
+					"value": "{\"OnPrem\": \"success\"}"
+				}
+			},
+			{
+				"name": "AppendAzureFail",
+				"type": "AppendVariable",
+				"dependsOn": [
+					{
+						"activity": "TryConnAzure",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ConnTestResult",
+					"value": "{\"Azure\": \"fail\"}"
+				}
+			},
+			{
+				"name": "AppendOnPremFail",
+				"type": "AppendVariable",
+				"dependsOn": [
+					{
+						"activity": "TryConnOnPremises",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ConnTestResult",
+					"value": "{\"OnPrem\": \"fail\"}"
+				}
+			},
+			{
+				"name": "GetDataSwitch",
+				"type": "Switch",
+				"dependsOn": [
+					{
+						"activity": "AppendAzureSuccess",
+						"dependencyConditions": [
+							"Completed",
+							"Skipped"
+						]
+					},
+					{
+						"activity": "AppendAzureFail",
+						"dependencyConditions": [
+							"Completed",
+							"Skipped"
+						]
+					},
+					{
+						"activity": "AppendOnPremSuccess",
+						"dependencyConditions": [
+							"Completed",
+							"Skipped"
+						]
+					},
+					{
+						"activity": "AppendOnPremFail",
+						"dependencyConditions": [
+							"Completed",
+							"Skipped"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "1=1",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "CaseAzure",
+							"activities": [
+								{
+									"name": "ResultAzure",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "pipelineReturnValue",
+										"value": [
+											{
+												"key": "ItWorked",
+												"value": {
+													"type": "Object",
+													"content": "@variables('ConnTestResult')"
+												}
+											}
+										],
+										"setSystemVariable": true
+									}
+								}
+							]
+						}
+					],
+					"defaultActivities": [
+						{
+							"name": "ResultDefault",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "pipelineReturnValue",
+								"value": [
+									{
+										"key": "ItWorked",
+										"value": {
+											"type": "Object",
+											"content": "@variables('ConnTestResult')"
+										}
+									}
+								],
+								"setSystemVariable": true
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"ServerFqdnAzure": {
+				"type": "string",
+				"defaultValue": "sql-ab092898.database.windows.net"
+			},
+			"ServerFqdnOnPrem": {
+				"type": "string",
+				"defaultValue": "localhost\\ACB"
+			},
+			"ConnTestQuery": {
+				"type": "string",
+				"defaultValue": "select @@servername as [SourceServer]"
+			},
+			"DbNameAzure": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"DbNameOnPrem": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"DataQuery": {
+				"type": "string",
+				"defaultValue": "select @@servername SourceServer, schema_name(schema_id) SchemaName, name TableName from sys.tables"
+			},
+			"FileSystem": {
+				"type": "string",
+				"defaultValue": "datalake"
+			},
+			"FilePath": {
+				"type": "string",
+				"defaultValue": "poc/SQL-Multi-Connect"
+			},
+			"FileNameStub": {
+				"type": "string",
+				"defaultValue": "sys.tables.{date}.parquet"
+			},
+			"PreferredTarget": {
+				"type": "string",
+				"defaultValue": "Azure"
+			}
+		},
+		"variables": {
+			"FileName": {
+				"type": "String"
+			},
+			"ConnTestResult": {
+				"type": "Array"
+			}
+		},
+		"annotations": []
+	}
+}
