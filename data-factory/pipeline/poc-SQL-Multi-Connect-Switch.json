@@ -111,103 +111,19 @@
 				}
 			},
 			{
-				"name": "AppendAzureSuccess",
-				"type": "AppendVariable",
-				"dependsOn": [
-					{
-						"activity": "TryConnAzure",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "ConnTestResult",
-					"value": "{\"Azure\": \"success\"}"
-				}
-			},
-			{
-				"name": "AppendOnPremSuccess",
-				"type": "AppendVariable",
-				"dependsOn": [
-					{
-						"activity": "TryConnOnPremises",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "ConnTestResult",
-					"value": "{\"OnPrem\": \"success\"}"
-				}
-			},
-			{
-				"name": "AppendAzureFail",
-				"type": "AppendVariable",
-				"dependsOn": [
-					{
-						"activity": "TryConnAzure",
-						"dependencyConditions": [
-							"Failed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "ConnTestResult",
-					"value": "{\"Azure\": \"fail\"}"
-				}
-			},
-			{
-				"name": "AppendOnPremFail",
-				"type": "AppendVariable",
-				"dependsOn": [
-					{
-						"activity": "TryConnOnPremises",
-						"dependencyConditions": [
-							"Failed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "ConnTestResult",
-					"value": "{\"OnPrem\": \"fail\"}"
-				}
-			},
-			{
 				"name": "GetDataSwitch",
 				"type": "Switch",
 				"dependsOn": [
 					{
-						"activity": "AppendAzureSuccess",
+						"activity": "TryConnAzure",
 						"dependencyConditions": [
-							"Completed",
-							"Skipped"
+							"Completed"
 						]
 					},
 					{
-						"activity": "AppendAzureFail",
+						"activity": "TryConnOnPremises",
 						"dependencyConditions": [
-							"Completed",
-							"Skipped"
-						]
-					},
-					{
-						"activity": "AppendOnPremSuccess",
-						"dependencyConditions": [
-							"Completed",
-							"Skipped"
-						]
-					},
-					{
-						"activity": "AppendOnPremFail",
-						"dependencyConditions": [
-							"Completed",
-							"Skipped"
+							"Completed"
 						]
 					}
 				],
