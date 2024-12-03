@@ -130,12 +130,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"on": {
-						"value": "1=1",
+						"value": "@concat(if(contains(activity('TryConnAzure').output, 'SourceServer'), 'Azure', ''), if(contains(activity('TryConnOnPremises').output, 'SourceServer'), 'OnPrem', ''))",
 						"type": "Expression"
 					},
 					"cases": [
 						{
-							"value": "CaseAzure",
+							"value": "Azure",
 							"activities": [
 								{
 									"name": "ResultAzure",
@@ -150,10 +150,66 @@
 										"variableName": "pipelineReturnValue",
 										"value": [
 											{
-												"key": "ItWorked",
+												"key": "Connection Test Result",
 												"value": {
-													"type": "Object",
-													"content": "@variables('ConnTestResult')"
+													"type": "String",
+													"content": "Only Azure connection"
+												}
+											}
+										],
+										"setSystemVariable": true
+									}
+								}
+							]
+						},
+						{
+							"value": "OnPrem",
+							"activities": [
+								{
+									"name": "ResultOnPrem",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "pipelineReturnValue",
+										"value": [
+											{
+												"key": "Connection Test Result",
+												"value": {
+													"type": "String",
+													"content": "Only OnPrem success"
+												}
+											}
+										],
+										"setSystemVariable": true
+									}
+								}
+							]
+						},
+						{
+							"value": "AzureOnPrem",
+							"activities": [
+								{
+									"name": "ResultBoth",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "pipelineReturnValue",
+										"value": [
+											{
+												"key": "Connection Test Result",
+												"value": {
+													"type": "String",
+													"content": "Both connections success"
 												}
 											}
 										],
@@ -177,10 +233,10 @@
 								"variableName": "pipelineReturnValue",
 								"value": [
 									{
-										"key": "ItWorked",
+										"key": "Connection Test Result",
 										"value": {
-											"type": "Object",
-											"content": "@variables('ConnTestResult')"
+											"type": "String",
+											"content": "All connections failed."
 										}
 									}
 								],
