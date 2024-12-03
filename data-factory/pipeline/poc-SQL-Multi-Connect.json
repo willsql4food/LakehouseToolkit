@@ -1,0 +1,347 @@
+{
+	"name": "poc-SQL-Multi-Connect",
+	"properties": {
+		"activities": [
+			{
+				"name": "TryConnAzure",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnAzure",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameAzure",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "TryConnOnPremises",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "TryConnAzure",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnOnPrem",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameOnPrem",
+								"type": "Expression"
+							},
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				}
+			},
+			{
+				"name": "GetDataAzure",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TryConnAzure",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.DataQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnAzure",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameAzure",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzPq",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsFilesystem": {
+								"value": "@pipeline().parameters.FileSystem",
+								"type": "Expression"
+							},
+							"dsPath": {
+								"value": "@pipeline().parameters.FilePath",
+								"type": "Expression"
+							},
+							"dsFilename": {
+								"value": "@concat('fromAz.', variables('FileName'))",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "GetDataOnPrem",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "TryConnOnPremises",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.DataQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "OpSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnOnPrem",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameOnPrem",
+								"type": "Expression"
+							},
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzPq",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsFilesystem": {
+								"value": "@pipeline().parameters.FileSystem",
+								"type": "Expression"
+							},
+							"dsPath": {
+								"value": "@pipeline().parameters.FilePath",
+								"type": "Expression"
+							},
+							"dsFilename": {
+								"value": "@concat('fromOP.', variables('FileName'))",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "ConnectionsFailed",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "TryConnOnPremises",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "Unable to connect to either source",
+					"errorCode": "9999"
+				}
+			},
+			{
+				"name": "Set FileName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FileName",
+					"value": {
+						"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd-HH.mm.ss'))",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ServerFqdnAzure": {
+				"type": "string",
+				"defaultValue": "sql-ab092898.database.windows.net"
+			},
+			"ServerFqdnOnPrem": {
+				"type": "string",
+				"defaultValue": "localhost\\ACB"
+			},
+			"ConnTestQuery": {
+				"type": "string",
+				"defaultValue": "select @@servername as [SourceServer]"
+			},
+			"DbNameAzure": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"DbNameOnPrem": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"DataQuery": {
+				"type": "string",
+				"defaultValue": "select @@servername SourceServer, schema_name(schema_id) SchemaName, name TableName from sys.tables"
+			},
+			"FileSystem": {
+				"type": "string",
+				"defaultValue": "datalake"
+			},
+			"FilePath": {
+				"type": "string",
+				"defaultValue": "poc/SQL-Multi-Connect"
+			},
+			"FileNameStub": {
+				"type": "string",
+				"defaultValue": "sys.tables.{date}.parquet"
+			}
+		},
+		"variables": {
+			"FileName": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

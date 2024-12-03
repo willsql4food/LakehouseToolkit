@@ -1,0 +1,41 @@
+{
+	"name": "OpSqlDb",
+	"properties": {
+		"description": "On premise SQL Server for generated queries.",
+		"linkedServiceName": {
+			"referenceName": "OnpremSqlDb",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"serverFqdn": {
+					"value": "@dataset().sqlFqdn",
+					"type": "Expression"
+				},
+				"dbName": {
+					"value": "@dataset().dbName",
+					"type": "Expression"
+				},
+				"userName": {
+					"value": "@dataset().userName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"sqlFqdn": {
+				"type": "string",
+				"defaultValue": "localhost\\ACB"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"userName": {
+				"type": "string",
+				"defaultValue": "AB092898@flooranddecor.com"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	}
+}

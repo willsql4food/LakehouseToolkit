@@ -5,8 +5,24 @@
 			"referenceName": "AzSqlDb",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"serverName": "sql-ab092898.database.windows.net",
-				"dbName": "txn"
+				"serverName": {
+					"value": "@dataset().sqlFqdn",
+					"type": "Expression"
+				},
+				"dbName": {
+					"value": "@dataset().dbName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"sqlFqdn": {
+				"type": "string",
+				"defaultValue": "sql-ab092898.database.windows.net"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "txn"
 			}
 		},
 		"annotations": [],

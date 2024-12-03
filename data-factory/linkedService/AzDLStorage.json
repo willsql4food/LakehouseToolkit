@@ -1,12 +1,32 @@
 {
 	"name": "AzDLStorage",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
+		"parameters": {
+			"StorageAccount": {
+				"type": "string",
+				"defaultValue": "https://staab09289802.dfs.core.windows.net/"
+			},
+			"saAccountKey": {
+				"type": "string",
+				"defaultValue": "key-staab09289802"
+			}
+		},
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://sadevdatalakehouse.dfs.core.windows.net/",
-			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQEFDRjhFNzJDLUIwQkItNEJDNS05NDNFLUJCRDc5OTkwMkU5Ml80MzZhZmZkOS0yOGNjLTQwNjgtOWE4NC00OTczMmM1OWM4NzYiDQp9"
+			"url": "@{linkedService().StorageAccount}",
+			"accountKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().saAccountKey",
+					"type": "Expression"
+				}
+			}
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
