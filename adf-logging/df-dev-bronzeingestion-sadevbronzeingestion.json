@@ -1,0 +1,164 @@
+{
+    "id": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.DataFactory/factories/df-dev-bronzeingestion/providers/microsoft.insights/diagnosticSettings/df-dev-bronzeingestion-sadevbronzeingestion",
+    "name": "df-dev-bronzeingestion-sadevbronzeingestion",
+    "properties": {
+        "logs": [
+            {
+                "category": "ActivityRuns",
+                "categoryGroup": null,
+                "enabled": true,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "PipelineRuns",
+                "categoryGroup": null,
+                "enabled": true,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "TriggerRuns",
+                "categoryGroup": null,
+                "enabled": true,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SandboxPipelineRuns",
+                "categoryGroup": null,
+                "enabled": true,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SandboxActivityRuns",
+                "categoryGroup": null,
+                "enabled": true,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SSISPackageEventMessages",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SSISPackageExecutableStatistics",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SSISPackageEventMessageContext",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SSISPackageExecutionComponentPhases",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SSISPackageExecutionDataStatistics",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "SSISIntegrationRuntimeLogs",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "AirflowTaskLogs",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "AirflowWorkerLogs",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "AirflowDagProcessingLogs",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "AirflowSchedulerLogs",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            },
+            {
+                "category": "AirflowWebLogs",
+                "categoryGroup": null,
+                "enabled": false,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                }
+            }
+        ],
+        "metrics": [
+            {
+                "timeGrain": null,
+                "enabled": true,
+                "retentionPolicy": {
+                    "days": 0,
+                    "enabled": false
+                },
+                "category": "AllMetrics"
+            }
+        ],
+        "storageAccountId": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.Storage/storageAccounts/sadevbronzeingestion"
+    }
+}
