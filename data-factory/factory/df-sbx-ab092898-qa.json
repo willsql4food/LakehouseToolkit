@@ -5,6 +5,10 @@
 			"BronzeIngestionKvUrl": {
 				"type": "string",
 				"value": "https://akv-ab092898.vault.azure.net/"
+			},
+			"gpWMDatabase": {
+				"type": "string",
+				"value": "LoadControl"
 			}
 		}
 	},
