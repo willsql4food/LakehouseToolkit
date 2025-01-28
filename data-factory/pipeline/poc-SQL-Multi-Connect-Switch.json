@@ -1,0 +1,298 @@
+{
+	"name": "poc-SQL-Multi-Connect-Switch",
+	"properties": {
+		"activities": [
+			{
+				"name": "TryConnAzure",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnAzure",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameAzure",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "TryConnOnPremises",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set FileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "@pipeline().parameters.ConnTestQuery",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "OpSqlDb",
+						"type": "DatasetReference",
+						"parameters": {
+							"sqlFqdn": {
+								"value": "@pipeline().parameters.ServerFqdnOnPrem",
+								"type": "Expression"
+							},
+							"dbName": {
+								"value": "@pipeline().parameters.DbNameOnPrem",
+								"type": "Expression"
+							},
+							"userName": "AB092898@flooranddecor.com"
+						}
+					}
+				}
+			},
+			{
+				"name": "Set FileName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FileName",
+					"value": {
+						"value": "@replace(pipeline().parameters.FileNameStub, '{date}', formatDateTime(utcNow(), 'yyyy.MM.dd-HH.mm.ss'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "GetDataSwitch",
+				"type": "Switch",
+				"dependsOn": [
+					{
+						"activity": "Available Connections",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@if(contains(variables('AvailableConnections'), pipeline().parameters.PreferredConnection), pipeline().parameters.PreferredConnection, variables('AvailableConnections'))",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "Azure",
+							"activities": [
+								{
+									"name": "Get from Azure",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "pipelineReturnValue",
+										"value": [
+											{
+												"key": "Connection Test Result",
+												"value": {
+													"type": "String",
+													"content": "Only Azure connection"
+												}
+											}
+										],
+										"setSystemVariable": true
+									}
+								}
+							]
+						},
+						{
+							"value": "OnPrem",
+							"activities": [
+								{
+									"name": "Get from OnPrem",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "pipelineReturnValue",
+										"value": [
+											{
+												"key": "Connection Test Result",
+												"value": {
+													"type": "String",
+													"content": "Only OnPrem success"
+												}
+											}
+										],
+										"setSystemVariable": true
+									}
+								}
+							]
+						}
+					],
+					"defaultActivities": [
+						{
+							"name": "No Connection",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "pipelineReturnValue",
+								"value": [
+									{
+										"key": "Connection Test Result",
+										"value": {
+											"type": "String",
+											"content": "All connections failed."
+										}
+									}
+								],
+								"setSystemVariable": true
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Available Connections",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "TryConnAzure",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "TryConnOnPremises",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "AvailableConnections",
+					"value": {
+						"value": "@concat(if(contains(string(activity('TryConnAzure').output), 'SourceServer'), 'Azure', ''), if(contains(string(activity('TryConnOnPremises').output), 'SourceServer'), 'OnPrem', ''))",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ServerFqdnAzure": {
+				"type": "string",
+				"defaultValue": "sql-ab092898.database.windows.net"
+			},
+			"ServerFqdnOnPrem": {
+				"type": "string",
+				"defaultValue": "localhost\\ACB"
+			},
+			"ConnTestQuery": {
+				"type": "string",
+				"defaultValue": "select @@servername as [SourceServer]"
+			},
+			"DbNameAzure": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"DbNameOnPrem": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"DataQuery": {
+				"type": "string",
+				"defaultValue": "select @@servername SourceServer, schema_name(schema_id) SchemaName, name TableName from sys.tables"
+			},
+			"FileSystem": {
+				"type": "string",
+				"defaultValue": "datalake"
+			},
+			"FilePath": {
+				"type": "string",
+				"defaultValue": "poc/SQL-Multi-Connect"
+			},
+			"FileNameStub": {
+				"type": "string",
+				"defaultValue": "sys.tables.{date}.parquet"
+			},
+			"PreferredConnection": {
+				"type": "string",
+				"defaultValue": "Azure"
+			}
+		},
+		"variables": {
+			"FileName": {
+				"type": "String"
+			},
+			"AvailableConnections": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

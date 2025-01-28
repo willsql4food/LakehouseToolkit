@@ -1,0 +1,7 @@
+{
+	"name": "shirt-ACB",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "Self-hosted integration runtime operating on Carter Burleigh's laptop"
+	}
+}

@@ -1,0 +1,19 @@
+ADFActivityRun
+| where Status in ("Succeeded", "Failed" ) and Start between ((now() - 7d) .. now())
+| project ActivityType, Tags, PipelineName, Output = parse_json(Output), Factory = tostring(split(ResourceId, "/")[(-1)]), ActivityDuration = End - Start
+| extend  RowCount = todouble(iif(isnull(Output.recordsAffected), 0, Output.recordsAffected))
+                    + todouble(iif(isnull(Output.rowsCopied), 0, Output.rowsCopied))
+        , dataRead = todouble(Output.dataRead)
+        , dataWritten = todouble(Output.dataWritten)
+        , Bill = parse_json(Output.billingReference).billableDuration
+| mv-expand Bill
+| project PipelineName, ActivityType, ActivityDuration, toint(RowCount), Tags = parse_json(Tags), Billing = parse_json(Bill), Factory, dataRead, dataWritten
+| extend 
+    Owner = tostring(Tags.ownerEmail)
+,   CostCenter = tostring(Tags.costCenter)
+,   BillMeter = tostring(Billing.meterType)
+,   BillDuration = todouble(Billing.duration)
+,   BillUnit = tostring(Billing.unit)
+| summarize NumExecutions = count(), TotalBillable = round(sum(BillDuration), 3), TotalRows = sum(RowCount), ActivityDuration = sum(ActivityDuration), DataRead = sum(dataRead), DataWritten = sum(dataWritten)
+    by Owner, CostCenter, Factory, PipelineName, ActivityType, BillMeter, BillUnit
+| sort by Owner, CostCenter, Factory, PipelineName, ActivityType, BillMeter, BillUnit

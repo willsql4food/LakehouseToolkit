@@ -1,0 +1,896 @@
+{
+	"name": "getGoogleBigQuery",
+	"properties": {
+		"activities": [
+			{
+				"name": "Loop Batches",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqLoadBatches",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get_gbqLoadBatches').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 7,
+					"activities": [
+						{
+							"name": "BatchToParquet",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 300,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "DestFile",
+									"value": "@{item().FileName}"
+								},
+								{
+									"name": "Query",
+									"value": "@{item().SelectCmd}"
+								},
+								{
+									"name": "TableName",
+									"value": "@{item().TableName}"
+								},
+								{
+									"name": "Batch",
+									"value": "@{concat(item().BatchId, if(equals(item().SubBatchId, null), '', concat('.', item().SubBatchId)))}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "GoogleBigQueryV2Source",
+									"query": {
+										"value": "@item().SelectCmd",
+										"type": "Expression"
+									}
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "GoogleBigQueryDirect",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsBaseURL": {
+											"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DLBronzeParquetKVFile",
+									"type": "DatasetReference",
+									"parameters": {
+										"dsURL": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsURL",
+											"type": "Expression"
+										},
+										"dsSecretName": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsSecretName",
+											"type": "Expression"
+										},
+										"dsFileSystem": {
+											"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsFileSystem",
+											"type": "Expression"
+										},
+										"dsDirectory": {
+											"value": "@{activity('Get Pipeline Parameters').output.firstRow.SinkdsDirectory}/@{item().FilePath}",
+											"type": "Expression"
+										},
+										"dsFileName": {
+											"value": "@{item().FileName}",
+											"type": "Expression"
+										},
+										"dsKVBaseURL": {
+											"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "LogFinish",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "BatchToParquet",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "GenericAzureSqlDatabaseMI",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"lsServerName": {
+										"value": "@pipeline().globalParameters.gpWMSQL",
+										"type": "Expression"
+									},
+									"lsDatabaseName": {
+										"value": "@pipeline().globalParameters.gpWMDatabase",
+										"type": "Expression"
+									}
+								}
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "update  dbo.gbqWatermark\nset     LoadedDateUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        DestinationUri = '@{activity('Get Pipeline Parameters').output.firstRow.SinkdsDirectory}/@{item().FilePath}/@{item().FilePath}/@{item().FileName}',\n        RowCountDest = @{activity('BatchToParquet').output.rowsCopied} \nwhere   TableCatalog = '@{item().TableCatalog}'\n    and TableSchema = '@{item().TableSchema}'\n    and TableName = '@{item().TableName}'\n    and BatchId = @{item().BatchId}\n    @{if(equals(item().SubBatchId, null), '', concat(' and SubBatchId = ', item().SubBatchId))}\n    @{if(equals(item().PartitionId, null), '', concat(' and PartitionId = ', item().PartitionId))}\n",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Get_gbqObject",
+				"description": "Get all objects available in GBQ and stage them in Load Control.",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "LogJobStart",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "GoogleBigQueryV2Source",
+						"query": {
+							"value": "select   table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, partition_id as PartitionId, total_rows as TotalRows, last_modified_time as LastModifiedTime\nFROM  @{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}.@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}.INFORMATION_SCHEMA.PARTITIONS @{if(greater(pipeline().parameters.DataAgeLimitHours, 0), concat('where last_modified_time > timestamp(parse_datetime(''%Y-%m-%dT%H:%M:%E*SZ'', ''', addHours(pipeline().TriggerTime, mul(-1, pipeline().parameters.DataAgeLimitHours)), '''))'), '')}\n",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": {
+							"value": "delete from [stage].[gbqObject] where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
+							"type": "Expression"
+						},
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": {
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "LoadControlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							},
+							"dsSchema": "stage",
+							"dsTable": "gbqObject"
+						}
+					}
+				]
+			},
+			{
+				"name": "Get_gbqLoadBatches",
+				"description": "Get the final list of batches to load, their file paths and names.\nFeed this to a load loop.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqObjectDetail",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "dbo.uspGetGbqLoadBatches",
+						"storedProcedureParameters": {
+							"PipelineExecutionId": {
+								"type": "Int32",
+								"value": {
+									"value": "@{activity('LogJobStart').output.value[0].Id}",
+									"type": "Expression"
+								}
+							},
+							"RowsLimit": {
+								"type": "Int32",
+								"value": {
+									"value": "@pipeline().parameters.BatchRowLimit",
+									"type": "Expression"
+								}
+							},
+							"TableCatalog": {
+								"type": "String",
+								"value": {
+									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog",
+									"type": "Expression"
+								}
+							},
+							"TableSchema": {
+								"type": "String",
+								"value": {
+									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Get_RowCountQueries",
+				"description": "Builds a set of queries to find the row count in each Google object not yet loaded.  Applies Batch to objects anticipated to exceed query return limit imposed by Google (1M rows as of 2024-01)",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqColumn",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "select  count(*) numBatches\n    ,   string_agg(convert(nvarchar(max), CountCmd), ' union all ') CountCmd\n    ,   string_agg(convert(nvarchar(max), TableName), ',') TableList \nfrom    dbo.gbqObjectToLoadCmd \nwhere TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Get_gbqObjectDetail",
+				"description": "Execute query and store results in stage table in Load Control.",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Get_RowCountQueries",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "GoogleBigQueryV2Source",
+						"query": {
+							"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].CountCmd, 'select ''na'' TableCatalog, ''na'' TableSchema, ''na'' TableName, 0 RowCountSource')\n",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": {
+							"value": "delete from [stage].[gbqObjectDetail] where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'",
+							"type": "Expression"
+						},
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": {
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "LoadControlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							},
+							"dsSchema": "stage",
+							"dsTable": "gbqObjectDetail"
+						}
+					}
+				]
+			},
+			{
+				"name": "LogJobFinish",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "IfDataWasLoaded",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "GenericAzureSqlDatabaseMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsServerName": {
+							"value": "@pipeline().globalParameters.gpWMSQL",
+							"type": "Expression"
+						},
+						"lsDatabaseName": {
+							"value": "@pipeline().globalParameters.gpWMDatabase",
+							"type": "Expression"
+						}
+					}
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = @{activity('Get_RowCountQueries').output.value[0].numBatches},\n        StatusMessage = 'Succeeded'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "LogJobStart",
+				"description": "Record the Pipeline start in LoadControl and capture the Id of the row for use in auditing.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Get Pipeline Parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "insert into dbo.adfPipelineExecution (PipelineName, RunId, StartTimeUtc, StatusMessage, Parameters)\noutput inserted.Id\nselect '@{pipeline().Pipeline}', '@{pipeline().RunId}', '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}', 'In Progress', Parameters = (select '@{pipeline().parameters.BatchRowLimit}' as BatchRowLimit, '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' as TableCatalog, '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}' as TableSchema for json path)",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "LogJobFail_GetObjDetail",
+				"description": "Log failure at Get_gbqObjectDetail",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqObjectDetail",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "GenericAzureSqlDatabaseMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsServerName": {
+							"value": "@pipeline().globalParameters.gpWMSQL",
+							"type": "Expression"
+						},
+						"lsDatabaseName": {
+							"value": "@pipeline().globalParameters.gpWMDatabase",
+							"type": "Expression"
+						}
+					}
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "update  dbo.adfPipelineExecution \nset     EndTimeUtc = '@{formatDateTime(utcNow(), 'yyyy-MM-dd HH:mm:ss.fff')}',\n        BatchCount = -1,\n        StatusMessage = 'Failed'\nwhere   Id = @{activity('LogJobStart').output.value[0].Id}\n",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "Get_ColumnQuery",
+				"description": "Builds a query to run against Google to find the column definition for each Google object not yet loaded.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Get_gbqObject",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "/* This runs on SQL Server (LoadControl)*/\nwith cte as (\n    select\n        /* Build WHERE condition for query on GBQ  */\n        gbqCondition = convert(nvarchar(max), concat('table_name = ''', TableName, '''')),\n        /* Build WHERE condition for query on SQL  */\n        sqlCondition = convert(nvarchar(max), concat('TableCatalog = ''', TableCatalog, ''' and TableSchema = ''', TableSchema, ''' and TableName = ''', TableName, '''')) \n    from dbo.gbqObjectToLoad\n    where TableCatalog = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}' and TableSchema = '@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}'\n    group by    TableCatalog, TableSchema, TableName\n)\nselect      gbqSelectCmd = 'select table_catalog as TableCatalog, table_schema as TableSchema, table_name as TableName, column_name as ColumnName, coalesce(ordinal_position, -1) as ColumnId, data_type as DataType, cast(case when is_partitioning_column = ''YES'' then 1 else 0 end as boolean) as IsPartitioningColumn from @{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableCatalog}.@{activity('Get Pipeline Parameters').output.firstRow.SourcedsTableSchema}.INFORMATION_SCHEMA.COLUMNS c where ' + string_agg(gbqCondition, ' or '),\n            sqlDeleteCmd = 'delete from dbo.gbqColumn where ' + string_agg(sqlCondition, ' or ')\nfrom        cte",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Get_gbqColumn",
+				"description": "Get the column definitions of each object to load",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Get_ColumnQuery",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "GoogleBigQueryV2Source",
+						"query": {
+							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].gbqSelectCmd, 'select ''na'' as StorageRegion, ''na'' as TableCatalog, ''na'' as TableSchema, ''na'' as TableName, ''na'' as ColumnName, 0 as ColumnId, ''na'' as DataType')\n",
+							"type": "Expression"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": {
+							"value": "@if(greater(activity('Get_ColumnQuery').output.count, 0), \nactivity('Get_ColumnQuery').output.value[0].sqlDeleteCmd, 'select ''Nothing to remove'' as AdfMessage')\n",
+							"type": "Expression"
+						},
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "GoogleBigQueryDirect",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsBaseURL": {
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsSecretName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "LoadControlTable",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							},
+							"dsSchema": "dbo",
+							"dsTable": "gbqColumn"
+						}
+					}
+				]
+			},
+			{
+				"name": "IfDataWasLoaded",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Loop Batches",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(activity('Get_RowCountQueries').output.value[0].TableList, null))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "ProcessSilver",
+							"type": "DatabricksNotebook",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": {
+									"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksNotebookPath",
+									"type": "Expression"
+								},
+								"baseParameters": {
+									"TableList": {
+										"value": "@if(greater(activity('Get_RowCountQueries').output.value[0].numBatches, 0), \nactivity('Get_RowCountQueries').output.value[0].TableList, 'nothing,to,do,at,this,time')\n",
+										"type": "Expression"
+									},
+									"StorageAccount": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SinkdsStorageAccount",
+										"type": "Expression"
+									},
+									"environment": {
+										"value": "@pipeline().globalParameters.gpEnvironment",
+										"type": "Expression"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzDatabricksJobCluster",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"lsWorkspaceUrl": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksWorkspaceUrl",
+										"type": "Expression"
+									},
+									"lsWorkspaceResourceId": {
+										"value": "@activity('Get Pipeline Parameters').output.firstRow.SourcedsDatabricksWorkspaceId",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Get Pipeline Parameters",
+				"description": "Use GetWatermark to get environment specific parameter values (key vault, storage account, etc.)",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "dbo.GetWatermark",
+						"storedProcedureParameters": {
+							"BatchName": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.BatchName",
+									"type": "Expression"
+								}
+							},
+							"SourceServiceType": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.SourceServiceType",
+									"type": "Expression"
+								}
+							},
+							"SinkServiceType": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().parameters.SinkServiceType",
+									"type": "Expression"
+								}
+							},
+							"Environment": {
+								"type": "String",
+								"value": {
+									"value": "@pipeline().globalParameters.gpEnvironment",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": true
+				}
+			}
+		],
+		"parameters": {
+			"BatchRowLimit": {
+				"type": "int",
+				"defaultValue": 1000000
+			},
+			"DataAgeLimitHours": {
+				"type": "int",
+				"defaultValue": 24
+			},
+			"BatchName": {
+				"type": "string",
+				"defaultValue": "Google Analytics to datalakehouse"
+			},
+			"SourceServiceType": {
+				"type": "string",
+				"defaultValue": "Pipeline_getGoogleAnalytics"
+			},
+			"SinkServiceType": {
+				"type": "string",
+				"defaultValue": "Pipeline_getGoogleAnalytics"
+			}
+		},
+		"annotations": []
+	}
+}

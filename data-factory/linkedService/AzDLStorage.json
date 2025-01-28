@@ -1,0 +1,32 @@
+{
+	"name": "AzDLStorage",
+	"properties": {
+		"parameters": {
+			"StorageAccount": {
+				"type": "string",
+				"defaultValue": "https://staab09289802.dfs.core.windows.net/"
+			},
+			"saAccountKey": {
+				"type": "string",
+				"defaultValue": "key-staab09289802"
+			}
+		},
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "@{linkedService().StorageAccount}",
+			"accountKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().saAccountKey",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
+}

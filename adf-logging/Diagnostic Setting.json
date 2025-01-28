@@ -1,0 +1,88 @@
+{
+    "authorization": {
+        "action": "microsoft.insights/diagnosticSettings/write",
+        "scope": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.DataFactory/factories/df-dev-bronzeingestion/providers/microsoft.insights/diagnosticSettings/df-dev-bronzeingestion-sadevbronzeingestion"
+    },
+    "caller": "AB092898@flooranddecor.com",
+    "channels": "Operation",
+    "claims": {
+        "aud": "https://management.core.windows.net/",
+        "iss": "https://sts.windows.net/6ed1cffb-0bf7-4bdb-aa67-6c34e7f32bb3/",
+        "iat": "1730394854",
+        "nbf": "1730394854",
+        "exp": "1730400083",
+        "http://schemas.microsoft.com/claims/authnclassreference": "1",
+        "aio": "ATQAy/8YAAAAqRY7pCn8DDJ8TXhCgnStZeAB0q0zfViL77lTOoTrUnRjksehy9sVE8OBYrIzfXN2",
+        "http://schemas.microsoft.com/claims/authnmethodsreferences": "pwd,rsa",
+        "appid": "c44b4083-3bb0-49c1-b47d-974e53cbdf3c",
+        "appidacr": "0",
+        "http://schemas.microsoft.com/2012/01/devicecontext/claims/identifier": "81133822-541f-4ee8-b433-0fbc5b32e451",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname": "Burleigh",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname": "Carter",
+        "groups": "895d5a01-77a8-43ca-b330-4a18db381007,22c9e303-ac79-4a3b-a137-93e706adee3c,e75e9c05-5dda-4fdb-b391-7113bf700df9,4beca806-1f55-4021-9c9e-4cfa42dd101f,a4f3a20b-4c59-4dfd-9bba-7132eafc25eb,773c330c-4795-4f56-8451-29abf5e5b95a,0eda530d-dda8-4c45-a1d3-02550aa8b751,5177760e-dce4-40f4-a44c-3429496a6d52,6d01480f-a761-40cd-872f-281ce70e7833,68cceb1a-fb6b-4fb0-880b-e3c09b7e7e2b,2e738f1c-b407-43c0-8dda-9f8a942eebba,816e461d-acd1-4974-9f4a-63806c4d07c8,08ddd51d-c260-4cc1-8cca-83f152bb860c,3d88531e-2c43-4279-82f1-855f9b3e62eb,daa26020-ee92-4465-8207-4c1edd9dca72,c1b9c820-cdb5-4187-8323-5f6463447e96,57684324-d474-4a9d-ae23-7752376c7894,82bdf424-a59c-4cd0-8b40-68d8d88be238,bab35d25-5ed7-4213-9143-51d28f29e710,59664e27-6d38-489a-ae7a-dce78bd304f7,dc23172c-9884-4545-916d-4bd368b56350,365d762e-c547-4b79-9e6f-85c4f2a32276,575b5e2f-c329-4d8a-9b85-06c61e70a94a,cd162732-5a82-4851-869e-6676c5f0a878,510a8b35-c2ca-4c6a-84d9-302851889c52,f289213a-d337-4a01-b495-c79e858f1269,23a2843a-d404-42ed-8175-368c1a184b09,2e99e93d-2a57-4e04-8827-55b585eab05a,9ab5ea3e-283b-4911-b02e-9bb1fdd5d9e7,6f471b41-e73c-4556-8691-d92daa27d272,ebc31147-a6b7-466e-8e25-71ad33a6291f,fb0d2747-cd35-4535-aa56-6d6f604d99e4,cacc6348-6d98-40f8-99c8-c6bb6a099945,f278ff49-de2e-41f2-b081-c5e5878fc7a9,aac2234b-4e96-469a-85e8-2e06daa34eb4,8cf7f74b-b6ce-4263-914d-28fdfc917dcc,aa5f7d4e-074d-4cb1-92af-97367e262551,01d1924f-e86d-4fe9-96a7-97b52e482fa9,eb285e51-cba8-4d1e-ac5f-d817eace48d2,b90fce51-3f50-4438-8bf1-ce4f72794624,eab67154-4d9e-4914-b70a-2315c6fe2e8e,c1c1df54-5d6b-45f9-9976-7566e8d53a35,47e14456-3c65-459a-b36f-b83ca6155849,c2dcf359-bfd9-4ff7-91c2-a63d99e98878,a4135d5c-fb02-43f2-b56c-25a44c75dc5c,d35ecc5c-4c9e-4b70-b4dc-84a3603c7b26,176c2e5f-11aa-484f-b170-d54251a14338,416e1a61-2a4a-4506-a69b-503b7b7bab4d,7bb56366-8b1a-45c4-8f6b-c5689f6fcb4c,97855b67-0ce2-4875-a6ba-55eb194f932a,31465368-6149-484b-a7a5-ad854885b3c4,65c2326a-6866-4afc-b32b-3c0e75b167c5,6a93336a-1b64-4e8d-b40a-866b0a9c9242,c223e16a-b24f-4dd8-9874-fbb5827e4757,6bc0da6c-9fd3-42d3-8082-229899061aa2,9d1af36e-4515-4eff-b78f-b3de4aa4bb55,560fa770-337c-48b6-93b6-aa0084838bc4,03a29c78-1729-4270-8fec-57fa7c429e2b,9bc1bf79-be95-4c09-9ecb-0e3cb7a148ca,eb02c27a-46a0-4263-9164-be5f10079501,54470c7d-eb85-4264-989e-5277ccdecc21,ace7db7d-1b15-4035-9bb8-bbd470209f6c,a1dbc27f-e020-4be1-903d-6d9a726434eb,a1b0d583-c9f3-48f0-8c0c-7fb2d9598663,aa988987-cf2b-412a-a243-13581fc83827,ded5dd87-95b9-4937-8a67-2aadc4519939,8df30e88-93db-4ddb-8dc2-716e6dd452a6,c8d95989-4011-456f-a2fc-4b78dd0cbaaa,4b1d0e8b-76c6-4f99-a877-9ef480956625,d0aeaa8c-866d-428d-81d9-1e60534b503c,583f8890-0f1a-413b-822a-127a8a51bc86,39528d95-734c-412c-a4bb-a4a4767723d4,4a485a97-aeb6-4556-9f54-66e00d6c4225,6b713198-063d-46ad-95b4-9715433b9d3d,5b7cfd9b-42e5-44a7-8f04-33e64ac2e51a,02a8f69c-7d30-43af-9dac-7cfadd7f5d98,7a86b69d-58cb-424c-8ffc-849570a36cdd,69b284a0-0808-4cd7-b504-125ecd696b71,b6557aa1-9dc5-40a0-a4dc-0acc1f15ab9c,73b506a8-aec6-492e-b73f-6cce9c1c3a5f,06842cae-0ce4-4f4e-9f9b-b86b1670ed65,27ef68af-2cd1-4e45-8b3d-1327064f7822,d02908b0-e83b-4294-affe-403902f6cd5c,bbf453b4-0bc7-4e77-b2cb-3bf37c2bd63c,accc27b6-f9d6-4c6c-a27e-55e30d0a7c0d,c6787cb7-7456-4550-84db-ff2d1d7ab1e8,f7a826b9-0175-4be3-b499-f21e709b20c5,5bd3d1ba-9c0a-491d-bf1e-3f2d083c0516,63f48bbd-09b7-4801-b3ad-bf43c8781a72,c0ee30c0-e321-41f4-8b4b-e968227f5680,816d3ac2-5323-4c79-a4ba-3014274a6574,8f8b4bc3-5fcb-418e-a430-559a53945953,064450c4-baaf-42c2-a098-fee947c1e5d4,a7f4fac6-737b-4473-9506-ee509394f1be,535d8cca-1cc5-4b5b-8766-ba4420b893cf,65a627cb-1562-4866-aac2-704005f1ec7a,73d638cc-1e10-4f8f-ab21-f4df94c06c17,c7c2e5cc-f72c-43c8-a928-30a8ac1d728a,7c9019cd-17a9-446b-b009-b7cf882fdac1,e9f3d3d4-7c1d-43f3-9d75-a8bd542337bd,d066a8d9-c849-421c-be8f-9ce82b5ffd4b,ac0509db-6dca-42ee-993f-4436f33d6e88,07f851dd-4126-473a-b3c3-078ebd7dc1e5,0e4815e4-a62f-46e7-b012-43bf5cfd74bf,96cd2ae4-f902-4d7a-87d5-85b42feb85ca,8eb415e7-89f7-46d7-910e-8a807c5b4f48,6ba5e3ec-ac63-4513-a841-5454e5bded20,ea4d00ed-4dfd-447c-97c4-c29bddd68232,242f0cee-8c07-409f-9e0e-5aa9ac69c9b7,05184bee-754a-4889-93ae-e72f08e616c8,7dda79ee-3f8d-4eef-8ce1-38bc6ff6358a,aeb7ccee-f951-4163-95c8-c8c537b802fb,ebb7dcf3-87df-4ad9-ab95-6b8c9014f2c2,ef3540f4-43dd-462f-9182-1e8aacb20db1,fdb135f6-3a91-4837-843c-e41b48823200,2da877f8-4131-41c2-91dc-539bc92c9efb,027752f9-3e01-4282-a5c2-b03549265f66,8e4891f9-b62b-43f5-960f-ffa491dd4bc4,16cef7f9-1f76-4348-9b11-382e97805564,c72557fb-ff62-41d1-a93e-61aa291b1755,45b150fc-81df-4621-b695-2d9a6d6d6ee4,757cc3fe-fa00-4c40-9db1-f93444c032a3,2e0765ff-c4e4-4def-9650-ffa29751a422",
+        "idtyp": "user",
+        "ipaddr": "128.77.104.166",
+        "name": "Carter Burleigh",
+        "http://schemas.microsoft.com/identity/claims/objectidentifier": "1512196e-0446-42b2-8a6f-e3cc57f8a450",
+        "onprem_sid": "S-1-5-21-1715567821-764733703-1417001333-125518",
+        "puid": "10032002E3F7227C",
+        "rh": "0.AQ4A-8_RbvcL20uqZ2w05_Mrs0ZIf3kAutdPukPawfj2MBNpATY.",
+        "http://schemas.microsoft.com/identity/claims/scope": "user_impersonation",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": "8EMsKuZ1rhMowtIoTavtMZwUyXIZ7gkikIg0Qi1JvjU",
+        "http://schemas.microsoft.com/identity/claims/tenantid": "6ed1cffb-0bf7-4bdb-aa67-6c34e7f32bb3",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": "AB092898@flooranddecor.com",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn": "AB092898@flooranddecor.com",
+        "uti": "_sLPSsT1NkSgaz5TMadVAA",
+        "ver": "1.0",
+        "xms_idrel": "1 28",
+        "xms_tcdt": "1407247214"
+    },
+    "correlationId": "338318ca-a616-4fc8-af86-c2e925f050d9",
+    "description": "",
+    "eventDataId": "448ccf50-e6ee-4639-a56d-d0830af545c2",
+    "eventName": {
+        "value": "BeginRequest",
+        "localizedValue": "Begin request"
+    },
+    "category": {
+        "value": "Administrative",
+        "localizedValue": "Administrative"
+    },
+    "eventTimestamp": "2024-10-31T17:22:56.361633Z",
+    "id": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.DataFactory/factories/df-dev-bronzeingestion/providers/microsoft.insights/diagnosticSettings/df-dev-bronzeingestion-sadevbronzeingestion/events/448ccf50-e6ee-4639-a56d-d0830af545c2/ticks/638659921763616330",
+    "level": "Informational",
+    "operationId": "338318ca-a616-4fc8-af86-c2e925f050d9",
+    "operationName": {
+        "value": "microsoft.insights/diagnosticSettings/write",
+        "localizedValue": "Create or update resource diagnostic setting"
+    },
+    "resourceGroupName": "rg-dev-bronze-ingestion",
+    "resourceProviderName": {
+        "value": "microsoft.insights",
+        "localizedValue": "Microsoft Insights"
+    },
+    "resourceType": {
+        "value": "microsoft.insights/diagnosticSettings",
+        "localizedValue": "microsoft.insights/diagnosticSettings"
+    },
+    "resourceId": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.DataFactory/factories/df-dev-bronzeingestion/providers/microsoft.insights/diagnosticSettings/df-dev-bronzeingestion-sadevbronzeingestion",
+    "status": {
+        "value": "Started",
+        "localizedValue": "Started"
+    },
+    "subStatus": {
+        "value": "",
+        "localizedValue": ""
+    },
+    "submissionTimestamp": "2024-10-31T17:24:12Z",
+    "subscriptionId": "8ff4931b-705f-4293-89d7-7d97570b98fe",
+    "tenantId": "6ed1cffb-0bf7-4bdb-aa67-6c34e7f32bb3",
+    "properties": {
+        "requestbody": "{\"id\":\"/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.DataFactory/factories/df-dev-bronzeingestion/providers/microsoft.insights/diagnosticSettings/df-dev-bronzeingestion-sadevbronzeingestion\",\"name\":\"df-dev-bronzeingestion-sadevbronzeingestion\",\"properties\":{\"logs\":[{\"category\":\"ActivityRuns\",\"categoryGroup\":null,\"enabled\":true,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"PipelineRuns\",\"categoryGroup\":null,\"enabled\":true,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"TriggerRuns\",\"categoryGroup\":null,\"enabled\":true,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SandboxPipelineRuns\",\"categoryGroup\":null,\"enabled\":true,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SandboxActivityRuns\",\"categoryGroup\":null,\"enabled\":true,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SSISPackageEventMessages\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SSISPackageExecutableStatistics\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SSISPackageEventMessageContext\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SSISPackageExecutionComponentPhases\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SSISPackageExecutionDataStatistics\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"SSISIntegrationRuntimeLogs\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"AirflowTaskLogs\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"AirflowWorkerLogs\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"AirflowDagProcessingLogs\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"AirflowSchedulerLogs\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}},{\"category\":\"AirflowWebLogs\",\"categoryGroup\":null,\"enabled\":false,\"retentionPolicy\":{\"days\":0,\"enabled\":false}}],\"metrics\":[{\"enabled\":true,\"retentionPolicy\":{\"days\":0,\"enabled\":false},\"category\":\"AllMetrics\"}],\"storageAccountId\":\"/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.Storage/storageAccounts/sadevbronzeingestion\"}}",
+        "eventCategory": "Administrative",
+        "entity": "/subscriptions/8ff4931b-705f-4293-89d7-7d97570b98fe/resourceGroups/rg-dev-bronze-ingestion/providers/Microsoft.DataFactory/factories/df-dev-bronzeingestion/providers/microsoft.insights/diagnosticSettings/df-dev-bronzeingestion-sadevbronzeingestion",
+        "message": "microsoft.insights/diagnosticSettings/write",
+        "hierarchy": "6ed1cffb-0bf7-4bdb-aa67-6c34e7f32bb3/mg-it/mg-it-non-prod/8ff4931b-705f-4293-89d7-7d97570b98fe"
+    },
+    "relatedEvents": []
+}

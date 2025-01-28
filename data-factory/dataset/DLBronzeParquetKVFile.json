@@ -1,0 +1,65 @@
+{
+	"name": "DLBronzeParquetKVFile",
+	"properties": {
+		"description": "Datalake accessed via Key Vault\nBronze layer \nSpecific parquet file",
+		"linkedServiceName": {
+			"referenceName": "GenericAzureDataLakeStorageGen2KV",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsURL": {
+					"value": "@dataset().dsURL",
+					"type": "Expression"
+				},
+				"lsSecretName": {
+					"value": "@dataset().dsSecretName",
+					"type": "Expression"
+				},
+				"lsKVBaseURL": {
+					"value": "@dataset().dsKVBaseURL",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"dsURL": {
+				"type": "string"
+			},
+			"dsSecretName": {
+				"type": "string"
+			},
+			"dsFileSystem": {
+				"type": "string"
+			},
+			"dsDirectory": {
+				"type": "string"
+			},
+			"dsFileName": {
+				"type": "string"
+			},
+			"dsKVBaseURL": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().dsFileName",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().dsDirectory",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().dsFileSystem",
+					"type": "Expression"
+				}
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

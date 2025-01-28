@@ -1,0 +1,184 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-sbx-ab092898"
+		},
+		"AzSqlDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzSqlDb'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
+		},
+		"GenericAzureSqlDatabaseMI_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'GenericAzureSqlDatabaseMI'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
+		},
+		"OnpremSqlDb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
+			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
+		},
+		"AzDLStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().StorageAccount}"
+		},
+		"AzKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://akv-ab092898.vault.azure.net/"
+		},
+		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsURL}"
+		},
+		"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsBaseURL}"
+		},
+		"GenericDB2_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsSecretName}"
+		},
+		"GenericSFTP_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsHost}"
+		},
+		"GenericSFTP_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsUserName}"
+		},
+		"OnpremSqlDb_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().userName}"
+		},
+		"RestApi_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().baseUrl}"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
+			"type": "string",
+			"defaultValue": "stage"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable": {
+			"type": "string",
+			"defaultValue": "PersonC"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema": {
+			"type": "string",
+			"defaultValue": "dbo"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid": {
+			"type": "string",
+			"defaultValue": "PersonRigid"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
+			"type": "string",
+			"defaultValue": "PersonFlexible"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "df-sbx-ab092898_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzSqlDb_connectionString": {
+						"value": "[parameters('AzSqlDb_connectionString')]"
+					},
+					"GenericAzureSqlDatabaseMI_connectionString": {
+						"value": "[parameters('GenericAzureSqlDatabaseMI_connectionString')]"
+					},
+					"OnpremSqlDb_connectionString": {
+						"value": "[parameters('OnpremSqlDb_connectionString')]"
+					},
+					"AzKeyVault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
+						"value": "[parameters('GenericAzureKeyVaultMI_properties_typeProperties_baseUrl')]"
+					},
+					"RestApi_properties_typeProperties_url": {
+						"value": "[parameters('RestApi_properties_typeProperties_url')]"
+					},
+					"AzDLStorage_properties_typeProperties_url": {
+						"value": "[parameters('AzDLStorage_properties_typeProperties_url')]"
+					},
+					"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+						"value": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]"
+					},
+					"GenericDB2_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('GenericDB2_properties_typeProperties_connectionString_secretName')]"
+					},
+					"GenericSFTP_properties_typeProperties_host": {
+						"value": "[parameters('GenericSFTP_properties_typeProperties_host')]"
+					},
+					"GenericSFTP_properties_typeProperties_userName": {
+						"value": "[parameters('GenericSFTP_properties_typeProperties_userName')]"
+					},
+					"OnpremSqlDb_properties_typeProperties_userName": {
+						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "df-sbx-ab092898_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid')]"
+					},
+					"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
+						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'df-sbx-ab092898_ArmTemplate_0')]"
+			]
+		}
+	]
+}

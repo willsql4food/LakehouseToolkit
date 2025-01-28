@@ -1,0 +1,30 @@
+{
+	"name": "AzDatabricksJobCluster",
+	"properties": {
+		"parameters": {
+			"lsWorkspaceUrl": {
+				"type": "string",
+				"defaultValue": "https://adb-7286372339506263.3.azuredatabricks.net"
+			},
+			"lsWorkspaceResourceId": {
+				"type": "string",
+				"defaultValue": "/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "@linkedService().lsWorkspaceUrl",
+			"authentication": "MSI",
+			"workspaceResourceId": "@linkedService().lsWorkspaceResourceId",
+			"newClusterNodeType": "Standard_DS4_v2",
+			"newClusterNumOfWorker": "1:4",
+			"newClusterSparkEnvVars": {
+				"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+			},
+			"newClusterVersion": "14.3.x-scala2.12",
+			"clusterOption": "Autoscaling",
+			"newClusterInitScripts": []
+		}
+	}
+}

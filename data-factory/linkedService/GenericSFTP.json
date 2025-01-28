@@ -1,0 +1,53 @@
+{
+	"name": "GenericSFTP",
+	"properties": {
+		"parameters": {
+			"lsHost": {
+				"type": "string",
+				"defaultValue": "10.247.96.8"
+			},
+			"lsUserName": {
+				"type": "string",
+				"defaultValue": "foundation_dw "
+			},
+			"lsKVBaseURL": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"lsSecretName": {
+				"type": "string",
+				"defaultValue": "foundation-sftp-pwd"
+			}
+		},
+		"annotations": [],
+		"type": "Sftp",
+		"typeProperties": {
+			"host": "@{linkedService().lsHost}",
+			"port": 22,
+			"skipHostKeyValidation": true,
+			"authenticationType": "Basic",
+			"userName": "@{linkedService().lsUserName}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKVBaseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().lsSecretName",
+					"type": "Expression"
+				}
+			}
+		},
+		"connectVia": {
+			"referenceName": "shirt-ACB",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

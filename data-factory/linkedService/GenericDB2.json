@@ -1,0 +1,40 @@
+{
+	"name": "GenericDB2",
+	"properties": {
+		"parameters": {
+			"lsKVBaseURL": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"lsSecretName": {
+				"type": "string",
+				"defaultValue": "qa-conn-string-mms"
+			}
+		},
+		"annotations": [],
+		"type": "Db2",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKVBaseURL",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@{linkedService().lsSecretName}",
+					"type": "Expression"
+				}
+			}
+		},
+		"connectVia": {
+			"referenceName": "shirt-ACB",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

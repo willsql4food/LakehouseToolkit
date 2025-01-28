@@ -1,0 +1,38 @@
+{
+	"name": "OnpremSqlDb",
+	"properties": {
+		"parameters": {
+			"serverFqdn": {
+				"type": "string",
+				"defaultValue": "localhost\\ACB"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "LoadControl"
+			},
+			"userName": {
+				"type": "string",
+				"defaultValue": "ab092898@flooranddecor.com"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}",
+			"userName": "@{linkedService().userName}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sqlAuthPwd-Local-ACB"
+			}
+		},
+		"connectVia": {
+			"referenceName": "shirt-ACB",
+			"type": "IntegrationRuntimeReference"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
+}

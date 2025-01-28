@@ -1,0 +1,60 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "df-sbx-ab092898"
+		},
+		"AzSqlDb_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().serverName};Initial Catalog=@{linkedService().dbName}"
+		},
+		"GenericAzureSqlDatabaseMI_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
+		},
+		"OnpremSqlDb_connectionString": {
+			"value": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
+		},
+		"AzDLStorage_properties_typeProperties_url": {
+			"value": "@{linkedService().StorageAccount}"
+		},
+		"AzKeyVault_properties_typeProperties_baseUrl": {
+			"value": "https://akv-ab092898.vault.azure.net/"
+		},
+		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+			"value": "@{linkedService().lsURL}"
+		},
+		"GenericAzureKeyVaultMI_properties_typeProperties_baseUrl": {
+			"value": "@{linkedService().lsBaseURL}"
+		},
+		"GenericDB2_properties_typeProperties_connectionString_secretName": {
+			"value": "@{linkedService().lsSecretName}"
+		},
+		"GenericSFTP_properties_typeProperties_host": {
+			"value": "@{linkedService().lsHost}"
+		},
+		"GenericSFTP_properties_typeProperties_userName": {
+			"value": "@{linkedService().lsUserName}"
+		},
+		"OnpremSqlDb_properties_typeProperties_userName": {
+			"value": "@{linkedService().userName}"
+		},
+		"RestApi_properties_typeProperties_url": {
+			"value": "@{linkedService().baseUrl}"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
+			"value": "stage"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceTable": {
+			"value": "PersonC"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetSchema": {
+			"value": "dbo"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableRigid": {
+			"value": "PersonRigid"
+		},
+		"schRunPipelines_properties_SchemaDriftTest_parameters_plTargetTableFlexible": {
+			"value": "PersonFlexible"
+		}
+	}
+}

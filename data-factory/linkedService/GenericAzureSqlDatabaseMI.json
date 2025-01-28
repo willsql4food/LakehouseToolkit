@@ -1,0 +1,18 @@
+{
+	"name": "GenericAzureSqlDatabaseMI",
+	"properties": {
+		"parameters": {
+			"lsServerName": {
+				"type": "string"
+			},
+			"lsDatabaseName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
+		}
+	}
+}

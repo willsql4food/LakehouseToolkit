@@ -1,0 +1,36 @@
+{
+	"name": "AzSqlDb",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzSqlDb",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"serverName": {
+					"value": "@dataset().sqlFqdn",
+					"type": "Expression"
+				},
+				"dbName": {
+					"value": "@dataset().dbName",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"sqlFqdn": {
+				"type": "string",
+				"defaultValue": "sql-ab092898.database.windows.net"
+			},
+			"dbName": {
+				"type": "string",
+				"defaultValue": "txn"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "sys",
+			"table": "tables"
+		}
+	}
+}
