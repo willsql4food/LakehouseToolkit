@@ -13,6 +13,10 @@
 			"gpWMSQL": {
 				"type": "string",
 				"value": "sql-ab092898.database.windows.net"
+			},
+			"gpEnvironment": {
+				"type": "string",
+				"value": "SBX"
 			}
 		}
 	},
