@@ -1,5 +1,13 @@
 {
 	"name": "df-sbx-ab092898-qa",
+	"properties": {
+		"globalParameters": {
+			"BronzeIngestionKvUrl": {
+				"type": "string",
+				"value": "https://akv-ab092898.vault.azure.net/"
+			}
+		}
+	},
 	"location": "eastus",
 	"identity": {
 		"type": "SystemAssigned",
