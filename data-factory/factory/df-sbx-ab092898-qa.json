@@ -10,7 +10,7 @@
 				"type": "string",
 				"value": "LoadControl"
 			},
-			"gpWMSql": {
+			"gpWMSQL": {
 				"type": "string",
 				"value": "sql-ab092898.database.windows.net"
 			}
