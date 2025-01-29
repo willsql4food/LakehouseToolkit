@@ -9,6 +9,10 @@
 			"gpWMDatabase": {
 				"type": "string",
 				"value": "LoadControl"
+			},
+			"gpWMSQL": {
+				"type": "string",
+				"value": "sql-ab092898.database.windows.net"
 			}
 		}
 	},
