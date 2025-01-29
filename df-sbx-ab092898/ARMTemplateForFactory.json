@@ -2616,7 +2616,12 @@
 							"secureOutput": false,
 							"secureInput": false
 						},
-						"userProperties": [],
+						"userProperties": [
+							{
+								"name": "fiddle",
+								"value": "rome burns"
+							}
+						],
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
