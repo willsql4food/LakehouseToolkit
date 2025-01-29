@@ -813,7 +813,12 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Chicken",
+						"value": "Biscuit"
+					}
+				],
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
