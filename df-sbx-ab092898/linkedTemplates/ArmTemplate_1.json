@@ -1676,6 +1676,8 @@
 					{
 						"name": "getTableDefinitions",
 						"type": "Copy",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Skipped",
 						"dependsOn": [
 							{
 								"activity": "getTablePKs",
@@ -1942,6 +1944,8 @@
 					{
 						"name": "getTableList",
 						"type": "Lookup",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Skipped",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -2163,6 +2167,8 @@
 					{
 						"name": "getTime",
 						"type": "Lookup",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Skipped",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -3811,7 +3817,12 @@
 							"secureOutput": false,
 							"secureInput": false
 						},
-						"userProperties": [],
+						"userProperties": [
+							{
+								"name": "fiddle",
+								"value": "rome burns"
+							}
+						],
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
