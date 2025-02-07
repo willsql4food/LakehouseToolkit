@@ -1,0 +1,33 @@
+{
+	"name": "FileServer",
+	"properties": {
+		"parameters": {
+			"lsHost": {
+				"type": "string"
+			},
+			"lsUserName": {
+				"type": "string"
+			},
+			"lsSecretName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "@{linkedService().lsHost}",
+			"userId": "@{linkedService().lsUserName}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().lsSecretName",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}
