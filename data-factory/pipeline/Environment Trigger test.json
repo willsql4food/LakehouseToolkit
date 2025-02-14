@@ -1,0 +1,37 @@
+{
+	"name": "Environment Trigger test",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "WhereIAm",
+					"value": {
+						"value": "@if(equals(pipeline().parameters.WhereAmI, pipeline().globalParameters.gpEnvironment), 'Where I belong', 'Not authorized to run on @{pipeline().parameters.WhereAmI}')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"WhereAmI": {
+				"type": "string",
+				"defaultValue": "NOWHERE"
+			}
+		},
+		"variables": {
+			"WhereIAm": {
+				"type": "String",
+				"defaultValue": "DONTKNOW"
+			}
+		},
+		"annotations": []
+	}
+}

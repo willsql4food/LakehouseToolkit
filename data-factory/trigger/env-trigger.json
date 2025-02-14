@@ -1,0 +1,30 @@
+{
+	"name": "env-trigger",
+	"properties": {
+		"description": "Runs differently on SQX, DEV, QA, & PRD",
+		"annotations": [
+			"Envrionment is?"
+		],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Environment Trigger test",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"WhereAmI": "DEV"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 3,
+				"startTime": "2025-02-14T19:32:00",
+				"timeZone": "Eastern Standard Time"
+			}
+		}
+	}
+}
