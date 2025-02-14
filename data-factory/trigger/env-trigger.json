@@ -13,7 +13,7 @@
 					"type": "PipelineReference"
 				},
 				"parameters": {
-					"WhereAmI": "DEV"
+					"WhereAmI": "@{DEV}"
 				}
 			}
 		],
