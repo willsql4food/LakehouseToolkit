@@ -3,7 +3,6 @@
 	"properties": {
 		"description": "Runs differently on SQX, DEV, QA, & PRD",
 		"annotations": [
-			"Envrionment is?",
 			"Envrionment is?"
 		],
 		"runtimeState": "Started",
@@ -14,7 +13,7 @@
 					"type": "PipelineReference"
 				},
 				"parameters": {
-					"WhereAmI": "DEV"
+					"WhereAmI": "equals('DEV', 'SBX')"
 				}
 			}
 		],
