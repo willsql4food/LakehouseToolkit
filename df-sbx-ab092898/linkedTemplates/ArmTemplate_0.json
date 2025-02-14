@@ -17,11 +17,6 @@
 			"metadata": "Secure string for 'connectionString' of 'GenericAzureSqlDatabaseMI'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
 		},
-		"OnpremSqlDb_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
-			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
-		},
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
@@ -38,6 +33,14 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().StorageAccount}"
 		},
+		"FileServer_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsHost}"
+		},
+		"FileServer_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsUserName}"
+		},
 		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().lsURL}"
@@ -53,16 +56,55 @@
 		"GenericSFTP_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "@{linkedService().lsUserName}"
-		},
-		"OnpremSqlDb_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "@{linkedService().userName}"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Environment Trigger test')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "WhereIAm",
+							"value": {
+								"value": "@if(equals(pipeline().parameters.WhereAmI, pipeline().globalParameters.gpEnvironment), 'Where I belong', 'Not authorized to run on @{pipeline().parameters.WhereAmI}')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"WhereAmI": {
+						"type": "string",
+						"defaultValue": "NOWHERE"
+					}
+				},
+				"variables": {
+					"WhereIAm": {
+						"type": "String",
+						"defaultValue": "DONTKNOW"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzDatabricksJobCluster')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -488,6 +530,49 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/FileServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"lsHost": {
+						"type": "string"
+					},
+					"lsUserName": {
+						"type": "string"
+					},
+					"lsSecretName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "FileServer",
+				"typeProperties": {
+					"host": "[parameters('FileServer_properties_typeProperties_host')]",
+					"userId": "[parameters('FileServer_properties_typeProperties_userId')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzKeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().lsSecretName",
+							"type": "Expression"
+						}
+					}
+				},
+				"connectVia": {
+					"referenceName": "shirt-ACB",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/GenericAzureDataLakeStorageGen2KV')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -633,92 +718,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
 				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryDirect')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"lsBaseURL": {
-						"type": "string",
-						"defaultValue": "https://akv-ab092898.vault.azure.net/"
-					},
-					"lsSecretName": {
-						"type": "string",
-						"defaultValue": "gbq-fnd-cloud-project"
-					}
-				},
-				"annotations": [],
-				"type": "GoogleBigQueryV2",
-				"typeProperties": {
-					"projectId": "fnd-cloud-project",
-					"authenticationType": "ServiceAuthentication",
-					"keyFileContent": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "GenericAzureKeyVaultMI",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"lsBaseURL": {
-									"value": "@linkedService().lsBaseURL",
-									"type": "Expression"
-								}
-							}
-						},
-						"secretName": {
-							"value": "@linkedService().lsSecretName",
-							"type": "Expression"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/OnpremSqlDb')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"serverFqdn": {
-						"type": "string",
-						"defaultValue": "localhost\\ACB"
-					},
-					"dbName": {
-						"type": "string",
-						"defaultValue": "LoadControl"
-					},
-					"userName": {
-						"type": "string",
-						"defaultValue": "ab092898@flooranddecor.com"
-					}
-				},
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('OnpremSqlDb_connectionString')]",
-					"userName": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]",
-					"password": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "AzKeyVault",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "sqlAuthPwd-Local-ACB"
-					}
-				},
-				"connectVia": {
-					"referenceName": "shirt-ACB",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
 			]
 		}
 	]

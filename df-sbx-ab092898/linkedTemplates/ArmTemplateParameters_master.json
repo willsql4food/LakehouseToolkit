@@ -20,6 +20,12 @@
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"value": "https://akv-ab092898.vault.azure.net/"
 		},
+		"FileServer_properties_typeProperties_host": {
+			"value": "@{linkedService().lsHost}"
+		},
+		"FileServer_properties_typeProperties_userId": {
+			"value": "@{linkedService().lsUserName}"
+		},
 		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
 			"value": "@{linkedService().lsURL}"
 		},
@@ -40,6 +46,9 @@
 		},
 		"RestApi_properties_typeProperties_url": {
 			"value": "@{linkedService().baseUrl}"
+		},
+		"env-trigger_properties_Environment Trigger test_parameters_WhereAmI": {
+			"value": "DEV"
 		},
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 			"value": "stage"

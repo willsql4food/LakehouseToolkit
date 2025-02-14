@@ -30,6 +30,14 @@
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
 		},
+		"FileServer_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsHost}"
+		},
+		"FileServer_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsUserName}"
+		},
 		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().lsURL}"
@@ -57,6 +65,10 @@
 		"RestApi_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().baseUrl}"
+		},
+		"env-trigger_properties_Environment Trigger test_parameters_WhereAmI": {
+			"type": "string",
+			"defaultValue": "DEV"
 		},
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 			"type": "string",
@@ -111,9 +123,6 @@
 					"GenericAzureSqlDatabaseMI_connectionString": {
 						"value": "[parameters('GenericAzureSqlDatabaseMI_connectionString')]"
 					},
-					"OnpremSqlDb_connectionString": {
-						"value": "[parameters('OnpremSqlDb_connectionString')]"
-					},
 					"AzKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
 					},
@@ -126,6 +135,12 @@
 					"AzDLStorage_properties_typeProperties_url": {
 						"value": "[parameters('AzDLStorage_properties_typeProperties_url')]"
 					},
+					"FileServer_properties_typeProperties_host": {
+						"value": "[parameters('FileServer_properties_typeProperties_host')]"
+					},
+					"FileServer_properties_typeProperties_userId": {
+						"value": "[parameters('FileServer_properties_typeProperties_userId')]"
+					},
 					"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
 						"value": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]"
 					},
@@ -137,9 +152,6 @@
 					},
 					"GenericSFTP_properties_typeProperties_userName": {
 						"value": "[parameters('GenericSFTP_properties_typeProperties_userName')]"
-					},
-					"OnpremSqlDb_properties_typeProperties_userName": {
-						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -158,6 +170,15 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"OnpremSqlDb_connectionString": {
+						"value": "[parameters('OnpremSqlDb_connectionString')]"
+					},
+					"OnpremSqlDb_properties_typeProperties_userName": {
+						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
+					},
+					"env-trigger_properties_Environment Trigger test_parameters_WhereAmI": {
+						"value": "[parameters('env-trigger_properties_Environment Trigger test_parameters_WhereAmI')]"
 					},
 					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]"
