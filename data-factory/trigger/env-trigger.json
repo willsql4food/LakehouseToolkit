@@ -6,7 +6,17 @@
 			"Envrionment is?"
 		],
 		"runtimeState": "Stopped",
-		"pipelines": [],
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Environment Trigger test",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"WhereAmI": "DEV"
+				}
+			}
+		],
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
