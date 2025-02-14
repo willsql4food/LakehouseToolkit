@@ -3,6 +3,7 @@
 	"properties": {
 		"description": "Runs differently on SQX, DEV, QA, & PRD",
 		"annotations": [
+			"Envrionment is?",
 			"Envrionment is?"
 		],
 		"runtimeState": "Started",
@@ -14,15 +15,6 @@
 				},
 				"parameters": {
 					"WhereAmI": "DEV"
-				}
-			},
-			{
-				"pipelineReference": {
-					"referenceName": "Environment Trigger test",
-					"type": "PipelineReference"
-				},
-				"parameters": {
-					"WhereAmI": "SBX"
 				}
 			}
 		],
