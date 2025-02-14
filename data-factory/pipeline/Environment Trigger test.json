@@ -10,11 +10,16 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "hhhh",
+						"value": "@{pipeline().variables(\"WhereAmI\")}"
+					}
+				],
 				"typeProperties": {
 					"variableName": "WhereIAm",
 					"value": {
-						"value": "@if(equals(pipeline().parameters.WhereAmI, pipeline().globalParameters.gpEnvironment), 'Where I belong', 'Not authorized to run on @{pipeline().parameters.WhereAmI}')",
+						"value": "@if(contains(pipeline().parameters.WhereAmI, pipeline().globalParameters.gpEnvironment), 'Where I belong', 'Not authorized to run on @{pipeline().parameters.WhereAmI}')",
 						"type": "Expression"
 					}
 				}
@@ -23,7 +28,7 @@
 		"parameters": {
 			"WhereAmI": {
 				"type": "string",
-				"defaultValue": "NOWHERE"
+				"defaultValue": "NOSBXHERE"
 			}
 		},
 		"variables": {
