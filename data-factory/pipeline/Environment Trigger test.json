@@ -12,7 +12,7 @@
 				},
 				"userProperties": [
 					{
-						"name": "hhhh",
+						"name": "UserProp",
 						"value": "@{pipeline().variables(\"WhereAmI\")}"
 					}
 				],
