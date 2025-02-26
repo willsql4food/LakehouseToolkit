@@ -3,3 +3,6 @@ LoadControl/.vs/*
 LoadControl/LoadControl/obj/*
 .suo
 */publish_config.json
+Tools/Databricks/Security-Groups/*.*
+Tools/Databricks/Workspaces/*.*
+Tools/Databricks/*.json
