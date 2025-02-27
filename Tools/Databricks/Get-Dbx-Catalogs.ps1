@@ -12,191 +12,90 @@ if ($null -ne $args[0])
     $dbxEnv = $args[0]
 }
 
-# Get the catalogs in this Databricks account
+# Get the catalogs in this Databricks account - explicitly request JSON out
 $linesep = "======================================================================"
 Write-Output $linesep
 Write-Output "Getting CATALOG list (using Databricks profile $dbxEnv)"
-Write-Output $linesep
 
 $invoke = @{ 
-    ScriptBlock = { databricks catalogs list --profile $($args[0]) }
+    ScriptBlock = { databricks catalogs list --profile $($args[0]) --output json }
     ArgumentList = $dbxEnv
 }
-$catlist = Invoke-Command @invoke
+$catlist = Invoke-Command @invoke | ConvertFrom-Json
 
-# Results returned from Databricks CLI are in the form:
-# <catalog-name>   <Type>  Comment
+Write-Output "`t$($catlist.count) found"
+Write-Output $linesep
 
 # Setup final array to hold catalog information list
 $cats = @()
-
-# Loop over the catalogs and extract the name, type, and comment
-# Split on <space> gives an array of elements, 
-# but comment is sliced up and will have to be reassembled
 $i = 0
-# while ($i -le 4 )
-while ($i -le $catlist.count)
+
+# Loop over the catalogs and extract the basic attributes
+#------------------------------------------------------------------------------
+# For testing, put array brackets to restrict list of catalogs to operate on
+# foreach ($cat in $catlist[2..3])
+#------------------------------------------------------------------------------
+
+foreach ($cat in $catlist)
 {
-    # The result has a header line, so ignore first 'catalog' returned
+    # Counter just for reporting
     $i++
+    Write-Output "$i : $($cat.name)"
 
-    # New object to hold this catalog
-    $cat = [PSCustomObject]@{
-        Name = ""
-        Type = ""
-        Comment = ""
-        bindings = @()
-        privilege_assignments = @()
-        schemas = @()
-    }
-    
-    # Read the current line and a provisional concatenation of the next line
-    $catline = $catlist[$i]
-    $next = "~$($catlist[$i + 1])"
-
-    # If the next line is not a new _CATALOG...
-    while (-not $next.Contains('_CATALOG') -and $i -lt $catlist.count)
+    # Make sure we have an actual catalog
+    if ($cat.name -ne "")
     {
-        # Append to current line and iterate
-        $catline += $next
-        $i++
-        $next = "~$($catlist[$i + 1])"
-    }
-
-    # Split the outer catalog by spaces and iterate over the parts
-    $j = 0
-    foreach ($element in $catline -split " ")
-    {
-        # many elements are blank, so screen these out
-        if ($element -ne "")
-        {
-            # First non-blank element (index mod 3 = 0) is Name
-            if($j -eq 0) 
-            {
-                $cat.Name = $element
-            }
-            # Second non-blank is Type
-            if($j -eq 1) 
-            {
-                $cat.Type = $element
-            }
-            # Subsequent non-blank values are pieces of Comment
-            if($j -gt 1) 
-            {
-                $cat.Comment += "$element ".Replace('~', "`r`n")
-            }
-            # Only iterate if we found an element
-            $j++
-        }
-    }
-
-    # Get various attribute arrays for the catalog
-    if ($cat.Name -ne "")
-    {
-        #########################################
+        #----------------------------------------------------------------------
         # Workspace bindings
-        #########################################
-        Write-Output "$($cat.Name)"
+        #----------------------------------------------------------------------
+        # Add object attribute to capture Workspace bindings
+        $cat | Add-Member -MemberType NoteProperty -Name "bindings" -Value ([PSCustomObject]@())
+
         Write-Output "`t- Getting workspace bindings"
         $invoke = @{ 
             ScriptBlock = { databricks workspace-bindings get-bindings catalog $($args[1]) --profile $($args[0]) }
-            ArgumentList = $dbxEnv, $cat.Name
+            ArgumentList = $dbxEnv, $cat.name
         }
-        $bind = Invoke-Command @invoke | ConvertFrom-Json
+        $cat.bindings = Invoke-Command @invoke | ConvertFrom-Json
     
-        # If there are any workspace bindings...
-        if ($bind)
-        {
-            $cat.bindings = $bind.bindings
-        }
-    
-        #########################################
+        #----------------------------------------------------------------------
         # Granted permissions
-        #########################################
+        #----------------------------------------------------------------------
+        # Add object attribute to capture privilege assignments
+        $cat | Add-Member -MemberType NoteProperty -Name "privilege_assignments" -Value ([PSCustomObject]@())
+
         Write-Output "`t- Getting permission grants"
         $invoke = @{ 
             ScriptBlock = { databricks grants get catalog $($args[1]) --profile $($args[0]) }
-            ArgumentList = $dbxEnv, $cat.Name
+            ArgumentList = $dbxEnv, $cat.name
         }
-        $grants = Invoke-Command @invoke | ConvertFrom-Json
+        $cat.privilege_assignments = Invoke-Command @invoke | ConvertFrom-Json
     
-        # If this catalog has any bindings, collect them
-        if ($grants)
-        {
-            $cat.privilege_assignments = $grants.privilege_assignments
-        }
-    
-        #########################################
-        # Schemas
-        #########################################
+        #----------------------------------------------------------------------
+        # Schemas - explicitly ask for JSON out
+        #----------------------------------------------------------------------
+        # Add object attribute to capture Schemas
+        $cat | Add-Member -MemberType NoteProperty -Name "schemas" -Value ([PSCustomObject]@())
+
         Write-Output "`t- Getting schemas"
         $invoke = @{ 
-            ScriptBlock = { databricks schemas list $($args[1]) --profile $($args[0]) }
-            ArgumentList = $dbxEnv, $cat.Name
+            ScriptBlock = { databricks schemas list $($args[1]) --profile $($args[0]) --output json }
+            ArgumentList = $dbxEnv, $cat.name
         }
-        $schemas = Invoke-Command @invoke
+        $cat.schemas =  Invoke-Command @invoke | ConvertFrom-Json
 
-        # If this catalog has any schemas, collect them
-        if ($schemas.count -gt 1)
-        {
-            # Ignore the first line (header)
-            $schemas = $schemas[1..($schemas.count-1)]
-
-            # Loop through each schema
-            foreach ($s in $schemas)
-            {
-                # New object to hold schema attributes
-                $sch = [PSCustomObject]@{
-                    full_name = ""
-                    owner = ""
-                    comment = ""
-                }
-
-                # Delimited string, but may have multiple blanks
-                $schemaline = $s.Split(" ")
-                $j = 0
-                # Loop through elements
-                foreach ($l in $schemaline)
-                {
-                    if ($l -ne " ")
-                    {
-                        # Full name is first actual string
-                        if ($j -eq 0)
-                        {
-                            $sch.full_name = $l
-                            $j++
-                        }
-
-                        # Owner is second actual string
-                        if ($j -eq 1)
-                        {
-                            $sch.owner = $l
-                            $j++
-                        }
-
-                        # Remainder is comment
-                        if ($j -gt 1)
-                        {
-                            $sch.comment += "$l "
-                        }
-                    }
-                }
-                # Trim trailing space from comment
-                $sch.comment = $sch.comment.Trim()
-
-                # Add this schema to the catalog's schemas array
-                $cat.schemas += $sch
-            }
-        }
-    
-        # As long as the extracted catalog information is real, add it to the final list
-        if ($cat.Name.Length -gt 0)
+        #----------------------------------------------------------------------
+        # As long as the extracted catalog information is real, 
+        # add it to the final list
+        #----------------------------------------------------------------------
+        if ($cat.name.Length -gt 0)
         {
             $cats += $cat
         }
     }
 }
 
+#------------------------------------------------------------------------------
 # Store Catalogs and return message to user
 $file = "./Catalogs.$($dbxEnv).json"
 $cats | ConvertTo-Json -depth 32 | Set-Content -Path $file
