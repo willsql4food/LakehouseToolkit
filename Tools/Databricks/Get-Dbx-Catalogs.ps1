@@ -56,7 +56,7 @@ foreach ($cat in $catlist)
             ScriptBlock = { databricks workspace-bindings get-bindings catalog $($args[1]) --profile $($args[0]) }
             ArgumentList = $dbxEnv, $cat.name
         }
-        $cat.bindings = Invoke-Command @invoke | ConvertFrom-Json
+        $cat.bindings = (Invoke-Command @invoke | ConvertFrom-Json).bindings
     
         #----------------------------------------------------------------------
         # Granted permissions
@@ -69,7 +69,7 @@ foreach ($cat in $catlist)
             ScriptBlock = { databricks grants get catalog $($args[1]) --profile $($args[0]) }
             ArgumentList = $dbxEnv, $cat.name
         }
-        $cat.privilege_assignments = Invoke-Command @invoke | ConvertFrom-Json
+        $cat.privilege_assignments = (Invoke-Command @invoke | ConvertFrom-Json).privilege_assignments
     
         #----------------------------------------------------------------------
         # Schemas - explicitly ask for JSON out
@@ -82,7 +82,7 @@ foreach ($cat in $catlist)
             ScriptBlock = { databricks schemas list $($args[1]) --profile $($args[0]) --output json }
             ArgumentList = $dbxEnv, $cat.name
         }
-        $cat.schemas =  Invoke-Command @invoke | ConvertFrom-Json
+        $cat.schemas = Invoke-Command @invoke | ConvertFrom-Json
 
         #----------------------------------------------------------------------
         # As long as the extracted catalog information is real, 

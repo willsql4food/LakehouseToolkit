@@ -5,7 +5,7 @@
 # the definitions in a set of JSON files
 ###############################################################################
 
-# Command line arguments - first item is expected to be environment
+# Security groups are at the account level, not accessed through a given workspace
 $dbxEnv = "ACCOUNT"
 
 # Get the groups in this Databricks account
@@ -15,79 +15,44 @@ Write-Output "Getting GROUP list (using Databricks profile $dbxEnv)"
 Write-Output $linesep
 
 $invoke = @{ 
-    ScriptBlock = { databricks account groups list --profile $($args[0]) }
+    ScriptBlock = { databricks account groups list --profile $($args[0]) --output json}
     ArgumentList = $dbxEnv
 }
 
-$grplist = Invoke-Command @invoke
-
-# Results returned from Databricks CLI are in the form:
-# ID   Name
+$grplist = Invoke-Command @invoke | ConvertFrom-Json
 
 # Setup final array to hold catalog information list
 $groups = @()
 
 # Loop over the groups and extract the ID & name
-foreach ($ln in $grplist)
+foreach ($g in $grplist)
 {
-    # New object to hold this group
-    $group = [PSCustomObject]@{
-        ID = 0
-        Name = ""
-        MemberCount = 0
-        externalId = ""
-    }
-
-    # Split the line by spaces and iterate over the parts
-    $e = 0
-    foreach ($element in $ln -split " ")
-    {
-        # If elements is blank, screen it out
-        if ($element -ne "")
-        {
-            # First non-blank element is ID
-            if($e -eq 0)
-            {
-                $group.ID = $element
-                $group.Name = ''
-            }
-            # Subsequent elements make up Name
-            if($e -ge 1) 
-            {
-                $group.Name += "$element "
-            }
-
-            # Only iterate if we found an element
-            $e++
-        }
-        # Remove trailing space from Name
-        $group.Name = $group.Name.Trim()
-    }
-
     # Now get the full definition, membership, etc. for the group
-    if ($group.Name -ne "")
+    if ($g.dispalyName -ne "")
     {
-        Write-Output "- Getting group definition for $($group.Name)"
+        #----------------------------------------------------------------------
+        # Group details
+        #----------------------------------------------------------------------
+        # Add object attributes to capture externalId, members and schemas
+        $g | Add-Member -MemberType NoteProperty -Name "externalId" -Value ""
+        $g | Add-Member -MemberType NoteProperty -Name "members" -Value ([PSCustomObject]@())
+        $g | Add-Member -MemberType NoteProperty -Name "schemas" -Value ([PSCustomObject]@())
 
+        # Get the properties of the group
+        Write-Output "- Getting group definition for $($g.displayName)"
         $invoke = @{ 
             ScriptBlock = { databricks account groups get $($args[1]) --profile $($args[0]) }
-            ArgumentList = $dbxEnv, $group.ID
+            ArgumentList = $dbxEnv, $g.id
         }
-        
         $grpdetail = Invoke-Command @invoke | ConvertFrom-Json
     
-        # Write the group details to a dedicated file
-        $file = "./Security-Groups/$($group.Name).json"
-        $grpdetail | ConvertTo-Json -depth 32 | Set-Content -Path $file
-        Write-Output "`tWritten to [$((Get-ChildItem $file).FullName)]`r`n"
-            
-        # As long as the extracted catalog information is real, add it to the final list
-        if ($group.Name.Length -gt 0)
-        {
-            $group.MemberCount = $grpdetail.members.Count
-            $group.externalId = $grpdetail.externalId
-            $groups += $group
-        }
+        # Augment the current group with these atrributes
+        $g.externalId = $grpdetail.externalId
+        $g.members = $grpdetail.members
+        $g.schemas = $grpdetail.schemas
+        
+        # Add augmented group to final array
+        $groups += $g
     }
 }
 
