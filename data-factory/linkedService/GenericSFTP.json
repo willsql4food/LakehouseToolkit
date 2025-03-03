@@ -27,7 +27,7 @@
 		"type": "Sftp",
 		"typeProperties": {
 			"host": "@{linkedService().lsHost}",
-			"port": 22,
+			"port": "@linkedService().lsSftpPort",
 			"skipHostKeyValidation": true,
 			"authenticationType": "Basic",
 			"userName": "@{linkedService().lsUserName}",
