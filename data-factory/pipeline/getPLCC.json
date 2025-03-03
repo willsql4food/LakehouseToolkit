@@ -1,0 +1,97 @@
+{
+	"name": "getPLCC",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Pipeline Parameters",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select 'astra-stg-sftp.syfbk.com' sourceSftpHost, 2022 sourceSftpPort, 'NPA-svc-astra-e01448' sourceUserName, 'plcc-password' sourceSecretNamePwd\nfor json path",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "WatermarkMI",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsServerName": {
+								"value": "@pipeline().globalParameters.gpWMSQL",
+								"type": "Expression"
+							},
+							"dsDatabaseName": {
+								"value": "@pipeline().globalParameters.gpWMDatabase",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "Get File List",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Get Pipeline Parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "BinSftp",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsHost": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSftpHost",
+								"type": "Expression"
+							},
+							"dsSecretName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSecretNamePassword",
+								"type": "Expression"
+							},
+							"dsUserName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceUserName",
+								"type": "Expression"
+							},
+							"dsBaseURL": {
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"type": "Expression"
+							},
+							"dsFilePath": "/in/StateLogProducts"
+						}
+					},
+					"fieldList": [],
+					"storeSettings": {
+						"type": "SftpReadSettings",
+						"enablePartitionDiscovery": false,
+						"disableChunking": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}
