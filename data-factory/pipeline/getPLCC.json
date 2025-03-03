@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select 'astra-stg-sftp.syfbk.com' sourceSftpHost, 2022 sourceSftpPort, 'NPA-svc-astra-e01448' sourceUserName, 'plcc-password' sourceSecretNamePwd\nfor json path",
+						"sqlReaderQuery": "select sourceSftpHost = 'astra-stg-sftp.syfbk.com' \n    , sourceSftpPort = 2022 \n    , sourceUserName = 'NPA-svc-astra-e01448' \n    , sourceSecretNamePwd = 'plcc-password' \n    , sourceFilePath = '\\'\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -77,10 +77,19 @@
 								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
 								"type": "Expression"
 							},
-							"dsFilePath": "/in/StateLogProducts"
+							"dsFilePath": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceFilePath",
+								"type": "Expression"
+							},
+							"dsSftpPort": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSftpPort",
+								"type": "Expression"
+							}
 						}
 					},
-					"fieldList": [],
+					"fieldList": [
+						"childItems"
+					],
 					"storeSettings": {
 						"type": "SftpReadSettings",
 						"enablePartitionDiscovery": false,
