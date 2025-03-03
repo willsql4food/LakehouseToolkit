@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select sourceSftpHost = 'astra-stg-sftp.syfbk.com' \n    , sourceSftpPort = 2022 \n    , sourceUserName = 'NPA-svc-astra-e01448' \n    , sourceSecretNamePwd = 'plcc-password' \n    , sourceFilePath = '\\'\n",
+						"sqlReaderQuery": "select sourceSftpHost = 'astra-stg-sftp.syfbk.com' \n    , sourceSftpPort = 2022 \n    , sourceUserName = 'NPA-svc-astra-e01448' \n    , sourceSecretNamePassword = 'plcc-sftp-password' \n    , sourceFilePath = '\\'\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
