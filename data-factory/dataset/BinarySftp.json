@@ -1,5 +1,5 @@
 {
-	"name": "BinSftp",
+	"name": "BinarySftp",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "GenericSFTP",

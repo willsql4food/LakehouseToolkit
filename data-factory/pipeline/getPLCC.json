@@ -58,7 +58,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "BinSftp",
+						"referenceName": "BinarySftp",
 						"type": "DatasetReference",
 						"parameters": {
 							"dsHost": {
