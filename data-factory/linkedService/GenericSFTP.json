@@ -17,6 +17,10 @@
 			"lsSecretName": {
 				"type": "string",
 				"defaultValue": "foundation-sftp-pwd"
+			},
+			"lsSftpPort": {
+				"type": "int",
+				"defaultValue": 22
 			}
 		},
 		"annotations": [],
