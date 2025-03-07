@@ -103,6 +103,29 @@
 						"type": "BinaryReadSettings"
 					}
 				}
+			},
+			{
+				"name": "Files",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Get File List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get File List').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@equals(item().type, 'File')",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"annotations": []
