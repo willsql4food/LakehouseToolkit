@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select sourceSftpHost = 'astra-stg-sftp.syfbk.com' \n    , sourceSftpPort = 2022 \n    , sourceUserName = 'NPA-svc-astra-e01448' \n    , sourceSecretNamePassword = 'plcc-sftp-password' \n    , sourceFilePath = '\\'\n",
+						"sqlReaderQuery": "select sourceSftpHostName = 'astra-stg-sftp.syfbk.com' \n    , sourceSftpPortNumber = 2022 \n    , sourceUserName = 'NPA-svc-astra-e01448' \n    , sourcePasswordSecret = 'plcc-sftp-password' \n    , sourcePrivateKeySecret = 'plcc-sftp-private-key' \n    , sourceDirectory = '\\outbound\\'\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -58,31 +58,35 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "BinarySftp",
+						"referenceName": "BinarySftpPrivateKey",
 						"type": "DatasetReference",
 						"parameters": {
-							"dsHost": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSftpHost",
+							"dsHostName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSftpHostName",
 								"type": "Expression"
 							},
-							"dsSecretName": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSecretNamePassword",
+							"dsPortNumber": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSftpPortNumber",
 								"type": "Expression"
 							},
 							"dsUserName": {
 								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceUserName",
 								"type": "Expression"
 							},
-							"dsBaseURL": {
+							"dsKvUrl": {
 								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
 								"type": "Expression"
 							},
-							"dsFilePath": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceFilePath",
+							"dsPrivateKeySecret": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourcePrivateKeySecret",
 								"type": "Expression"
 							},
-							"dsSftpPort": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceSftpPort",
+							"dsPasswordSecret": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourcePasswordSecret",
+								"type": "Expression"
+							},
+							"dsDirectory": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDirectory",
 								"type": "Expression"
 							}
 						}

@@ -1,0 +1,69 @@
+{
+	"name": "BinarySftpPrivateKey",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SftpKeyFile",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsHostName": {
+					"value": "@dataset().dsHostName",
+					"type": "Expression"
+				},
+				"lsPortNumber": {
+					"value": "@dataset().dsPortNumber",
+					"type": "Expression"
+				},
+				"lsUserName": {
+					"value": "@dataset().dsUserName",
+					"type": "Expression"
+				},
+				"lsKvUrl": {
+					"value": "@dataset().dsKvUrl",
+					"type": "Expression"
+				},
+				"lsPrivateKeySecret": {
+					"value": "@dataset().dsPrivateKeySecret",
+					"type": "Expression"
+				},
+				"lsPasswordSecret": {
+					"value": "@dataset().dsPasswordSecret",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"dsHostName": {
+				"type": "string"
+			},
+			"dsPortNumber": {
+				"type": "int"
+			},
+			"dsUserName": {
+				"type": "string"
+			},
+			"dsKvUrl": {
+				"type": "string"
+			},
+			"dsPrivateKeySecret": {
+				"type": "string"
+			},
+			"dsPasswordSecret": {
+				"type": "string"
+			},
+			"dsDirectory": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "SftpLocation",
+				"folderPath": {
+					"value": "@dataset().dsDirectory",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}
