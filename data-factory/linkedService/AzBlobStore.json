@@ -5,7 +5,7 @@
 		"type": "AzureBlobStorage",
 		"typeProperties": {
 			"serviceEndpoint": "https://staab09289802.blob.core.windows.net/",
-			"accountKind": "StorageV2"
+			"accountKind": "Storage"
 		}
 	}
 }
