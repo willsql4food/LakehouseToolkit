@@ -38,7 +38,8 @@
 					"value": "@linkedService().lsSecretName",
 					"type": "Expression"
 				}
-			}
+			},
+			"supportV1DataTypes": true
 		},
 		"connectVia": {
 			"referenceName": "shirt-ACB",
