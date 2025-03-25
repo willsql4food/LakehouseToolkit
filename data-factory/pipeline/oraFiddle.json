@@ -1,0 +1,65 @@
+{
+	"name": "oraFiddle",
+	"properties": {
+		"activities": [
+			{
+				"name": "QueryToParquet",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "OracleSource",
+						"oracleReaderQuery": "select cast(csn_nbr as number(38)) csn_nbr from MFCS_RDS.RDS_WV_PRICE_HIST",
+						"partitionOption": "None",
+						"convertDecimalToInteger": true,
+						"queryTimeout": "02:00:00"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "OracleQuery",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzPq",
+						"type": "DatasetReference",
+						"parameters": {
+							"dsFilesystem": "landing",
+							"dsPath": "mfcs-rds",
+							"dsFilename": "MFCS_RDS.RDS_WV_PRICE_HIST.parquet"
+						}
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
