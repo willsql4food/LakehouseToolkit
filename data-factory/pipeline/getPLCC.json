@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select sourceSftpHostName = 'astra-stg-sftp.syfbk.com' \n    , sourceSftpPortNumber = 2022 \n    , sourceUserName = 'NPA-svc-astra-e01448' \n    , sourcePasswordSecret = 'plcc-sftp-password' \n    , sourcePrivateKeySecret = 'plcc-sftp-private-key' \n    , sourceDirectory = '\\outbound\\'\n",
+						"sqlReaderQuery": "select sourceSftpHostName = 'astra-stg-sftp.syfbk.com' \n    , sourceSftpPortNumber = 2022 \n    , sourceUserName = 'NPA-svc-astra-e01448' \n    , sourcePasswordSecret = 'plcc-sftp-password' \n    , sourcePrivateKeySecret = 'plcc-sftp-private-key' \n    , sourceDirectory = '\\outbound\\'\n    , sourceDsDatabricksWorkspaceId = '/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898'\n    , sourceDsDatabricksNotebookPath = '/Repos/ENTDATALAKEHOUSE/databricks-entdatalakehouse/BRONZE-SILVER/'\n    , sourceDsDatabricksWorkspaceUrl = 'https://adb-7286372339506263.3.azuredatabricks.net'\n    , sourceDsDbxClusterNodeType= 'Standard_D4ds_v5'\n    , sourceDsDbxWorkerOptions= '1:8'\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -235,7 +235,36 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": {
+						"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDatabricksNotebookPath",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "GenericAzureDatabricksNewJobClusterMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsDatabricksWorkspaceURL": {
+							"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDatabricksWorkspaceUrl",
+							"type": "Expression"
+						},
+						"lsWorkspaceResourceId": {
+							"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDatabricksWorkspaceId",
+							"type": "Expression"
+						},
+						"lsClusterVersion": "14.3.x-scala2.12",
+						"lsClusterNodeType": {
+							"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDbxClusterNodeType",
+							"type": "Expression"
+						},
+						"lsWorkerOptions": {
+							"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDbxWorkerOptions",
+							"type": "Expression"
+						}
+					}
+				}
 			}
 		],
 		"annotations": []
