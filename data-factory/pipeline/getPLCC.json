@@ -129,25 +129,6 @@
 				}
 			},
 			{
-				"name": "Decrypt Files",
-				"type": "Custom",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"referenceObjects": {
-						"linkedServices": [],
-						"datasets": []
-					}
-				}
-			},
-			{
 				"name": "Copy Files",
 				"type": "Copy",
 				"dependsOn": [
@@ -235,6 +216,26 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Decrypt Files",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Copy Files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
 			}
 		],
 		"annotations": []
