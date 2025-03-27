@@ -1,0 +1,49 @@
+{
+	"name": "Oracle",
+	"properties": {
+		"parameters": {
+			"lsKvBaseUrl": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"lsSecretName": {
+				"type": "string",
+				"defaultValue": "mcfs-rds-password"
+			},
+			"lsUserName": {
+				"type": "string",
+				"defaultValue": "RDS_CUSTOM_3"
+			}
+		},
+		"annotations": [],
+		"type": "Oracle",
+		"version": "2.0",
+		"typeProperties": {
+			"server": "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=10.240.1.45))(connect_data=(service_name=g3a6af48942ad9d_aex490cv48p12wi_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))",
+			"authenticationType": "Basic",
+			"username": "@{linkedService().lsUserName}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKvBaseUrl",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().lsSecretName",
+					"type": "Expression"
+				}
+			},
+			"supportV1DataTypes": true
+		},
+		"connectVia": {
+			"referenceName": "shirt-ACB",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

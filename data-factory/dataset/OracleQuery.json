@@ -1,0 +1,17 @@
+{
+	"name": "OracleQuery",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Oracle",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsKvBaseUrl": "https://akv-ab092898.vault.azure.net/",
+				"lsSecretName": "mcfs-rds-password",
+				"lsUserName": "RDS_CUSTOM_3"
+			}
+		},
+		"annotations": [],
+		"type": "OracleTable",
+		"schema": []
+	}
+}

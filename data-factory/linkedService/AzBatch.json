@@ -1,0 +1,16 @@
+{
+	"name": "AzBatch",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBatch",
+		"typeProperties": {
+			"batchUri": "https://batsbxab092898.eastus2.batch.azure.com",
+			"poolName": "batsbxab092898-pool1",
+			"accountName": "batsbxab092898",
+			"linkedServiceName": {
+				"referenceName": "AzBlobStore",
+				"type": "LinkedServiceReference"
+			}
+		}
+	}
+}
