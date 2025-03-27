@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "OracleSource",
-						"oracleReaderQuery": "select cast(csn_nbr as number(38)) csn_nbr from MFCS_RDS.RDS_WV_PRICE_HIST",
+						"oracleReaderQuery": "select * from MFCS_RDS.RDS_WV_PRICE_HIST",
 						"partitionOption": "None",
 						"convertDecimalToInteger": true,
 						"queryTimeout": "02:00:00"
