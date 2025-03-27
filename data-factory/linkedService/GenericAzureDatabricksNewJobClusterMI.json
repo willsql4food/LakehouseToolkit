@@ -1,0 +1,49 @@
+{
+	"name": "GenericAzureDatabricksNewJobClusterMI",
+	"properties": {
+		"parameters": {
+			"lsDatabricksWorkspaceURL": {
+				"type": "string"
+			},
+			"lsWorkspaceResourceId": {
+				"type": "string"
+			},
+			"lsClusterVersion": {
+				"type": "string",
+				"defaultValue": "14.3.x-scala2.12"
+			},
+			"lsClusterNodeType": {
+				"type": "string"
+			},
+			"lsWorkerOptions": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "@linkedService().lsDatabricksWorkspaceURL",
+			"authentication": "MSI",
+			"workspaceResourceId": "@linkedService().lsWorkspaceResourceId",
+			"newClusterNodeType": "@linkedService().lsClusterNodeType",
+			"newClusterNumOfWorker": "@linkedService().lsWorkerOptions",
+			"newClusterSparkConf": {
+				"spark.databricks.io.cache.enabled": "true",
+				"spark.databricks.io.cache.compression.enabled": "false",
+				"spark.databricks.io.cache.maxDiskUsage": "50g",
+				"spark.databricks.io.cache.maxMetaDataCache": "1g",
+				"spark.databricks.delta.schema.autoMerge.enabled": "true",
+				"spark.sql.sources.partitionOverwriteMode": "dynamic",
+				"spark.databricks.unityCatalog.enabled": "true",
+				"spark.rpc.message.maxSize": "1024"
+			},
+			"newClusterSparkEnvVars": {
+				"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+			},
+			"newClusterVersion": "@linkedService().lsClusterVersion",
+			"clusterOption": "Autoscaling",
+			"newClusterInitScripts": [],
+			"dataSecurityMode": "USER_ISOLATION"
+		}
+	}
+}
