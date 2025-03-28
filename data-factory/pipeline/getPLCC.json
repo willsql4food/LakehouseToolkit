@@ -164,9 +164,6 @@
 						"type": "ParquetSink",
 						"storeSettings": {
 							"type": "AzureBlobFSWriteSettings"
-						},
-						"formatSettings": {
-							"type": "ParquetWriteSettings"
 						}
 					},
 					"enableStaging": false
@@ -209,7 +206,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "DLBronzeParquetKV",
+						"referenceName": "BinaryDL",
 						"type": "DatasetReference",
 						"parameters": {
 							"dsURL": {
@@ -229,7 +226,7 @@
 								"type": "Expression"
 							},
 							"dsKVBaseURL": {
-								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sinkDsKVBaseURL",
 								"type": "Expression"
 							}
 						}

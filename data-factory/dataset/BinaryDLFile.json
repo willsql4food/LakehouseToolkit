@@ -1,5 +1,5 @@
 {
-	"name": "BinaryDL",
+	"name": "BinaryDLFile",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "GenericAzureDataLakeStorageGen2KV",
@@ -32,6 +32,9 @@
 			"dsDirectory": {
 				"type": "string"
 			},
+			"dsFileName": {
+				"type": "string"
+			},
 			"dsKVBaseURL": {
 				"type": "string"
 			}
@@ -41,6 +44,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().dsFileName",
+					"type": "Expression"
+				},
 				"folderPath": {
 					"value": "@dataset().dsDirectory",
 					"type": "Expression"
