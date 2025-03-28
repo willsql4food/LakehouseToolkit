@@ -286,7 +286,7 @@
 							"type": "Expression"
 						},
 						"lsUnityCatalogEnabled": {
-							"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDbxUnityCatalogEnabled",
+							"value": "@not(equals(pipeline().globalParameters.gpEnvironment, 'SBX'))",
 							"type": "Expression"
 						}
 					}
