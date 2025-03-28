@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select sourceDsSftpHostName = 'astra-stg-sftp.syfbk.com' \n    , sourceDsSftpPortNumber = 2022 \n    , sourceDsUserName = 'NPA-svc-astra-e01448' \n    , sourceDsPasswordSecret = 'plcc-sftp-password' \n    , sourceDsPrivateKeySecret = 'plcc-sftp-private-key' \n    , sourceDsDirectory = '\\outbound\\'\n    , sourceDsDatabricksWorkspaceId = '/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898'\n    , sourceDsDatabricksNotebookPath = '/Repos/ENTDATALAKEHOUSE/databricks-entdatalakehouse/BRONZE-SILVER/PLCC_Decryption'\n    , sourceDsDatabricksWorkspaceUrl = 'https://adb-7286372339506263.3.azuredatabricks.net'\n    , sourceDsDbxClusterNodeType= 'Standard_D4ds_v5'\n    , sourceDsDbxWorkerOptions= '1:8'\n    , sinkDsURL = 'https://staab09289802.dfs.core.windows.net'\n    , sinkDsSecretName = 'key-staab09289802'\n    , sinkDsStorageAccount = 'staab09289802'\n    , sinkDsFileSystem = 'landing'",
+						"sqlReaderQuery": "select sourceDsSftpHostName = 'astra-stg-sftp.syfbk.com' \n    , sourceDsSftpPortNumber = 2022 \n    , sourceDsUserName = 'NPA-svc-astra-e01448' \n    , sourceDsPasswordSecret = 'plcc-sftp-password' \n    , sourceDsPrivateKeySecret = 'plcc-sftp-private-key' \n    , sourceDsDirectory = '\\outbound\\'\n    , sourceDsDatabricksWorkspaceId = '/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898'\n    , sourceDsDatabricksNotebookPath = '/Repos/ENTDATALAKEHOUSE/databricks-entdatalakehouse/BRONZE-SILVER/PLCC_Decryption'\n    , sourceDsDatabricksWorkspaceUrl = 'https://adb-7286372339506263.3.azuredatabricks.net'\n    , sourceDsDbxClusterNodeType= 'Standard_D4ds_v5'\n    , sourceDsDbxWorkerOptions= '1:8'\n    , sourceDsDbxUnityCatalogEnabled = 'false'\n    , sinkDsURL = 'https://staab09289802.dfs.core.windows.net'\n    , sinkDsSecretName = 'key-staab09289802'\n    , sinkDsStorageAccount = 'staab09289802'\n    , sinkDsFileSystem = 'landing'\n    , sinkDsDirectory = 'PLCC/PGP'\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -226,7 +226,7 @@
 								"type": "Expression"
 							},
 							"dsKVBaseURL": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sinkDsKVBaseURL",
+								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
 								"type": "Expression"
 							}
 						}
@@ -256,6 +256,12 @@
 					"notebookPath": {
 						"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDatabricksNotebookPath",
 						"type": "Expression"
+					},
+					"baseParameters": {
+						"environment": {
+							"value": "@pipeline().globalParameters.gpEnvironment",
+							"type": "Expression"
+						}
 					}
 				},
 				"linkedServiceName": {
@@ -277,6 +283,10 @@
 						},
 						"lsWorkerOptions": {
 							"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDbxWorkerOptions",
+							"type": "Expression"
+						},
+						"lsUnityCatalogEnabled": {
+							"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDbxUnityCatalogEnabled",
 							"type": "Expression"
 						}
 					}
