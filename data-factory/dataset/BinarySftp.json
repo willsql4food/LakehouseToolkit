@@ -51,6 +51,14 @@
 			"dsSftpPort": {
 				"type": "int",
 				"defaultValue": 22
+			},
+			"dsCompressionType": {
+				"type": "string",
+				"defaultValue": "ZipDeflate"
+			},
+			"dsCompressionLevel": {
+				"type": "string",
+				"defaultValue": "Fastest"
 			}
 		},
 		"annotations": [],
@@ -64,8 +72,14 @@
 				}
 			},
 			"compression": {
-				"type": "ZipDeflate",
-				"level": "Fastest"
+				"type": {
+					"value": "@dataset().dsCompressionType",
+					"type": "Expression"
+				},
+				"level": {
+					"value": "@dataset().dsCompressionLevel",
+					"type": "Expression"
+				}
 			}
 		}
 	}
