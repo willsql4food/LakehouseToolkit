@@ -38,102 +38,11 @@
 				}
 			},
 			{
-				"name": "Get File List",
-				"type": "GetMetadata",
-				"dependsOn": [
-					{
-						"activity": "Get Pipeline Parameters",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "BinarySftpPrivateKey",
-						"type": "DatasetReference",
-						"parameters": {
-							"dsHostName": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsSftpHostName",
-								"type": "Expression"
-							},
-							"dsPortNumber": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsSftpPortNumber",
-								"type": "Expression"
-							},
-							"dsUserName": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsUserName",
-								"type": "Expression"
-							},
-							"dsKvUrl": {
-								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
-								"type": "Expression"
-							},
-							"dsPrivateKeySecret": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsPrivateKeySecret",
-								"type": "Expression"
-							},
-							"dsPasswordSecret": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsPasswordSecret",
-								"type": "Expression"
-							},
-							"dsDirectory": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDirectory",
-								"type": "Expression"
-							}
-						}
-					},
-					"fieldList": [
-						"childItems"
-					],
-					"storeSettings": {
-						"type": "SftpReadSettings",
-						"recursive": true,
-						"enablePartitionDiscovery": false,
-						"disableChunking": false
-					},
-					"formatSettings": {
-						"type": "BinaryReadSettings"
-					}
-				}
-			},
-			{
-				"name": "Files",
-				"type": "Filter",
-				"dependsOn": [
-					{
-						"activity": "Get File List",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('Get File List').output.childItems",
-						"type": "Expression"
-					},
-					"condition": {
-						"value": "@equals(item().type, 'File')",
-						"type": "Expression"
-					}
-				}
-			},
-			{
 				"name": "Copy Files",
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Files",
+						"activity": "Get Pipeline Parameters",
 						"dependencyConditions": [
 							"Succeeded"
 						]
