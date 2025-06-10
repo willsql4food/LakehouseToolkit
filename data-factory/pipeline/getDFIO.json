@@ -18,7 +18,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select sourceDsSftpHostName = 'fdcr-dev-b2b.logistics.com' \n    , sourceDsSftpPortNumber = 22\n    , sourceDsSshHostKey = 'ssh-ed25519 32 75:45:0c:a2:a7:42:c1:10:8c:2d:cb:aa:0f:90:fb:75'\n    , sourceDsUserName = 'sftpadmin' \n    , sourceDsPassphraseSecret = 'dfio-sftp-passphrase' \n    , sourceDsPrivateKeySecret = 'dfio-sftp-private-key' \n    , sourceDsDirectory = '/outbox/extracts/'\n    , sourceDsCompressionType = 'TarGZip'\n    , sourceDsDatabricksWorkspaceId = '/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898'\n    , sourceDsDatabricksNotebookPath = '/Repos/ENTDATALAKEHOUSE/databricks-entdatalakehouse/BRONZE-SILVER/PLCC_Decryption'\n    , sourceDsDatabricksWorkspaceUrl = 'https://adb-7286372339506263.3.azuredatabricks.net'\n    , sourceDsDbxClusterNodeType = 'Standard_D4ds_v5'\n    , sourceDsDbxClusterVersion = '15.4.x-scala2.12'\n    , sourceDsDbxWorkerOptions = '1:8'\n    , sourceDsDbxUnityCatalogEnabled = 'false'\n    , sinkDsURL = 'https://staab09289802.dfs.core.windows.net'\n    , sinkDsSecretName = 'key-staab09289802'\n    , sinkDsStorageAccount = 'staab09289802'\n    , sinkDsFileSystem = 'landing'\n    , sinkDsDirectory = 'DFIO'\n",
+						"sqlReaderQuery": "select sourceDsSftpHostName = 'fdcr-dev-b2b.logistics.com' \n    , sourceDsSftpPortNumber = 22\n    , sourceDsSshHostKey = 'ssh-ed25519 32 75:45:0c:a2:a7:42:c1:10:8c:2d:cb:aa:0f:90:fb:75'\n    , sourceDsUserName = 'sftpadmin' \n    , sourceDsPassphraseSecret = 'dfio-sftp-passphrase' \n    , sourceDsPrivateKeySecret = 'dfio-sftp-private-key' \n    , sourceDsDirectory = '/outbox/extracts/'\n    , sourceDsFilePattern = '*.tar.gz'\n    , sourceDsCompressionType = 'TarGZip'\n    , sourceDsDatabricksWorkspaceId = '/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898'\n    , sourceDsDatabricksNotebookPath = '/Repos/ENTDATALAKEHOUSE/databricks-entdatalakehouse/BRONZE-SILVER/PLCC_Decryption'\n    , sourceDsDatabricksWorkspaceUrl = 'https://adb-7286372339506263.3.azuredatabricks.net'\n    , sourceDsDbxClusterNodeType = 'Standard_D4ds_v5'\n    , sourceDsDbxClusterVersion = '15.4.x-scala2.12'\n    , sourceDsDbxWorkerOptions = '1:8'\n    , sourceDsDbxUnityCatalogEnabled = 'false'\n    , sinkDsURL = 'https://staab09289802.dfs.core.windows.net'\n    , sinkDsSecretName = 'key-staab09289802'\n    , sinkDsStorageAccount = 'staab09289802'\n    , sinkDsFileSystem = 'landing'\n    , sinkDsDirectory = 'DFIO'\n",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -63,7 +63,10 @@
 						"storeSettings": {
 							"type": "SftpReadSettings",
 							"recursive": false,
-							"wildcardFileName": "*.tar.gz",
+							"wildcardFileName": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsFilePattern",
+								"type": "Expression"
+							},
 							"deleteFilesAfterCompletion": false,
 							"disableChunking": false
 						},
@@ -115,6 +118,10 @@
 							"dsSshHostKey": {
 								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsSshHostKey",
 								"type": "Expression"
+							},
+							"dsCompressionType": {
+								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsCompressionType",
+								"type": "Expression"
 							}
 						}
 					}
@@ -151,6 +158,8 @@
 			{
 				"name": "Decrypt Files",
 				"type": "DatabricksNotebook",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Copy Files",
