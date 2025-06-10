@@ -53,6 +53,9 @@
 				"defaultValue": 22
 			}
 		},
+		"folder": {
+			"name": "Binary"
+		},
 		"annotations": [],
 		"type": "Binary",
 		"typeProperties": {
