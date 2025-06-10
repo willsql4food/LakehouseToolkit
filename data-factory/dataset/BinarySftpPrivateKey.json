@@ -17,13 +17,20 @@
 					"value": "@dataset().dsPortNumber",
 					"type": "Expression"
 				},
-				"lsSshHostKey": "ssh-ed25519 32 75:45:0c:a2:a7:42:c1:10:8c:2d:cb:aa:0f:90:fb:75",
+				"lsSshHostKey": {
+					"value": "@dataset().dsSshHostKey",
+					"type": "Expression"
+				},
 				"lsPrivateKeySecret": {
 					"value": "@dataset().dsPrivateKeySecret",
 					"type": "Expression"
 				},
 				"lsPassphraseSecret": {
 					"value": "@dataset().dsPassphraseSecret",
+					"type": "Expression"
+				},
+				"lsKVBaseUrl": {
+					"value": "@dataset().dsKvUrl",
 					"type": "Expression"
 				}
 			}
@@ -48,6 +55,9 @@
 				"type": "string"
 			},
 			"dsDirectory": {
+				"type": "string"
+			},
+			"dsSshHostKey": {
 				"type": "string"
 			}
 		},
