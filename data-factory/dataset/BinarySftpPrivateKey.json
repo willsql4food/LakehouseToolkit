@@ -2,31 +2,28 @@
 	"name": "BinarySftpPrivateKey",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "SftpKeyFile",
+			"referenceName": "SftpSshKeyFile",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"lsHostName": {
-					"value": "@dataset().dsHostName",
-					"type": "Expression"
-				},
-				"lsPortNumber": {
-					"value": "@dataset().dsPortNumber",
-					"type": "Expression"
-				},
 				"lsUserName": {
 					"value": "@dataset().dsUserName",
 					"type": "Expression"
 				},
-				"lsKvUrl": {
-					"value": "@dataset().dsKvUrl",
+				"lsSftpHostName": {
+					"value": "@dataset().dsHostName",
 					"type": "Expression"
 				},
+				"lsSftpPortNumber": {
+					"value": "@dataset().dsPortNumber",
+					"type": "Expression"
+				},
+				"lsSshHostKey": "ssh-ed25519 32 75:45:0c:a2:a7:42:c1:10:8c:2d:cb:aa:0f:90:fb:75",
 				"lsPrivateKeySecret": {
 					"value": "@dataset().dsPrivateKeySecret",
 					"type": "Expression"
 				},
-				"lsPasswordSecret": {
-					"value": "@dataset().dsPasswordSecret",
+				"lsPassphraseSecret": {
+					"value": "@dataset().dsPassphraseSecret",
 					"type": "Expression"
 				}
 			}
@@ -47,7 +44,7 @@
 			"dsPrivateKeySecret": {
 				"type": "string"
 			},
-			"dsPasswordSecret": {
+			"dsPassphraseSecret": {
 				"type": "string"
 			},
 			"dsDirectory": {
