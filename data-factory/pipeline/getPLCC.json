@@ -79,7 +79,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "BinarySftpPrivateKey",
+						"referenceName": "BinarySftpMultiFactor",
 						"type": "DatasetReference",
 						"parameters": {
 							"dsHostName": {

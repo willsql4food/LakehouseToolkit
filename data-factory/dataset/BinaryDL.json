@@ -36,6 +36,9 @@
 				"type": "string"
 			}
 		},
+		"folder": {
+			"name": "Binary"
+		},
 		"annotations": [],
 		"type": "Binary",
 		"typeProperties": {

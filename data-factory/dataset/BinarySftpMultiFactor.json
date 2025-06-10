@@ -1,5 +1,5 @@
 {
-	"name": "BinarySftpPrivateKey",
+	"name": "BinarySftpMultiFactor",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "SftpKeyFile",
