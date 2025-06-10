@@ -1,5 +1,5 @@
 {
-	"name": "BinaryDL",
+	"name": "BinDL",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "GenericAzureDataLakeStorageGen2KV",

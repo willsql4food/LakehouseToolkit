@@ -115,7 +115,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "BinaryDL",
+						"referenceName": "BinDL",
 						"type": "DatasetReference",
 						"parameters": {
 							"dsURL": {
