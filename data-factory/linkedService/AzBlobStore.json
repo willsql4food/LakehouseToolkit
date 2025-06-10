@@ -1,0 +1,11 @@
+{
+	"name": "AzBlobStore",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"serviceEndpoint": "https://staab09289802.blob.core.windows.net/",
+			"accountKind": "Storage"
+		}
+	}
+}

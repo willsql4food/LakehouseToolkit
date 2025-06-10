@@ -1,0 +1,68 @@
+{
+	"name": "BinarySftp",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GenericSFTP",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"lsHost": {
+					"value": "@dataset().dsHost",
+					"type": "Expression"
+				},
+				"lsUserName": {
+					"value": "@dataset().dsUserName",
+					"type": "Expression"
+				},
+				"lsKVBaseURL": {
+					"value": "@dataset().dsBaseURL",
+					"type": "Expression"
+				},
+				"lsSecretName": {
+					"value": "@dataset().dsSecretName",
+					"type": "Expression"
+				},
+				"lsSftpPort": {
+					"value": "@dataset().dsSftpPort",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"dsHost": {
+				"type": "string",
+				"defaultValue": "10.247.64.4"
+			},
+			"dsSecretName": {
+				"type": "string",
+				"defaultValue": "sftp-foundation-pwd"
+			},
+			"dsUserName": {
+				"type": "string",
+				"defaultValue": "foundation_dw"
+			},
+			"dsBaseURL": {
+				"type": "string",
+				"defaultValue": "https://kv-dev-bronzeingestion.vault.azure.net/"
+			},
+			"dsFilePath": {
+				"type": "string",
+				"defaultValue": "/in/StateLogProducts"
+			},
+			"dsSftpPort": {
+				"type": "int",
+				"defaultValue": 22
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "SftpLocation",
+				"folderPath": {
+					"value": "@dataset().dsFilePath",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}

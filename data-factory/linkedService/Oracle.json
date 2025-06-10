@@ -1,36 +1,27 @@
 {
-	"name": "GenericSFTP",
+	"name": "Oracle",
 	"properties": {
 		"parameters": {
-			"lsHost": {
-				"type": "string",
-				"defaultValue": "10.247.96.8"
-			},
-			"lsUserName": {
-				"type": "string",
-				"defaultValue": "foundation_dw "
-			},
-			"lsKVBaseURL": {
+			"lsKvBaseUrl": {
 				"type": "string",
 				"defaultValue": "https://akv-ab092898.vault.azure.net/"
 			},
 			"lsSecretName": {
 				"type": "string",
-				"defaultValue": "foundation-sftp-pwd"
+				"defaultValue": "mcfs-rds-password"
 			},
-			"lsSftpPort": {
-				"type": "int",
-				"defaultValue": 22
+			"lsUserName": {
+				"type": "string",
+				"defaultValue": "RDS_CUSTOM_3"
 			}
 		},
 		"annotations": [],
-		"type": "Sftp",
+		"type": "Oracle",
+		"version": "2.0",
 		"typeProperties": {
-			"host": "@{linkedService().lsHost}",
-			"port": "@linkedService().lsSftpPort",
-			"skipHostKeyValidation": true,
+			"server": "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=10.240.1.45))(connect_data=(service_name=g3a6af48942ad9d_aex490cv48p12wi_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))",
 			"authenticationType": "Basic",
-			"userName": "@{linkedService().lsUserName}",
+			"username": "@{linkedService().lsUserName}",
 			"password": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
@@ -38,7 +29,7 @@
 					"type": "LinkedServiceReference",
 					"parameters": {
 						"lsBaseURL": {
-							"value": "@linkedService().lsKVBaseURL",
+							"value": "@linkedService().lsKvBaseUrl",
 							"type": "Expression"
 						}
 					}
@@ -47,7 +38,8 @@
 					"value": "@linkedService().lsSecretName",
 					"type": "Expression"
 				}
-			}
+			},
+			"supportV1DataTypes": true
 		},
 		"connectVia": {
 			"referenceName": "shirt-ACB",

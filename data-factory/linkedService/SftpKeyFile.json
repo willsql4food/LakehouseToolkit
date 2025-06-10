@@ -1,0 +1,76 @@
+{
+	"name": "SftpKeyFile",
+	"properties": {
+		"description": "An SFTP connection with public key authentication\nuser name, passphrase, public key content stored in key vault",
+		"parameters": {
+			"lsHostName": {
+				"type": "string",
+				"defaultValue": "astra-stg-sftp.syfbk.com"
+			},
+			"lsPortNumber": {
+				"type": "int",
+				"defaultValue": 2022
+			},
+			"lsUserName": {
+				"type": "string",
+				"defaultValue": "NPA-svc-astra-e01448"
+			},
+			"lsKvUrl": {
+				"type": "string",
+				"defaultValue": "https://akv-ab092898.vault.azure.net/"
+			},
+			"lsPrivateKeySecret": {
+				"type": "string",
+				"defaultValue": "plcc-sftp-private-key"
+			},
+			"lsPasswordSecret": {
+				"type": "string",
+				"defaultValue": "plcc-sftp-password"
+			}
+		},
+		"annotations": [],
+		"type": "Sftp",
+		"typeProperties": {
+			"host": "@{linkedService().lsHostName}",
+			"port": "@linkedService().lsPortNumber",
+			"skipHostKeyValidation": true,
+			"authenticationType": "MultiFactor",
+			"userName": "@{linkedService().lsUserName}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKvUrl",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().lsPasswordSecret",
+					"type": "Expression"
+				}
+			},
+			"privateKeyContent": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "GenericAzureKeyVaultMI",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"lsBaseURL": {
+							"value": "@linkedService().lsKvUrl",
+							"type": "Expression"
+						}
+					}
+				},
+				"secretName": {
+					"value": "@linkedService().lsPrivateKeySecret",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
+}

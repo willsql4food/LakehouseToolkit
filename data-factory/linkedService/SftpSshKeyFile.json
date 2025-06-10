@@ -1,0 +1,67 @@
+{
+	"name": "SftpSshKeyFile",
+	"properties": {
+		"parameters": {
+			"lsUserName": {
+				"type": "string",
+				"defaultValue": "sftpadmin"
+			},
+			"lsSftpHostName": {
+				"type": "string",
+				"defaultValue": "fdcr-dev-b2b.logistics.com"
+			},
+			"lsSftpPortNumber": {
+				"type": "int",
+				"defaultValue": 22
+			},
+			"lsSshHostKey": {
+				"type": "string",
+				"defaultValue": "ssh-ed25519 32 75:45:0c:a2:a7:42:c1:10:8c:2d:cb:aa:0f:90:fb:75"
+			},
+			"lsPrivateKeySecret": {
+				"type": "string",
+				"defaultValue": "dfio-sftp-private-key"
+			},
+			"lsPassphraseSecret": {
+				"type": "string",
+				"defaultValue": "dfio-sftp-passphrase"
+			}
+		},
+		"annotations": [],
+		"type": "Sftp",
+		"typeProperties": {
+			"host": "@{linkedService().lsSftpHostName}",
+			"port": "@linkedService().lsSftpPortNumber",
+			"skipHostKeyValidation": false,
+			"hostKeyFingerprint": "@{linkedService().lsSshHostKey}",
+			"authenticationType": "SshPublicKey",
+			"userName": "@{linkedService().lsUserName}",
+			"privateKeyContent": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().lsPrivateKeySecret",
+					"type": "Expression"
+				}
+			},
+			"passPhrase": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().lsPassphraseSecret",
+					"type": "Expression"
+				}
+			}
+		},
+		"connectVia": {
+			"referenceName": "shirt-ACB",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
