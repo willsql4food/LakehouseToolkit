@@ -25,6 +25,9 @@
 			"lsPassphraseSecret": {
 				"type": "string",
 				"defaultValue": "dfio-sftp-passphrase"
+			},
+			"lsKVBaseUrl": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -39,7 +42,7 @@
 			"privateKeyContent": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
-					"referenceName": "AzKeyVault",
+					"referenceName": "GenericAzureKeyVaultMI",
 					"type": "LinkedServiceReference"
 				},
 				"secretName": {
