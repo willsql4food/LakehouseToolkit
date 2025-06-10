@@ -79,38 +79,8 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "BinarySftpPrivateKey",
-						"type": "DatasetReference",
-						"parameters": {
-							"dsHostName": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsSftpHostName",
-								"type": "Expression"
-							},
-							"dsPortNumber": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsSftpPortNumber",
-								"type": "Expression"
-							},
-							"dsUserName": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsUserName",
-								"type": "Expression"
-							},
-							"dsKvUrl": {
-								"value": "@pipeline().globalParameters.BronzeIngestionKvUrl",
-								"type": "Expression"
-							},
-							"dsPrivateKeySecret": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsPrivateKeySecret",
-								"type": "Expression"
-							},
-							"dsPasswordSecret": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsPasswordSecret",
-								"type": "Expression"
-							},
-							"dsDirectory": {
-								"value": "@activity('Get Pipeline Parameters').output.firstRow.sourceDsDirectory",
-								"type": "Expression"
-							}
-						}
+						"referenceName": "BinarySftpMultiFactor",
+						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
