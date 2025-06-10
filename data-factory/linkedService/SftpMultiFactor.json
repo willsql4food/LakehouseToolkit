@@ -1,5 +1,5 @@
 {
-	"name": "SftpKeyFile",
+	"name": "SftpMultiFactor",
 	"properties": {
 		"description": "An SFTP connection with public key authentication\nuser name, passphrase, public key content stored in key vault",
 		"parameters": {

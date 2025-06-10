@@ -2,7 +2,7 @@
 	"name": "BinarySftpMultiFactor",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "SftpKeyFile",
+			"referenceName": "SftpMultiFactor",
 			"type": "LinkedServiceReference",
 			"parameters": {
 				"lsHostName": {
