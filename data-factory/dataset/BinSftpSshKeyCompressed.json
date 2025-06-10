@@ -1,32 +1,32 @@
 {
-	"name": "BinSftpPrivateKey",
+	"name": "BinSftpSshKeyCompressed",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "SftpKeyFile",
+			"referenceName": "SftpSshKeyFile",
 			"type": "LinkedServiceReference",
 			"parameters": {
-				"lsHostName": {
-					"value": "@dataset().dsHostName",
-					"type": "Expression"
-				},
-				"lsPortNumber": {
-					"value": "@dataset().dsPortNumber",
-					"type": "Expression"
-				},
 				"lsUserName": {
 					"value": "@dataset().dsUserName",
 					"type": "Expression"
 				},
-				"lsKvUrl": {
-					"value": "@dataset().dsKvUrl",
+				"lsSftpHostName": {
+					"value": "@dataset().dsHostName",
+					"type": "Expression"
+				},
+				"lsSftpPortNumber": {
+					"value": "@dataset().dsPortNumber",
+					"type": "Expression"
+				},
+				"lsSshHostKey": {
+					"value": "@dataset().dsSshHostKey",
 					"type": "Expression"
 				},
 				"lsPrivateKeySecret": {
 					"value": "@dataset().dsPrivateKeySecret",
 					"type": "Expression"
 				},
-				"lsPasswordSecret": {
-					"value": "@dataset().dsPasswordSecret",
+				"lsPassphraseSecret": {
+					"value": "@dataset().dsPassphraseSecret",
 					"type": "Expression"
 				}
 			}
@@ -47,10 +47,16 @@
 			"dsPrivateKeySecret": {
 				"type": "string"
 			},
-			"dsPasswordSecret": {
+			"dsPassphraseSecret": {
 				"type": "string"
 			},
 			"dsDirectory": {
+				"type": "string"
+			},
+			"dsSshHostKey": {
+				"type": "string"
+			},
+			"dsCompressionType": {
 				"type": "string"
 			}
 		},
@@ -64,6 +70,12 @@
 				"type": "SftpLocation",
 				"folderPath": {
 					"value": "@dataset().dsDirectory",
+					"type": "Expression"
+				}
+			},
+			"compression": {
+				"type": {
+					"value": "@dataset().dsCompressionType",
 					"type": "Expression"
 				}
 			}
