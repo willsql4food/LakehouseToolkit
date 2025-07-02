@@ -87,7 +87,7 @@ def buildLineage(src: DataFrame,
                         , concat(p.lineage, '{delimiter}', s.{lineage}) as lineage
                 from {vw} s 
                 join {tbl} p on s.{parent} = p.{child}
-                where not exists (select * from {tbl} where id = s.{child})"""
+                where not exists (select * from {tbl} where {child} = s.{child})"""
                 )
         rows.writeTo(tbl).append()
 
