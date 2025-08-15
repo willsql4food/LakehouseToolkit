@@ -5,15 +5,8 @@
 		"type": "AzureDatabricksDeltaLake",
 		"typeProperties": {
 			"domain": "https://adb-7286372339506263.3.azuredatabricks.net",
-			"clusterId": "0304-190420-v9fjlpxf",
-			"accessToken": {
-				"type": "AzureKeyVaultSecret",
-				"store": {
-					"referenceName": "AzKeyVault",
-					"type": "LinkedServiceReference"
-				},
-				"secretName": "dbxAccessToken"
-			}
+			"clusterId": "0617-202045-ptvwkoat",
+			"workspaceResourceId": "/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898"
 		}
 	}
 }
