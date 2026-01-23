@@ -17,6 +17,10 @@
 			"gpEnvironment": {
 				"type": "string",
 				"value": "SBX"
+			},
+			"gpStuff": {
+				"type": "string",
+				"value": "Thing to test publish with Global Parameter addition"
 			}
 		}
 	},
