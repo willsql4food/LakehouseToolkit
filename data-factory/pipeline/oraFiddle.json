@@ -4,6 +4,7 @@
 		"activities": [
 			{
 				"name": "QueryToParquet",
+				"description": "description added for publish detection",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
