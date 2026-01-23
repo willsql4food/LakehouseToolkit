@@ -17,6 +17,10 @@
 			"metadata": "Secure string for 'connectionString' of 'GenericAzureSqlDatabaseMI'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=@{linkedService().lsServerName};Initial Catalog=@{linkedService().lsDatabaseName}"
 		},
+		"AzBlobStore_properties_typeProperties_serviceEndpoint": {
+			"type": "string",
+			"defaultValue": "https://staab09289802.blob.core.windows.net/"
+		},
 		"AzKeyVault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://akv-ab092898.vault.azure.net/"
@@ -29,6 +33,18 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().baseUrl}"
 		},
+		"AzBatch_properties_typeProperties_batchUri": {
+			"type": "string",
+			"defaultValue": "https://batsbxab092898.eastus2.batch.azure.com"
+		},
+		"AzBatch_properties_typeProperties_poolName": {
+			"type": "string",
+			"defaultValue": "batsbxab092898-pool1"
+		},
+		"AzBatch_properties_typeProperties_accountName": {
+			"type": "string",
+			"defaultValue": "batsbxab092898"
+		},
 		"AzDLStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().StorageAccount}"
@@ -38,22 +54,6 @@
 			"defaultValue": "@{linkedService().lsHost}"
 		},
 		"FileServer_properties_typeProperties_userId": {
-			"type": "string",
-			"defaultValue": "@{linkedService().lsUserName}"
-		},
-		"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "@{linkedService().lsURL}"
-		},
-		"GenericDB2_properties_typeProperties_connectionString_secretName": {
-			"type": "string",
-			"defaultValue": "@{linkedService().lsSecretName}"
-		},
-		"GenericSFTP_properties_typeProperties_host": {
-			"type": "string",
-			"defaultValue": "@{linkedService().lsHost}"
-		},
-		"GenericSFTP_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "@{linkedService().lsUserName}"
 		}
@@ -76,11 +76,16 @@
 							"secureOutput": false,
 							"secureInput": false
 						},
-						"userProperties": [],
+						"userProperties": [
+							{
+								"name": "UserProp",
+								"value": "@{pipeline().variables(\"WhereAmI\")}"
+							}
+						],
 						"typeProperties": {
 							"variableName": "WhereIAm",
 							"value": {
-								"value": "@if(equals(pipeline().parameters.WhereAmI, pipeline().globalParameters.gpEnvironment), 'Where I belong', 'Not authorized to run on @{pipeline().parameters.WhereAmI}')",
+								"value": "@if(contains(pipeline().parameters.WhereAmI, pipeline().globalParameters.gpEnvironment), 'Where I belong', 'Not authorized to run on @{pipeline().parameters.WhereAmI}')",
 								"type": "Expression"
 							}
 						}
@@ -92,7 +97,7 @@
 				"parameters": {
 					"WhereAmI": {
 						"type": "string",
-						"defaultValue": "NOWHERE"
+						"defaultValue": "NOSBXHERE"
 					}
 				},
 				"variables": {
@@ -102,6 +107,20 @@
 					}
 				},
 				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzBlobStore')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"serviceEndpoint": "[parameters('AzBlobStore_properties_typeProperties_serviceEndpoint')]",
+					"accountKind": "Storage"
+				}
 			},
 			"dependsOn": []
 		},
@@ -139,6 +158,21 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzDeltalake')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricksDeltaLake",
+				"typeProperties": {
+					"domain": "https://adb-7286372339506263.3.azuredatabricks.net",
+					"clusterId": "0617-202045-ptvwkoat",
+					"workspaceResourceId": "/subscriptions/4c87027a-d0a7-4f47-b9c4-31447460fbef/resourceGroups/rg-sbx-ab092898/providers/Microsoft.Databricks/workspaces/dbx-sbx-ab092898"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzKeyVault')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -170,6 +204,65 @@
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
 					"connectionString": "[parameters('AzSqlDb_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GenericAzureDatabricksNewJobClusterMI')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"lsDatabricksWorkspaceURL": {
+						"type": "string"
+					},
+					"lsWorkspaceResourceId": {
+						"type": "string"
+					},
+					"lsClusterVersion": {
+						"type": "string",
+						"defaultValue": "14.3.x-scala2.12"
+					},
+					"lsClusterNodeType": {
+						"type": "string"
+					},
+					"lsWorkerOptions": {
+						"type": "string"
+					},
+					"lsUnityCatalogEnabled": {
+						"type": "bool",
+						"defaultValue": true
+					}
+				},
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "@linkedService().lsDatabricksWorkspaceURL",
+					"authentication": "MSI",
+					"workspaceResourceId": "@linkedService().lsWorkspaceResourceId",
+					"newClusterNodeType": "@linkedService().lsClusterNodeType",
+					"newClusterNumOfWorker": "@linkedService().lsWorkerOptions",
+					"newClusterSparkConf": {
+						"spark.databricks.io.cache.enabled": "true",
+						"spark.databricks.io.cache.compression.enabled": "false",
+						"spark.databricks.io.cache.maxDiskUsage": "50g",
+						"spark.databricks.io.cache.maxMetaDataCache": "1g",
+						"spark.databricks.delta.schema.autoMerge.enabled": "true",
+						"spark.sql.sources.partitionOverwriteMode": "dynamic",
+						"spark.databricks.unityCatalog.enabled": {
+							"value": "@linkedService().lsUnityCatalogEnabled",
+							"type": "Expression"
+						},
+						"spark.rpc.message.maxSize": "1024"
+					},
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "@linkedService().lsClusterVersion",
+					"clusterOption": "Autoscaling",
+					"newClusterInitScripts": [],
+					"dataSecurityMode": "USER_ISOLATION"
 				}
 			},
 			"dependsOn": []
@@ -266,25 +359,22 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/suckLess')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"name": "[concat(parameters('factoryName'), '/AzDbxDeltaLake')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"type": "Managed",
-				"typeProperties": {
-					"computeProperties": {
-						"location": "East US 2",
-						"dataFlowProperties": {
-							"computeType": "General",
-							"coreCount": 8,
-							"timeToLive": 10,
-							"cleanup": false,
-							"customProperties": []
-						}
-					}
-				}
+				"linkedServiceName": {
+					"referenceName": "AzDeltalake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureDatabricksDeltaLakeDataset",
+				"typeProperties": {},
+				"schema": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzDeltalake')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/AzSqlDb')]",
@@ -470,6 +560,27 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzBatch')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBatch",
+				"typeProperties": {
+					"batchUri": "[parameters('AzBatch_properties_typeProperties_batchUri')]",
+					"poolName": "[parameters('AzBatch_properties_typeProperties_poolName')]",
+					"accountName": "[parameters('AzBatch_properties_typeProperties_accountName')]",
+					"linkedServiceName": {
+						"referenceName": "AzBlobStore",
+						"type": "LinkedServiceReference"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzBlobStore')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzDLStorage')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -498,30 +609,6 @@
 							"value": "@linkedService().saAccountKey",
 							"type": "Expression"
 						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzDeltalake')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricksDeltaLake",
-				"typeProperties": {
-					"domain": "https://adb-7286372339506263.3.azuredatabricks.net",
-					"clusterId": "0304-190420-v9fjlpxf",
-					"accessToken": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "AzKeyVault",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "dbxAccessToken"
 					}
 				}
 			},
@@ -570,154 +657,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
 				"[concat(variables('factoryId'), '/linkedServices/AzKeyVault')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GenericAzureDataLakeStorageGen2KV')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"lsURL": {
-						"type": "string"
-					},
-					"lsSecretName": {
-						"type": "string"
-					},
-					"lsKVBaseURL": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "GenericAzureKeyVaultMI",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"lsBaseURL": {
-									"value": "@linkedService().lsKVBaseURL",
-									"type": "Expression"
-								}
-							}
-						},
-						"secretName": {
-							"value": "@linkedService().lsSecretName",
-							"type": "Expression"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GenericDB2')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"lsKVBaseURL": {
-						"type": "string",
-						"defaultValue": "https://akv-ab092898.vault.azure.net/"
-					},
-					"lsSecretName": {
-						"type": "string",
-						"defaultValue": "qa-conn-string-mms"
-					}
-				},
-				"annotations": [],
-				"type": "Db2",
-				"typeProperties": {
-					"connectionString": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "GenericAzureKeyVaultMI",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"lsBaseURL": {
-									"value": "@linkedService().lsKVBaseURL",
-									"type": "Expression"
-								}
-							}
-						},
-						"secretName": {
-							"value": "[parameters('GenericDB2_properties_typeProperties_connectionString_secretName')]",
-							"type": "Expression"
-						}
-					}
-				},
-				"connectVia": {
-					"referenceName": "shirt-ACB",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
-				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/GenericSFTP')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"parameters": {
-					"lsHost": {
-						"type": "string",
-						"defaultValue": "10.247.96.8"
-					},
-					"lsUserName": {
-						"type": "string",
-						"defaultValue": "foundation_dw "
-					},
-					"lsKVBaseURL": {
-						"type": "string",
-						"defaultValue": "https://akv-ab092898.vault.azure.net/"
-					},
-					"lsSecretName": {
-						"type": "string",
-						"defaultValue": "foundation-sftp-pwd"
-					}
-				},
-				"annotations": [],
-				"type": "Sftp",
-				"typeProperties": {
-					"host": "[parameters('GenericSFTP_properties_typeProperties_host')]",
-					"port": 22,
-					"skipHostKeyValidation": true,
-					"authenticationType": "Basic",
-					"userName": "[parameters('GenericSFTP_properties_typeProperties_userName')]",
-					"password": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "GenericAzureKeyVaultMI",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"lsBaseURL": {
-									"value": "@linkedService().lsKVBaseURL",
-									"type": "Expression"
-								}
-							}
-						},
-						"secretName": {
-							"value": "@linkedService().lsSecretName",
-							"type": "Expression"
-						}
-					}
-				},
-				"connectVia": {
-					"referenceName": "shirt-ACB",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/shirt-ACB')]",
-				"[concat(variables('factoryId'), '/linkedServices/GenericAzureKeyVaultMI')]"
 			]
 		}
 	]

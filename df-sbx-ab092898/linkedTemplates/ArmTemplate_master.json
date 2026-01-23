@@ -22,6 +22,26 @@
 			"metadata": "Secure string for 'connectionString' of 'OnpremSqlDb'",
 			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().serverFqdn};Initial Catalog=@{linkedService().dbName}"
 		},
+		"SftpKeyFile_passPhrase": {
+			"type": "secureString",
+			"metadata": "Secure string for 'passPhrase' of 'SftpKeyFile'"
+		},
+		"AzBatch_properties_typeProperties_batchUri": {
+			"type": "string",
+			"defaultValue": "https://batsbxab092898.eastus2.batch.azure.com"
+		},
+		"AzBatch_properties_typeProperties_poolName": {
+			"type": "string",
+			"defaultValue": "batsbxab092898-pool1"
+		},
+		"AzBatch_properties_typeProperties_accountName": {
+			"type": "string",
+			"defaultValue": "batsbxab092898"
+		},
+		"AzBlobStore_properties_typeProperties_serviceEndpoint": {
+			"type": "string",
+			"defaultValue": "https://staab09289802.blob.core.windows.net/"
+		},
 		"AzDLStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().StorageAccount}"
@@ -62,13 +82,41 @@
 			"type": "string",
 			"defaultValue": "@{linkedService().userName}"
 		},
+		"Oracle_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=10.240.1.45))(connect_data=(service_name=g3a6af48942ad9d_aex490cv48p12wi_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))"
+		},
+		"Oracle_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsUserName}"
+		},
 		"RestApi_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "@{linkedService().baseUrl}"
 		},
+		"SftpKeyFile_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsHostName}"
+		},
+		"SftpKeyFile_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsUserName}"
+		},
+		"SftpSshKeyFile_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsSftpHostName}"
+		},
+		"SftpSshKeyFile_properties_typeProperties_hostKeyFingerprint": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsSshHostKey}"
+		},
+		"SftpSshKeyFile_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().lsUserName}"
+		},
 		"env-trigger_properties_Environment Trigger test_parameters_WhereAmI": {
 			"type": "string",
-			"defaultValue": "DEV"
+			"defaultValue": "@{DEV}"
 		},
 		"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 			"type": "string",
@@ -123,6 +171,9 @@
 					"GenericAzureSqlDatabaseMI_connectionString": {
 						"value": "[parameters('GenericAzureSqlDatabaseMI_connectionString')]"
 					},
+					"AzBlobStore_properties_typeProperties_serviceEndpoint": {
+						"value": "[parameters('AzBlobStore_properties_typeProperties_serviceEndpoint')]"
+					},
 					"AzKeyVault_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzKeyVault_properties_typeProperties_baseUrl')]"
 					},
@@ -132,6 +183,15 @@
 					"RestApi_properties_typeProperties_url": {
 						"value": "[parameters('RestApi_properties_typeProperties_url')]"
 					},
+					"AzBatch_properties_typeProperties_batchUri": {
+						"value": "[parameters('AzBatch_properties_typeProperties_batchUri')]"
+					},
+					"AzBatch_properties_typeProperties_poolName": {
+						"value": "[parameters('AzBatch_properties_typeProperties_poolName')]"
+					},
+					"AzBatch_properties_typeProperties_accountName": {
+						"value": "[parameters('AzBatch_properties_typeProperties_accountName')]"
+					},
 					"AzDLStorage_properties_typeProperties_url": {
 						"value": "[parameters('AzDLStorage_properties_typeProperties_url')]"
 					},
@@ -140,18 +200,6 @@
 					},
 					"FileServer_properties_typeProperties_userId": {
 						"value": "[parameters('FileServer_properties_typeProperties_userId')]"
-					},
-					"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
-						"value": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]"
-					},
-					"GenericDB2_properties_typeProperties_connectionString_secretName": {
-						"value": "[parameters('GenericDB2_properties_typeProperties_connectionString_secretName')]"
-					},
-					"GenericSFTP_properties_typeProperties_host": {
-						"value": "[parameters('GenericSFTP_properties_typeProperties_host')]"
-					},
-					"GenericSFTP_properties_typeProperties_userName": {
-						"value": "[parameters('GenericSFTP_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -174,11 +222,67 @@
 					"OnpremSqlDb_connectionString": {
 						"value": "[parameters('OnpremSqlDb_connectionString')]"
 					},
+					"SftpKeyFile_passPhrase": {
+						"value": "[parameters('SftpKeyFile_passPhrase')]"
+					},
+					"GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url": {
+						"value": "[parameters('GenericAzureDataLakeStorageGen2KV_properties_typeProperties_url')]"
+					},
+					"GenericDB2_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('GenericDB2_properties_typeProperties_connectionString_secretName')]"
+					},
+					"GenericSFTP_properties_typeProperties_host": {
+						"value": "[parameters('GenericSFTP_properties_typeProperties_host')]"
+					},
+					"GenericSFTP_properties_typeProperties_userName": {
+						"value": "[parameters('GenericSFTP_properties_typeProperties_userName')]"
+					},
 					"OnpremSqlDb_properties_typeProperties_userName": {
 						"value": "[parameters('OnpremSqlDb_properties_typeProperties_userName')]"
 					},
+					"Oracle_properties_typeProperties_server": {
+						"value": "[parameters('Oracle_properties_typeProperties_server')]"
+					},
+					"Oracle_properties_typeProperties_username": {
+						"value": "[parameters('Oracle_properties_typeProperties_username')]"
+					},
+					"SftpKeyFile_properties_typeProperties_host": {
+						"value": "[parameters('SftpKeyFile_properties_typeProperties_host')]"
+					},
+					"SftpKeyFile_properties_typeProperties_userName": {
+						"value": "[parameters('SftpKeyFile_properties_typeProperties_userName')]"
+					},
+					"SftpSshKeyFile_properties_typeProperties_host": {
+						"value": "[parameters('SftpSshKeyFile_properties_typeProperties_host')]"
+					},
+					"SftpSshKeyFile_properties_typeProperties_hostKeyFingerprint": {
+						"value": "[parameters('SftpSshKeyFile_properties_typeProperties_hostKeyFingerprint')]"
+					},
+					"SftpSshKeyFile_properties_typeProperties_userName": {
+						"value": "[parameters('SftpSshKeyFile_properties_typeProperties_userName')]"
+					},
 					"env-trigger_properties_Environment Trigger test_parameters_WhereAmI": {
 						"value": "[parameters('env-trigger_properties_Environment Trigger test_parameters_WhereAmI')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'df-sbx-ab092898_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "df-sbx-ab092898_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
 					},
 					"schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema": {
 						"value": "[parameters('schRunPipelines_properties_SchemaDriftTest_parameters_plSourceSchema')]"
@@ -198,7 +302,7 @@
 				}
 			},
 			"dependsOn": [
-				"[resourceId('Microsoft.Resources/deployments', 'df-sbx-ab092898_ArmTemplate_0')]"
+				"[resourceId('Microsoft.Resources/deployments', 'df-sbx-ab092898_ArmTemplate_1')]"
 			]
 		}
 	]
